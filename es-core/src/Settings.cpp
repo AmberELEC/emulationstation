@@ -91,7 +91,7 @@ void Settings::setDefaults()
 
 	mBoolMap["UseOSK"] = true; // on screen keyboard
 	mBoolMap["DrawClock"] = true;
-	mBoolMap["ShowControllerActivity"] = true;
+	mBoolMap["ShowControllerActivity"] = false;
 	mBoolMap["ShowControllerBattery"] = true;
 	mIntMap["SystemVolume"] = 95;
 	mBoolMap["Overscan"] = false;
@@ -159,7 +159,7 @@ void Settings::setDefaults()
 #endif
 
 	mStringMap["TransitionStyle"] = "auto";
-	mStringMap["GameTransitionStyle"] = "auto";
+	mStringMap["GameTransitionStyle"] = "instant";
 
 	mStringMap["ThemeSet"] = "";
 	mStringMap["ScreenSaverBehavior"] = "black";
