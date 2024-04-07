@@ -70,7 +70,7 @@ private:
 #endif
 	// batocera	
 	void openSystemSettings_batocera();
-	void openGamesSettings_batocera();
+	void openGamesSettings_batocera(int selectItem = -1);
 	void openControllersSettings_batocera(int autoSel = 0);
 	void openNetworkSettings_batocera(bool selectWifiEnable = false);	
 	void openQuitMenu_batocera();
@@ -99,6 +99,7 @@ private:
 	static void popSpecificConfigurationGui(Window* mWindow, std::string title, std::string configName, SystemData *systemData, FileData* fileData, bool selectCoreLine = false);
 
 	static void openLatencyReductionConfiguration(Window* mWindow, std::string configName);
+	static void openPerformanceSettingsConfiguration(Window* mWindow, std::string configName, int selectItem = -1);
 
 	std::vector<StrInputConfig*> mLoadedInput; // used to keep information about loaded devices in case there are unpluged between device window load and save
 	void clearLoadedInput();
