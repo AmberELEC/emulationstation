@@ -2538,7 +2538,7 @@ void GuiMenu::openPerformanceSettingsConfiguration(Window* mWindow, std::string 
 	// disable little cores
 	auto littlecores_disabled = std::make_shared<SwitchComponent>(mWindow);
 	littlecores_disabled->setState(SystemConf::getInstance()->get(configName + ".disable_cores") == "1");
-	guiPerformance->addWithDescription(_("DISABLE CPU CORES (LITTLE)"),_("Disable LITTLE CPU cores to save energy and/or improve performance"), littlecores_disabled, nullptr, "", selectItem == 5, true, true);
+	guiPerformance->addWithDescription(_(little_title.c_str()),_(little_desc.c_str()), littlecores_disabled, nullptr, "", selectItem == 5, true, true);
 	littlecores_disabled->setOnChangedCallback([mWindow, guiPerformance, littlecores_disabled, configName]
 	{
 		if (SystemConf::getInstance()->set(configName + ".disable_cores", littlecores_disabled->getState() ? "1" : "0"))
