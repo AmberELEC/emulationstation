@@ -2559,6 +2559,7 @@ void GuiMenu::openPerformanceSettingsConfiguration(Window* mWindow, std::string 
 		{
 			// CPU clock (big cores)
 			std::string cpuclock_big;
+			bool oc_condition_cpuclock_big;
 			auto cpuclock_big_choices = std::make_shared<OptionListComponent<std::string> >(mWindow, _("CUSTOM CPU CLOCK (BIG)"),false);
 			std::string currentFilterCPU_big = SystemConf::getInstance()->get(configName + ".cpuclock_big");
 			if (currentFilterCPU_big.empty()) {
@@ -2566,7 +2567,10 @@ void GuiMenu::openPerformanceSettingsConfiguration(Window* mWindow, std::string 
 			}
 			cpuclock_big_choices->add(_("AUTO"), "auto", currentFilterCPU_big == "auto");
 			for(std::stringstream ss(getShOutput(R"(awk '{printf "%s ", $1}' /sys/devices/system/cpu/cpufreq/policy4/stats/time_in_state)")); getline(ss, cpuclock_big, ' '); )
-			cpuclock_big_choices->add(std::to_string(std::stoi(cpuclock_big)/1000) + "MHz", cpuclock_big, currentFilterCPU_big == cpuclock_big);
+			{
+				bool oc_condition_cpuclock_big=(std::stoi(cpuclock_big)/1000)>1992;
+				cpuclock_big_choices->add(std::to_string(std::stoi(cpuclock_big)/1000) + "MHz" + (oc_condition_cpuclock_big ? " (OC)" : ""), cpuclock_big, currentFilterCPU_big == cpuclock_big);
+			}
 			guiPerformance->addWithDescription(_("CUSTOM CPU CLOCK (BIG)"),_("Set custom CPU clock for BIG cores"), cpuclock_big_choices);
 			guiPerformance->addSaveFunc([cpuclock_big_choices, configName] { SystemConf::getInstance()->set(configName + ".cpuclock_big", cpuclock_big_choices->getSelected()); });
 		}
@@ -2586,6 +2590,7 @@ void GuiMenu::openPerformanceSettingsConfiguration(Window* mWindow, std::string 
 #endif
 		{
 			std::string cpuclock;
+			bool oc_condition_cpuclock;
 			auto cpuclock_choices = std::make_shared<OptionListComponent<std::string> >(mWindow, _(little_title.c_str()),false);
 			std::string currentFilterCPU = SystemConf::getInstance()->get(configName + ".cpuclock");
 			if (currentFilterCPU.empty()) {
@@ -2593,13 +2598,21 @@ void GuiMenu::openPerformanceSettingsConfiguration(Window* mWindow, std::string 
 			}
 			cpuclock_choices->add(_("AUTO"), "auto", currentFilterCPU == "auto");
 			for(std::stringstream ss(getShOutput(R"(awk '{printf "%s ", $1}' /sys/devices/system/cpu/cpufreq/policy0/stats/time_in_state)")); getline(ss, cpuclock, ' '); )
-			cpuclock_choices->add(std::to_string(std::stoi(cpuclock)/1000) + "MHz", cpuclock, currentFilterCPU == cpuclock);
+			{
+#ifdef RG552
+				bool oc_condition_cpuclock=(std::stoi(cpuclock)/1000)>1512;
+#else
+				bool oc_condition_cpuclock=(std::stoi(cpuclock)/1000)>1296;
+#endif
+				cpuclock_choices->add(std::to_string(std::stoi(cpuclock)/1000) + "MHz" + (oc_condition_cpuclock ? " (OC)" : ""), cpuclock, currentFilterCPU == cpuclock);
+			}
 			guiPerformance->addWithDescription(_(little_title.c_str()),_(little_desc.c_str()), cpuclock_choices);
 			guiPerformance->addSaveFunc([cpuclock_choices, configName] { SystemConf::getInstance()->set(configName + ".cpuclock", cpuclock_choices->getSelected()); });
 		}
 
 		// GPU clock
 		std::string gpuclock;
+		bool oc_condition_gpuclock;
 		auto gpuclock_choices = std::make_shared<OptionListComponent<std::string> >(mWindow, _("CUSTOM GPU CLOCK"),false);
 		std::string currentFilterGPU = SystemConf::getInstance()->get(configName + ".gpuclock");
 		if (currentFilterGPU.empty()) {
@@ -2607,12 +2620,20 @@ void GuiMenu::openPerformanceSettingsConfiguration(Window* mWindow, std::string 
 		}
 		gpuclock_choices->add(_("AUTO"), "auto", currentFilterGPU == "auto");
 		for(std::stringstream ss(getShOutput(R"(cat /sys/devices/platform/*.gpu/devfreq/*.gpu/available_frequencies | tr ' ' '\n' | sort -n | tr '\n' ' ')")); getline(ss, gpuclock, ' '); )
-		gpuclock_choices->add(std::to_string(std::stoi(gpuclock)/1000000) + "MHz", gpuclock, currentFilterGPU == gpuclock);
+		{
+#ifdef RG552
+			bool oc_condition_gpuclock=(std::stoi(gpuclock)/1000000)>800;
+#else
+			bool oc_condition_gpuclock=(std::stoi(gpuclock)/1000000)>520;
+#endif
+			gpuclock_choices->add(std::to_string(std::stoi(gpuclock)/1000000) + "MHz" + (oc_condition_gpuclock ? " (OC)" : ""), gpuclock, currentFilterGPU == gpuclock);
+		}
 		guiPerformance->addWithDescription(_("CUSTOM GPU CLOCK"),_("Set custom GPU clock"), gpuclock_choices);
 		guiPerformance->addSaveFunc([gpuclock_choices, configName] { SystemConf::getInstance()->set(configName + ".gpuclock", gpuclock_choices->getSelected()); });
 
 		// RAM clock
 		std::string ramclock;
+		bool oc_condition_ramclock;
 		auto ramclock_choices = std::make_shared<OptionListComponent<std::string> >(mWindow, _("CUSTOM RAM CLOCK"),false);
 		std::string currentFilterRAM = SystemConf::getInstance()->get(configName + ".ramclock");
 		if (currentFilterRAM.empty()) {
@@ -2620,7 +2641,14 @@ void GuiMenu::openPerformanceSettingsConfiguration(Window* mWindow, std::string 
 		}
 		ramclock_choices->add(_("AUTO"), "auto", currentFilterRAM == "auto");
 		for(std::stringstream ss(getShOutput(R"(cat /sys/devices/platform/dmc/devfreq/dmc/available_frequencies)")); getline(ss, ramclock, ' '); )
-		ramclock_choices->add(std::to_string(std::stoi(ramclock)/1000000) + "MHz", ramclock, currentFilterRAM == ramclock);
+		{
+#ifdef RG552
+			bool oc_condition_ramclock=(std::stoi(ramclock)/1000000)>856;
+#else
+			bool oc_condition_ramclock=(std::stoi(ramclock)/1000000)>786;
+#endif
+			ramclock_choices->add(std::to_string(std::stoi(ramclock)/1000000) + "MHz" + (oc_condition_ramclock ? " (OC)" : ""), ramclock, currentFilterRAM == ramclock);
+		}
 		guiPerformance->addWithDescription(_("CUSTOM RAM CLOCK"),_("Set custom RAM clock"), ramclock_choices);
 		guiPerformance->addSaveFunc([ramclock_choices, configName] { SystemConf::getInstance()->set(configName + ".ramclock", ramclock_choices->getSelected()); });
 	}
