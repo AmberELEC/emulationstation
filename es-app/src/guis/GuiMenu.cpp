@@ -2580,7 +2580,10 @@ void GuiMenu::openPerformanceSettingsConfiguration(Window* mWindow, std::string 
 		std::string little_desc = "Set custom CPU clock";
 		guiPerformance->addGroup(_("CLOCKS"));
 #endif
+
+#ifdef RG552
 		if (SystemConf::getInstance()->get(configName + ".disable_cores") == "0" || SystemConf::getInstance()->get(configName + ".disable_cores") == "")
+#endif
 		{
 			std::string cpuclock;
 			auto cpuclock_choices = std::make_shared<OptionListComponent<std::string> >(mWindow, _(little_title.c_str()),false);
