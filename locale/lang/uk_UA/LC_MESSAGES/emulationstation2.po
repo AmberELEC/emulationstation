@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: batocera-emulationstation\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-16 07:49+0100\n"
+"POT-Creation-Date: 2021-12-15 23:48+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Bennington111, viroot\n"
 "Language-Team: Ukrainian <https://4pda.ru/forum/index.php?showtopic=802556>\n"
@@ -10,8 +10,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: Poedit 2.3\n"
 
 msgid "UPDATE AVAILABLE"
@@ -94,6 +94,12 @@ msgstr "Карта"
 
 msgid "enter path to map"
 msgstr "введіть шлях для карти"
+
+msgid "Bezel (16:9)"
+msgstr ""
+
+msgid "enter path to bezel (16:9)"
+msgstr ""
 
 msgid "Cartridge"
 msgstr "Картридж"
@@ -281,6 +287,9 @@ msgstr ""
 msgid "lightgun games"
 msgstr ""
 
+msgid "wheel games"
+msgstr ""
+
 msgid "collections"
 msgstr "колекції"
 
@@ -336,7 +345,7 @@ msgstr "ЗАВАНТАЖЕННЯ"
 msgid "THEME INSTALLED SUCCESSFULLY"
 msgstr "ТЕМУ УСПІШНО ВСТАНОВЛЕНО"
 
-msgid "AN ERROR OCCURED"
+msgid "AN ERROR OCCURRED"
 msgstr "ВІДБУЛАСЬ ПОМИЛКА"
 
 msgid "THEME UNINSTALLED SUCCESSFULLY"
@@ -353,6 +362,95 @@ msgstr "ПАКЕТИ ВСТАНОВЛЕНО"
 
 msgid "PACKAGE REMOVED SUCCESSFULLY"
 msgstr "ПАКЕТИ ВИДАЛЕНО"
+
+msgid "RETROACHIEVEMENT SETTINGS"
+msgstr ""
+
+msgid "SETTINGS"
+msgstr "НАЛАШТУВАННЯ"
+
+msgid "RETROACHIEVEMENTS"
+msgstr "РЕТРОДОСЯГНЕННЯ"
+
+msgid "USERNAME"
+msgstr "ІМ'Я КОРИСТУВАЧА"
+
+msgid "PASSWORD"
+msgstr "ПАРОЛЬ"
+
+msgid "OPTIONS"
+msgstr "ПАРАМЕТРИ"
+
+msgid "HARDCORE MODE"
+msgstr "ХАРДКОР РЕЖИМ"
+
+msgid "Disable loading states, rewind and cheats for more points."
+msgstr ""
+
+msgid "LEADERBOARDS"
+msgstr "ДОШКА ЛІДЕРІВ"
+
+msgid "Compete in high-score and best time leaderboards (requires hardcore)."
+msgstr ""
+
+msgid "VERBOSE MODE"
+msgstr "ДОКЛАДНИЙ РЕЖИМ"
+
+msgid "Show achievement progression on game launch and other notifications."
+msgstr ""
+
+msgid "RICH PRESENCE"
+msgstr ""
+
+msgid "ENCORE MODE"
+msgstr ""
+
+msgid "Unlocked achievements can be earned again."
+msgstr ""
+
+msgid "AUTOMATIC SCREENSHOT"
+msgstr "АВТОМАТИЧНИЙ СКРІНШОТ"
+
+msgid "Automatically take a screenshot when an achievement is earned."
+msgstr ""
+
+msgid "CHALLENGE INDICATORS"
+msgstr ""
+
+msgid ""
+"Shows icons in the bottom right corner when eligible achievements can be "
+"earned."
+msgstr ""
+
+msgid "RETROACHIEVEMENT UNLOCK SOUND"
+msgstr ""
+
+msgid "none"
+msgstr "нічого"
+
+msgid "UNLOCK SOUND"
+msgstr ""
+
+msgid "SHOW RETROACHIEVEMENTS ENTRY IN MAIN MENU"
+msgstr ""
+
+msgid "View your RetroAchievement stats right from the main menu!"
+msgstr ""
+
+msgid "GAME INDEXES"
+msgstr ""
+
+msgid "INDEX NEW GAMES AT STARTUP"
+msgstr ""
+
+msgid "INDEX GAMES"
+msgstr ""
+
+msgid "UNABLE TO ACTIVATE RETROACHIEVEMENTS:"
+msgstr ""
+
+msgid "OK"
+msgstr "ОК"
 
 msgid "FILTER GAMELIST BY"
 msgstr "ФІЛЬТР СПИСКУ ІГР ПО"
@@ -396,23 +494,20 @@ msgstr "ЗГРУПОВАНІ СИСТЕМИ"
 msgid "CREATE CUSTOM COLLECTION"
 msgstr "СТВОРИТИ СВОЮ КОЛЕКЦІЮ"
 
-msgid "CREATE NEW CUSTOM COLLECTION FROM THEME"
-msgstr "СТВОРИТИ ТЕМАТИЧНУ КОЛЕКЦІЮ"
+msgid "New Collection Name"
+msgstr "Назва нової колекції"
 
-msgid "SELECT THEME FOLDER"
-msgstr "ВИБЕРІТЬ ПАПКУ ТЕМИ"
+msgid "ENTER NAME"
+msgstr ""
+
+msgid "CREATE FROM THEME"
+msgstr ""
 
 msgid "CREATE NEW EDITABLE COLLECTION"
 msgstr "СТВОРЕНО НОВУ КОЛЕКЦІЮ"
 
-msgid "New Collection Name"
-msgstr "Назва нової колекції"
-
 msgid "CREATE NEW DYNAMIC COLLECTION"
 msgstr "СТВОРИТИ ДИНАМІЧНУ КОЛЕКЦІЮ"
-
-msgid "OPTIONS"
-msgstr "ПАРАМЕТРИ"
 
 msgid "SORT COLLECTIONS AND SYSTEMS"
 msgstr "СОРТУВАТИ КОЛЕКЦІЇ ТА СИСТЕМИ"
@@ -425,6 +520,9 @@ msgstr "ЗА ВИРОБНИКОМ"
 
 msgid "BY HARDWARE TYPE"
 msgstr "ЗА ТИПОМ ОБЛАДНАННЯ"
+
+msgid "BY MANUFACTURER AND TYPE"
+msgstr ""
 
 msgid "BY RELEASE YEAR"
 msgstr "ЗА РОКОМ ВИХОДУ"
@@ -444,13 +542,19 @@ msgstr "ВІДНОВИТИ ОСТАННЄ ВИБРАНЕ"
 msgid "START ON GAMELIST"
 msgstr "ПОЧАТИ З СПИСКУ ІГР"
 
-msgid "GROUP UNTHEMED CUSTOM COLLECTIONS"
-msgstr "ГРУПУВАТИ ВЛАСНІ КОЛЕКЦІЇ"
+msgid "GROUP CUSTOM COLLECTIONS"
+msgstr ""
+
+msgid "UNTHEMED"
+msgstr ""
 
 msgid "SHOW SYSTEM NAME IN COLLECTIONS"
 msgstr "ПОКАЗУВАТИ СИСТЕМУ В НАЗВІ"
 
 msgid "SHOW GAMES OF HIDDEN SYSTEMS IN COLLECTIONS"
+msgstr ""
+
+msgid "SHOW EMPTY SYSTEMS"
 msgstr ""
 
 msgid "UPDATE GAMELISTS"
@@ -487,13 +591,21 @@ msgid "PLEASE WAIT"
 msgstr "ЗАЧЕКАЙТЕ"
 
 #, c-format
+msgid "%d of %d softcore points"
+msgstr ""
+
+#, c-format
+msgid "%d of %d hardcore points"
+msgstr ""
+
+#, c-format
 msgid "%d%% (%d of %d)"
 msgstr ""
 
-msgid "RETROACHIEVEMENTS"
-msgstr "РЕТРОДОСЯГНЕННЯ"
+msgid "Softcore points"
+msgstr ""
 
-msgid "Points"
+msgid "Points (hardcore)"
 msgstr ""
 
 msgid "Rank"
@@ -505,11 +617,41 @@ msgstr ""
 msgid "LAUNCH"
 msgstr "ЗАПУСК"
 
+msgid "NETPLAY SETTINGS"
+msgstr "НАЛАШТУВАННЯ NETPLAY"
+
+msgid "ENABLE NETPLAY"
+msgstr "УВІМКНУТИ NETPLAY"
+
+msgid "NICKNAME"
+msgstr "НІК"
+
+msgid "PORT"
+msgstr "ПОРТ"
+
+msgid "USE RELAY SERVER"
+msgstr ""
+
+msgid "NEW YORK"
+msgstr ""
+
+msgid "MADRID"
+msgstr ""
+
+msgid "MONTREAL"
+msgstr ""
+
+msgid "SAO PAULO"
+msgstr ""
+
+msgid "SHOW UNAVAILABLE GAMES"
+msgstr ""
+
+msgid "Show rooms for games not present on this machine."
+msgstr ""
+
 msgid "FINISHED"
 msgstr "ЗАВЕРШЕНО"
-
-msgid "OK"
-msgstr "ОК"
 
 msgid "VIEW OPTIONS"
 msgstr "ОПЦІЇ ПЕРЕГЛЯДУ"
@@ -520,23 +662,29 @@ msgstr "назад"
 msgid "NAVIGATION"
 msgstr "НАВІГАЦІЯ"
 
-msgid "JUMP TO GAME BEGINNING WITH THE LETTER"
-msgstr ""
+msgid "OTHER FILTERS"
+msgstr "ІНШІ ФІЛЬТРИ"
 
 msgid "SELECT RANDOM GAME"
+msgstr ""
+
+msgid "JUMP TO GAME BEGINNING WITH THE LETTER"
 msgstr ""
 
 msgid "SORT GAMES BY"
 msgstr "СОРТУВАННЯ ЗА"
 
-msgid "OTHER FILTERS"
-msgstr "ІНШІ ФІЛЬТРИ"
+msgid "DYNAMIC COLLECTION"
+msgstr ""
 
-msgid "COLLECTION"
-msgstr "КОЛЕКЦІЯ"
+msgid "CUSTOM COLLECTION"
+msgstr ""
 
 msgid "DELETE COLLECTION"
 msgstr "ВИДАЛИТИ КОЛЕКЦІЮ"
+
+msgid "COLLECTION"
+msgstr "КОЛЕКЦІЯ"
 
 msgid "GAMELIST VIEW STYLE"
 msgstr "ВИД СПИСКА ІГР"
@@ -567,6 +715,25 @@ msgstr "ЗАКРИТИ"
 
 msgid "ARE YOU SURE YOU WANT TO DELETE THIS ITEM?"
 msgstr "ВИ ВПЕВНЕНІ ЩО ХОЧЕТЕ ЦЕ ВИДАЛИТИ?"
+
+msgid "FORGET A BLUETOOTH DEVICE"
+msgstr ""
+
+msgid "REMOVE ALL"
+msgstr "ВИДАЛИТИ ВСЕ"
+
+msgid "NO BLUETOOTH DEVICES FOUND"
+msgstr "НЕ ЗНАЙДЕНО BLUETOOTH КОНТРОЛЛЕРІВ"
+
+msgid "REMOVE"
+msgstr "ВИДАЛИТИ"
+
+msgid "BLUETOOTH DEVICES HAVE BEEN DELETED."
+msgstr ""
+
+#, c-format
+msgid "ARE YOU SURE YOU WANT TO REMOVE '%s' ?"
+msgstr ""
 
 msgid "INPUT"
 msgstr "ВВІД"
@@ -625,16 +792,13 @@ msgstr "МЕРЕЖА WIFI НЕ ЗНАЙДЕНА"
 msgid "SEARCHING WI-FI NETWORKS"
 msgstr "ПОШУК МЕРЕЖІ WIFI"
 
-msgid "FORGET A BLUETOOTH DEVICE"
+msgid "YOU ARE NOT CONNECTED TO A NETWORK"
+msgstr "ВИ НЕ ПІДЄДНАННІ ДО ІНТЕРНЕТУ"
+
+msgid "PAIR A BLUETOOTH DEVICE"
 msgstr ""
 
-msgid "REMOVE ALL"
-msgstr "ВИДАЛИТИ ВСЕ"
-
-msgid "NO BLUETOOTH DEVICES FOUND"
-msgstr "НЕ ЗНАЙДЕНО BLUETOOTH КОНТРОЛЛЕРІВ"
-
-msgid "BLUETOOTH DEVICES HAVE BEEN DELETED."
+msgid "PAIR"
 msgstr ""
 
 msgid "FILE BROWSER"
@@ -654,6 +818,195 @@ msgstr "ВИБІР"
 
 msgid "ADD COMBINATION KEY"
 msgstr "ДОДАТИ КОМБІНАЦІЇ КНОПОК"
+
+msgid "CONTROLLER SETTINGS"
+msgstr ""
+
+msgid "CONTROLLER & BLUETOOTH SETTINGS"
+msgstr "НАЛАШТУВАННЯ КОНТРОЛЕРІВ"
+
+msgid "CONTROLLERS PRIORITY"
+msgstr ""
+
+msgid "PLAYER ASSIGNMENTS"
+msgstr ""
+
+#, c-format
+msgid "CONTROLLER #%i"
+msgstr ""
+
+#, c-format
+msgid "P%i'S CONTROLLER"
+msgstr ""
+
+msgid "CONTROLLER MAPPING"
+msgstr ""
+
+msgid ""
+"YOU ARE GOING TO MAP A CONTROLLER. MAP BASED ON THE BUTTON'S POSITION, NOT "
+"ITS PHYSICAL LABEL. IF YOU DO NOT HAVE A SPECIAL BUTTON FOR HOTKEY, USE THE "
+"SELECT BUTTON. SKIP ALL BUTTONS/STICKS YOU DO NOT HAVE BY HOLDING ANY "
+"BUTTON. PRESS THE SOUTH BUTTON TO CONFIRM WHEN DONE."
+msgstr ""
+
+msgid "SINDEN GUN SETTINGS"
+msgstr ""
+
+msgid "WIIMOTE GUN SETTINGS"
+msgstr ""
+
+msgid "STEAMDECK MOUSE/GUN SETTINGS"
+msgstr ""
+
+msgid "BLUETOOTH"
+msgstr ""
+
+msgid "ENABLE BLUETOOTH"
+msgstr ""
+
+msgid "PAIR BLUETOOTH PADS AUTOMATICALLY"
+msgstr ""
+
+msgid "PAIR A BLUETOOTH DEVICE MANUALLY"
+msgstr ""
+
+msgid "DISPLAY OPTIONS"
+msgstr "ОПЦІЇ ЕКРАНУ"
+
+msgid "SHOW CONTROLLER NOTIFICATIONS"
+msgstr ""
+
+msgid "SHOW CONTROLLER ACTIVITY"
+msgstr "ПОКАЗАТИ АКТИВНІСТЬ КОНТРОЛЕРА"
+
+msgid "SHOW CONTROLLER BATTERY LEVEL"
+msgstr ""
+
+msgid "default"
+msgstr "за замовчуванням"
+
+msgid "NOT CONNECTED"
+msgstr "НЕ ПІДКЛЮЧЕНО"
+
+msgid "BORDER SIZE"
+msgstr ""
+
+msgid "AUTO"
+msgstr "АВТО"
+
+msgid "THIN"
+msgstr ""
+
+msgid "MEDIUM"
+msgstr ""
+
+msgid "BIG"
+msgstr ""
+
+msgid "BORDER MODE"
+msgstr ""
+
+msgid "NORMAL"
+msgstr ""
+
+msgid "IN GAME ONLY"
+msgstr ""
+
+msgid "HIDDEN"
+msgstr ""
+
+msgid "BORDER COLOR"
+msgstr ""
+
+msgid "WHITE"
+msgstr ""
+
+msgid "RED"
+msgstr ""
+
+msgid "GREEN"
+msgstr ""
+
+msgid "BLUE"
+msgstr ""
+
+msgid "CAMERA CONTRAST"
+msgstr ""
+
+msgid "Daytime/Bright Sunlight (40)"
+msgstr ""
+
+msgid "Default (50)"
+msgstr ""
+
+msgid "Dim Display/Evening (60)"
+msgstr ""
+
+msgid "CAMERA BRIGHTNESS"
+msgstr ""
+
+msgid "Daytime/Bright Sunlight (80)"
+msgstr ""
+
+msgid "Default (100)"
+msgstr ""
+
+msgid "Dim Display/Evening (120)"
+msgstr ""
+
+msgid "CAMERA EXPOSURE"
+msgstr ""
+
+msgid "Projector/CRT (-5)"
+msgstr ""
+
+msgid "Projector/CRT (-6)"
+msgstr ""
+
+msgid "Default (-7)"
+msgstr ""
+
+msgid "Other (-8)"
+msgstr ""
+
+msgid "Other (-9)"
+msgstr ""
+
+msgid "RECOIL"
+msgstr ""
+
+msgid "DISABLED"
+msgstr ""
+
+msgid "GUN"
+msgstr ""
+
+msgid "MACHINE GUN"
+msgstr ""
+
+msgid "QUIET GUN"
+msgstr ""
+
+msgid "QUIET MACHINE GUN"
+msgstr ""
+
+msgid "MODE"
+msgstr ""
+
+msgid "JOYSTICK"
+msgstr ""
+
+msgid "MOUSE ONLY"
+msgstr ""
+
+msgid "HAND"
+msgstr ""
+
+msgid "LEFT"
+msgstr "ЛІВОРУЧ"
+
+msgid "RIGHT"
+msgstr "ПРАВОРУЧ"
 
 msgid "CONTENT DOWNLOADER"
 msgstr "ЗАВАНТАЖЕННЯ КОНТЕНТУ"
@@ -677,9 +1030,6 @@ msgstr "ОНОВИТИ"
 msgid "'%s' ADDED TO DOWNLOAD QUEUE"
 msgstr "'%s' ДОДАНО В ЧЕРГУ ЗАВАНТАЖЕННЯ"
 
-msgid "REMOVE"
-msgstr "ВИДАЛИТИ"
-
 msgid "UNINSTALLATION ADDED TO QUEUE"
 msgstr ""
 
@@ -696,6 +1046,15 @@ msgstr ""
 msgid "MISSING BIOS CHECK"
 msgstr "ВІДСУТНІ БІОСИ"
 
+msgid "Installed systems"
+msgstr ""
+
+msgid "All"
+msgstr ""
+
+msgid "refresh"
+msgstr ""
+
 msgid "NO MISSING BIOS"
 msgstr "НЕМАЄ БРАКУЮЧОГО BIOS"
 
@@ -711,6 +1070,9 @@ msgstr "випадкове відео"
 msgid "slideshow"
 msgstr "слайдшоу"
 
+msgid "suspend"
+msgstr ""
+
 msgid "always"
 msgstr "завжди"
 
@@ -720,9 +1082,6 @@ msgstr "початок та кінець"
 msgid "never"
 msgstr "ніколи"
 
-msgid "none"
-msgstr "нічого"
-
 msgid "systems"
 msgstr "системи"
 
@@ -731,9 +1090,6 @@ msgstr "випадково"
 
 msgid "SCREENSAVER SETTINGS"
 msgstr "НАЛАШТУВАННЯ ЗАСТАВКИ"
-
-msgid "SETTINGS"
-msgstr "НАЛАШТУВАННЯ"
 
 msgid "START SCREENSAVER AFTER"
 msgstr "ЗАСТАВКА ЧЕРЕЗ"
@@ -859,14 +1215,11 @@ msgstr "ВИ ВПЕВНЕНІ?"
 msgid "UPDATING %s"
 msgstr ""
 
-msgid "UPDATING BATOCERA"
-msgstr "ОНОВЛЕННЯ BATOCERA"
-
 msgid "UPDATE IS READY"
 msgstr "ОНОВЛЕННЯ ГОТОВЕ"
 
-msgid "REBOOT SYSTEM TO APPLY THE UPDATE"
-msgstr "ПЕРЕЗАВАНТАЖЕННЯ СИСТЕМИ ДЛЯ ЗАСТОСУВАННЯ"
+msgid "REBOOT TO APPLY"
+msgstr ""
 
 msgid "REALLY UPDATE?"
 msgstr "ДІЙСНО ОНОВИТИ?"
@@ -877,14 +1230,21 @@ msgid ""
 "DO YOU WANT TO UPDATE TO VERSION %s?"
 msgstr ""
 
+#, c-format
+msgid ""
+"UNOFFICIAL SYSTEM MODIFICATIONS DETECTED.\n"
+"UPGRADING COULD BREAK YOUR SYSTEM.\n"
+"DO YOU WANT TO UPDATE TO VERSION %s?"
+msgstr ""
+
 msgid "NETWORK CONNECTION NEEDED"
 msgstr "НЕОБХІДНО МЕРЕЖЕВЕ З'ЄДНАННЯ"
 
 msgid "NO UPDATE AVAILABLE"
 msgstr "НЕМАЄ ОНОВЛЕНЬ"
 
-msgid "INSTALL BATOCERA"
-msgstr "ВСТАНОВИТИ BATOCERA"
+msgid "INSTALL ON A NEW DISK"
+msgstr ""
 
 msgid "TARGET DEVICE"
 msgstr "ЦІЛЬОВИЙ ПРИСТРІЙ"
@@ -934,7 +1294,7 @@ msgstr ""
 msgid "OPEN"
 msgstr ""
 
-msgid "NETPLAY HOSTING/OPTIONS"
+msgid "START A NETPLAY GAME"
 msgstr ""
 
 msgid "NETPLAY"
@@ -943,19 +1303,16 @@ msgstr ""
 msgid "START GAME"
 msgstr ""
 
-msgid "BEGIN HOSTING A NETPLAY SESSION"
+msgid "HOST A NETPLAY GAME"
 msgstr ""
-
-msgid "YOU ARE NOT CONNECTED TO A NETWORK"
-msgstr "ВИ НЕ ПІДЄДНАННІ ДО ІНТЕРНЕТУ"
 
 msgid "PUBLICLY ANNOUNCE GAME"
 msgstr ""
 
-msgid "SET PLAYER PASSWORD"
+msgid "PLAYER PASSWORD"
 msgstr ""
 
-msgid "SET VIEWER PASSWORD"
+msgid "VIEWER PASSWORD"
 msgstr ""
 
 msgid "FIND SIMILAR GAMES..."
@@ -1015,9 +1372,17 @@ msgstr "ЗАВАНТАЖУВАЧ ТЕМ"
 msgid "SELECT THEMES TO INSTALL/REMOVE"
 msgstr ""
 
-#, c-format
+msgid "Installed"
+msgstr ""
+
+msgid "Available"
+msgstr ""
+
 msgid "CURRENT THEME"
 msgstr "ПОТОЧНА ТЕМА"
+
+msgid "Points"
+msgstr ""
 
 msgid "Unlocked on"
 msgstr ""
@@ -1025,20 +1390,23 @@ msgstr ""
 msgid "THIS GAME HAS NO ACHIEVEMENTS YET"
 msgstr ""
 
-msgid "Achievements won"
+msgid "Achievements (softcore)"
+msgstr ""
+
+msgid "Achievements (hardcore)"
 msgstr ""
 
 #, c-format
 msgid "%d%% complete"
 msgstr ""
 
-msgid "SAVE STATE MANAGER"
+msgid "SAVESTATE MANAGER"
 msgstr ""
 
 msgid "START NEW GAME"
 msgstr ""
 
-msgid "START AUTO SAVE"
+msgid "START NEW AUTO SAVE"
 msgstr ""
 
 msgid "AUTO SAVE"
@@ -1050,20 +1418,140 @@ msgstr ""
 msgid "COPY TO FREE SLOT"
 msgstr ""
 
-msgid "SCRAPE CRITERIA"
+msgid "SCRAPER SETTINGS"
 msgstr ""
 
-msgid "MEDIA TO SCRAPE FOR"
+msgid "IMAGE SOURCE"
+msgstr "СТИЛЬ ЗОБРАЖЕННЯ"
+
+msgid "SCREENSHOT"
+msgstr "СКРІНШОТ"
+
+msgid "TITLE SCREENSHOT"
+msgstr "СКРІНШОТ ГОЛОВНОГО МЕНЮ"
+
+msgid "MIX V1"
+msgstr ""
+
+msgid "MIX V2"
+msgstr ""
+
+msgid "BOX 2D"
+msgstr "ОБЛОЖКИ 2D"
+
+msgid "BOX 3D"
+msgstr "ОБЛОЖКИ 3D"
+
+msgid "FAN ART"
+msgstr "ФАН АРТ"
+
+msgid "BOX SOURCE"
+msgstr "СТИЛЬ ОБЛОЖКИ"
+
+msgid "LOGO SOURCE"
+msgstr "СТИЛЬ ЛОГО"
+
+msgid "WHEEL"
+msgstr "КОЛЕСО"
+
+msgid "MARQUEE"
+msgstr "БАНЕР"
+
+msgid "PREFERED REGION"
+msgstr ""
+
+msgid "OVERWRITE DESCRIPTIONS"
+msgstr ""
+
+msgid "OVERWRITE MEDIAS"
+msgstr ""
+
+msgid "SCRAPE FOR"
+msgstr ""
+
+msgid "SHORT NAME"
+msgstr ""
+
+msgid "COMMUNITY RATING"
+msgstr ""
+
+msgid "VIDEO"
+msgstr ""
+
+msgid "FANART"
+msgstr ""
+
+msgid "BEZEL (16:9)"
+msgstr ""
+
+msgid "BOX BACKSIDE"
+msgstr ""
+
+msgid "MAP"
+msgstr ""
+
+msgid "MANUAL"
+msgstr ""
+
+msgid "PADTOKEY SETTINGS"
+msgstr ""
+
+msgid "ACCOUNT"
+msgstr ""
+
+msgid "SCRAPER"
+msgstr "СКРАПЕР"
+
+msgid "SCRAPING DATABASE"
+msgstr ""
+
+msgid "SOURCE"
+msgstr ""
+
+msgid "SCRAPE FROM"
+msgstr "ЗАВАНТАЖЕННЯ З"
+
+msgid "FILTERS"
+msgstr ""
+
+msgid "GAMES TO SCRAPE FOR"
 msgstr ""
 
 msgid "ALL"
 msgstr ""
 
-msgid "ONLY MISSING"
+msgid "GAMES MISSING ANY MEDIA"
+msgstr ""
+
+msgid "GAMES MISSING ALL MEDIA"
+msgstr ""
+
+msgid "IGNORE RECENTLY SCRAPED GAMES"
+msgstr ""
+
+msgid "LAST DAY"
+msgstr ""
+
+msgid "LAST WEEK"
+msgstr ""
+
+msgid "LAST 15 DAYS"
+msgstr ""
+
+msgid "LAST MONTH"
+msgstr ""
+
+msgid "LAST 3 MONTHS"
+msgstr ""
+
+msgid "LAST YEAR"
 msgstr ""
 
 msgid "SYSTEMS INCLUDED"
 msgstr ""
+
+msgid "SCRAPE NOW"
+msgstr "ЗАВАНТАЖИТИ ДАНІ"
 
 msgid "START"
 msgstr "ПОЧАТИ"
@@ -1079,6 +1567,24 @@ msgstr "ДАНІ ЗАВАНТАЖУЮТСЯ. ЗУПИНИТИ?"
 
 msgid "NO GAMES FIT THAT CRITERIA."
 msgstr "НЕМАЄ ПІДХОДЯЩИХ ІГР."
+
+msgid "INFORMATION"
+msgstr "ІНФОРМАЦІЯ"
+
+msgid "VERSION"
+msgstr "ВЕРСІЯ"
+
+msgid "USER DISK USAGE"
+msgstr "ЗЯЙНЯТИЙ ПРОСТІР КОРИСТУВАЧА"
+
+msgid "SYSTEM DISK USAGE"
+msgstr "ЗАЙНЯТИЙ ПРОСТІР ДИСКУ"
+
+msgid "SYSTEM"
+msgstr "СИСТЕМА"
+
+msgid "VIDEO DRIVER"
+msgstr ""
 
 msgid "THE BEZEL PROJECT"
 msgstr "НАБІР РАМОК (ОВЕРЛЕЇВ)"
@@ -1131,24 +1637,35 @@ msgstr "Максимальна частота процесора"
 msgid "Cpu feature"
 msgstr "Функції CPU"
 
+msgctxt "game_options"
+msgid "SHARP-BILINEAR-SIMPLE"
+msgstr ""
+
+msgctxt "game_options"
 msgid "SCANLINES"
-msgstr "SCANLINES"
+msgstr ""
 
+msgctxt "game_options"
 msgid "RETRO"
-msgstr "РЕТРО"
+msgstr ""
 
+msgctxt "game_options"
 msgid "ENHANCED"
-msgstr "РАЗГОРНУТИЙ"
+msgstr ""
 
+msgctxt "game_options"
 msgid "CURVATURE"
-msgstr "КРИВИЗНА"
+msgstr ""
 
+msgctxt "game_options"
 msgid "ZFAST"
 msgstr ""
 
+msgctxt "game_options"
 msgid "FLATTEN-GLOW"
 msgstr ""
 
+msgctxt "game_options"
 msgid "RGA SCALING"
 msgstr ""
 
@@ -1158,17 +1675,20 @@ msgstr ""
 msgid "RENDERER"
 msgstr ""
 
-msgid "VERSION"
-msgstr "ВЕРСІЯ"
-
 msgid "SHADERS"
 msgstr ""
 
-msgid "CONTROLLER SETTINGS"
+msgid "INTERNAL"
 msgstr ""
 
-msgid "CONTROLLER & BLUETOOTH SETTINGS"
-msgstr "НАЛАШТУВАННЯ КОНТРОЛЕРІВ"
+msgid "ANY EXTERNAL"
+msgstr ""
+
+msgid "maximum 1920x1080"
+msgstr ""
+
+msgid "maximum 640x480"
+msgstr ""
 
 msgid "MAIN MENU"
 msgstr "ГОЛОВНЕ МЕНЮ"
@@ -1179,8 +1699,8 @@ msgstr "МЕДІАЦЕНТР KODI"
 msgid "GAME SETTINGS"
 msgstr ""
 
-msgid "UI SETTINGS"
-msgstr "НАЛАШТУВАННЯ ІНТЕРФЕЙСУ"
+msgid "USER INTERFACE SETTINGS"
+msgstr ""
 
 msgid "SOUND SETTINGS"
 msgstr "НАЛАШТУВАННЯ ЗВУКУ"
@@ -1194,95 +1714,17 @@ msgstr "НАЛАШТУВАННЯ ВВОДУ"
 msgid "EMULATOR SETTINGS"
 msgstr "НАЛАШТУВАННЯ ЕМУЛЯТОРА"
 
-msgid "SCRAPER"
-msgstr "СКРАПЕР"
-
 msgid "UPDATES & DOWNLOADS"
 msgstr "ОНОВЛЕННЯ & ЗАВАНТАЖЕННЯ"
 
 msgid "SYSTEM SETTINGS"
 msgstr "НАЛАШТУВАННЯ СИСТЕМИ"
 
-msgid "INFORMATION"
-msgstr "ІНФОРМАЦІЯ"
-
-msgid "UNLOCK UI MODE"
+msgid "UNLOCK USER INTERFACE MODE"
 msgstr ""
 
 msgid "QUIT"
 msgstr "ВИХІД"
-
-msgid "SCRAPER IS RUNNING. DO YOU WANT TO STOP IT?"
-msgstr ""
-
-msgid "NEXT"
-msgstr ""
-
-msgid "SCRAPING DATABASE"
-msgstr ""
-
-msgid "IMAGE SOURCE"
-msgstr "СТИЛЬ ЗОБРАЖЕННЯ"
-
-msgid "SCREENSHOT"
-msgstr "СКРІНШОТ"
-
-msgid "TITLE SCREENSHOT"
-msgstr "СКРІНШОТ ГОЛОВНОГО МЕНЮ"
-
-msgid "MIX V1"
-msgstr ""
-
-msgid "MIX V2"
-msgstr ""
-
-msgid "BOX 2D"
-msgstr "ОБЛОЖКИ 2D"
-
-msgid "BOX 3D"
-msgstr "ОБЛОЖКИ 3D"
-
-msgid "FAN ART"
-msgstr "ФАН АРТ"
-
-msgid "BOX SOURCE"
-msgstr "СТИЛЬ ОБЛОЖКИ"
-
-msgid "LOGO SOURCE"
-msgstr "СТИЛЬ ЛОГО"
-
-msgid "WHEEL"
-msgstr "КОЛЕСО"
-
-msgid "MARQUEE"
-msgstr "БАНЕР"
-
-msgid "SCRAPE RATINGS"
-msgstr "ЗАВАНТАЖЕННЯ РЕЙТИНГІВ"
-
-msgid "SCRAPE VIDEOS"
-msgstr "ЗАВАНТАЖЕННЯ ВІДЕО"
-
-msgid "SCRAPE FANART"
-msgstr "ЗАВАНТАЖИТИ ФАН АРТ"
-
-msgid "SCRAPE BOX BACKSIDE"
-msgstr ""
-
-msgid "SCRAPE MAP"
-msgstr ""
-
-msgid "SCRAPE MANUAL"
-msgstr "ЗАВАНТАЖИТИ МАНУАЛ"
-
-msgid "SCRAPE PADTOKEY SETTINGS"
-msgstr ""
-
-msgid "USERNAME"
-msgstr "ІМ'Я КОРИСТУВАЧА"
-
-msgid "PASSWORD"
-msgstr "ПАРОЛЬ"
 
 msgid "ARE YOU SURE YOU WANT TO CONFIGURE THE INPUT?"
 msgstr ""
@@ -1290,26 +1732,92 @@ msgstr ""
 msgid "CHOOSE"
 msgstr "ВИБЕРІТЬ"
 
-msgid "THE UI MODE IS NOW UNLOCKED"
+msgid "THE USER INTERFACE MODE IS NOW UNLOCKED"
 msgstr ""
 
-msgid "ENTER THE CODE TO UNLOCK THE CURRENT UI MODE"
+msgid "ENTER THE CODE NOW TO UNLOCK"
 msgstr ""
 
-msgid "USER DISK USAGE"
-msgstr "ЗЯЙНЯТИЙ ПРОСТІР КОРИСТУВАЧА"
-
-msgid "SYSTEM DISK USAGE"
-msgstr "ЗАЙНЯТИЙ ПРОСТІР ДИСКУ"
-
-msgid "SYSTEM"
-msgstr "СИСТЕМА"
-
-msgid "VIDEO DRIVER"
+msgid "SERVICES"
 msgstr ""
 
-msgid "DEVELOPER"
-msgstr "РОЗРОБНИК"
+msgid "DMD"
+msgstr ""
+
+msgid "SERVER"
+msgstr ""
+
+msgid "DMDSERVER (for real dmd)"
+msgstr ""
+
+msgid "SIMULATOR (for web dmd)"
+msgstr ""
+
+msgid "dmd server"
+msgstr ""
+
+msgid "FORMAT"
+msgstr ""
+
+msgid "dmd matrix size"
+msgstr ""
+
+msgid "MATRIX"
+msgstr ""
+
+msgid "rgb dmd order"
+msgstr ""
+
+msgid "BRIGHTNESS"
+msgstr "ЯСКРАВІСТЬ"
+
+msgid "DMDSERVER stopped"
+msgstr ""
+
+msgid "DMDSERVER restarted"
+msgstr ""
+
+msgid "DMDSERVER started"
+msgstr ""
+
+msgid "MULTISCREENS"
+msgstr ""
+
+msgid "BACKGLASS / INFORMATION SCREEN"
+msgstr ""
+
+msgid "VIDEO OUTPUT"
+msgstr "ВІДЕО ВИХІД"
+
+msgid "VIDEO MODE"
+msgstr "ВІДЕО РЕЖИМ"
+
+msgid "Sets the display's resolution."
+msgstr ""
+
+msgid "ROTATION"
+msgstr ""
+
+msgid "0 DEGREES"
+msgstr ""
+
+msgid "90 DEGREES"
+msgstr ""
+
+msgid "180 DEGREES"
+msgstr ""
+
+msgid "270 DEGREES"
+msgstr ""
+
+msgid "SCREEN ROTATION"
+msgstr ""
+
+msgid "DMD SCREEN"
+msgstr ""
+
+msgid "FRONTEND DEVELOPER OPTIONS"
+msgstr ""
 
 msgid "VIDEO OPTIONS"
 msgstr "ОПЦІЇ ВІДЕО"
@@ -1320,11 +1828,17 @@ msgstr "ЛІМІТ VRAM"
 msgid "SHOW FRAMERATE"
 msgstr "ПОКАЗУВАТИ ЧАСТОТУ КАДРІВ"
 
+msgid "Also turns on the emulator's native FPS counter, if available."
+msgstr ""
+
 msgid "VSYNC"
 msgstr "VSYNC"
 
 msgid "OVERSCAN"
 msgstr "РОЗГОРТКА"
+
+msgid "Sets the display's resolution for emulationstation."
+msgstr ""
 
 msgid "USE OMX PLAYER (HARDWARE ACCELERATED)"
 msgstr ""
@@ -1335,15 +1849,12 @@ msgstr "ІНСТРУМЕНТИ"
 msgid "STOP LAUNCHING THIS GAME AT STARTUP"
 msgstr ""
 
-msgid "ENABLE PUBLIC WEB ACCESS"
+msgid "ENABLE PUBLIC WEB API ACCESS"
 msgstr ""
 
 #, c-format
 msgid "Allow public web access API using %s"
 msgstr ""
-
-msgid "REBOOT REQUIRED TO APPLY THE NEW CONFIGURATION"
-msgstr "ДЛЯ ЗАСТОСУВАННЯ НАЛАШТУВАНЬ ПОТРІБНО ПЕРЕЗАПУСТИТИ СИСТЕМУ"
 
 msgid "LOG LEVEL"
 msgstr "РІВЕНЬ ЖУРНАЛУ"
@@ -1351,8 +1862,8 @@ msgstr "РІВЕНЬ ЖУРНАЛУ"
 msgid "CREATE A SUPPORT FILE"
 msgstr "СТВОРИТИ ФАЙЛ ПІДТРИМКИ"
 
-msgid "CREATE A SUPPORT FILE?"
-msgstr "СТВОРИТИ ФАЙЛ ПІДТРИМКИ?"
+msgid "CREATE A SUPPORT FILE? THIS INCLUDES ALL DATA IN YOUR SYSTEM FOLDER."
+msgstr ""
 
 msgid "SUPPORT FILE CREATED IN SAVES FOLDER"
 msgstr ""
@@ -1366,8 +1877,29 @@ msgstr "ФОРМАТУВАТИ ДИСК"
 msgid "CLEAN GAMELISTS & REMOVE UNUSED MEDIA"
 msgstr "ОЧИСТИТИ ГЕЙМЛИСТ ТА ВИДАЛИТИ ДАННІ"
 
+msgid "Remove unused entries, and clean references to missing medias."
+msgstr ""
+
 msgid "Cleaning"
 msgstr "Очищення"
+
+msgid "RESET GAMELISTS USAGE DATA"
+msgstr ""
+
+msgid "Reset values of GameTime, PlayCount and LastPlayed metadatas."
+msgstr ""
+
+msgid "RESET FILE EXTENSIONS"
+msgstr "СКИНУТИ РОЗШИРЕННЯ ФАЙЛІВ"
+
+msgid "Reset customized file extensions filters to default."
+msgstr ""
+
+msgid "REDETECT ALL GAMES' LANG/REGION"
+msgstr ""
+
+msgid "FIND ALL GAMES WITH NETPLAY/ACHIEVEMENTS"
+msgstr ""
 
 msgid "CLEAR CACHES"
 msgstr "ОЧИСТИТИ КЕШ"
@@ -1378,13 +1910,22 @@ msgstr ""
 msgid "Building image cache"
 msgstr ""
 
-msgid "RESET FILE EXTENSIONS"
-msgstr "СКИНУТИ РОЗШИРЕННЯ ФАЙЛІВ"
-
-msgid "REDETECT ALL GAMES' LANG/REGION"
+msgid "DISPLAY SETTINGS"
 msgstr ""
 
-msgid "FIND ALL GAMES WITH NETPLAY/ACHIEVEMENTS"
+msgid "MENU FONT SCALE"
+msgstr ""
+
+msgid "FONT SCALE"
+msgstr ""
+
+msgid "THEME FONT SCALE"
+msgstr ""
+
+msgid "FULL SCREEN MENUS"
+msgstr ""
+
+msgid "FORCE SMALL SCREEN THEMING"
 msgstr ""
 
 msgid "DATA MANAGEMENT"
@@ -1393,19 +1934,31 @@ msgstr ""
 msgid "IGNORE MULTI-FILE DISK CONTENT (CUE/GDI/CCD/M3U)"
 msgstr ""
 
-msgid "ENABLE FILTERS"
-msgstr "ВМИКНУТИ ФІЛЬТРИ"
+msgid "ENABLE GAME FILTERING"
+msgstr ""
+
+msgid ""
+"Whether to show or hide game filtering related settings in the view options."
+msgstr ""
 
 msgid "SAVE METADATA ON EXIT"
 msgstr "ЗБЕРЕГТИ МЕТАДАНІ ПІСЛЯ ВИХОДУ"
 
-msgid "PARSE GAMESLISTS ONLY"
-msgstr "АНАЛІЗУВАТИ ТІЛЬКИ СПИСОК ІГР"
+msgid "PARSE GAMELISTS ONLY"
+msgstr ""
+
+msgid "Debug tool: Don't check if the ROMs actually exist. Can cause problems!"
+msgstr ""
 
 msgid "SEARCH FOR LOCAL ART"
 msgstr "ПОШУК ЛОКАЛЬНИХ ЗОБРАЖЕНЬ"
 
-msgid "UI"
+msgid ""
+"If no image is specified in the gamelist, try to find media with the same "
+"filename to use."
+msgstr ""
+
+msgid "USER INTERFACE"
 msgstr ""
 
 msgid "CAROUSEL TRANSITIONS"
@@ -1426,14 +1979,11 @@ msgstr ""
 msgid "RETROARCH MENU DRIVER"
 msgstr ""
 
-msgid "AUTO"
-msgstr "АВТО"
+msgid "SWITCH CONFIRM & CANCEL BUTTONS IN EMULATIONSTATION"
+msgstr ""
 
-msgid "AUTOCONFIGURE EMULATORS CONTROLLERS"
-msgstr "АВТОНАЛАШТУВАННЯ КОНТРОЛЛЕРІВ"
-
-msgid "SWITCH A & B BUTTONS IN EMULATIONSTATION"
-msgstr "ЗМІНИТИ МІСЦЯМИ КНОПКИ А/В"
+msgid "Switches the South and East buttons' functionality"
+msgstr ""
 
 msgid "ACCESS GAME OPTIONS WITH NORTH BUTTON"
 msgstr ""
@@ -1446,22 +1996,37 @@ msgstr ""
 msgid "CONTROL EMULATIONSTATION WITH FIRST JOYSTICK ONLY"
 msgstr ""
 
+msgid "GUN MOVE TOLERENCE"
+msgstr ""
+
+msgid "ENABLE PS3 CONTROLLER SUPPORT"
+msgstr ""
+
+msgid "Might have negative impact on security."
+msgstr ""
+
+msgid "ENABLE HID JOYSTICK DRIVERS"
+msgstr ""
+
 msgid "SHOW NETWORK INDICATOR"
 msgstr "ПОКАЗАТИ ІНДИКАТОР ІНТЕРНЕТУ"
 
 msgid "OPTIMIZATIONS"
 msgstr "ОПТИМІЗАЦІЯ"
 
-msgid "PRELOAD UI ELEMENTS"
+msgid "PRELOAD UI ELEMENTS ON BOOT"
 msgstr ""
 
-msgid "Reduce overall menu lag at the cost of storage space"
+msgid ""
+"Reduces lag when entering gamelists from the system menu, increases boot time"
 msgstr ""
 
-msgid "PRELOAD METADATA MEDIA"
+msgid "PRELOAD METADATA MEDIA ON BOOT"
 msgstr ""
 
-msgid "Reduce gamelist lag at the cost of storage space"
+msgid ""
+"Reduces lag when scrolling through a fully scraped gamelist, increases boot "
+"time"
 msgstr ""
 
 msgid "THREADED LOADING"
@@ -1475,6 +2040,9 @@ msgstr "ОПТИМІЗАЦІЯ ЗОБРАЖЕНЬ ДЛЯ VRAM"
 
 msgid "OPTIMIZE VIDEO VRAM USAGE"
 msgstr "ОПТИМІЗАЦІЯ ВІДЕО ДЛЯ VRAM"
+
+msgid "REBOOT REQUIRED TO APPLY THE NEW CONFIGURATION"
+msgstr "ДЛЯ ЗАСТОСУВАННЯ НАЛАШТУВАНЬ ПОТРІБНО ПЕРЕЗАПУСТИТИ СИСТЕМУ"
 
 msgid "DOWNLOADS"
 msgstr "ЗАВАНТАЖЕННЯ"
@@ -1503,6 +2071,9 @@ msgstr ""
 msgid "LANGUAGE"
 msgstr "МОВА"
 
+msgid "LANGUAGE (REGION)"
+msgstr ""
+
 msgid "SELECT YOUR TIME ZONE"
 msgstr ""
 
@@ -1512,28 +2083,34 @@ msgstr ""
 msgid "SHOW CLOCK IN 12-HOUR FORMAT"
 msgstr ""
 
-msgid "POWER SAVER MODES"
-msgstr "РЕЖИМ ЕНЕРГОЗБЕРЕЖЕННЯ"
-
-msgid "DISABLED"
+msgid "POWER SAVING MODE"
 msgstr ""
 
 msgid "DEFAULT"
 msgstr ""
 
+msgid "ENHANCED"
+msgstr "РАЗГОРНУТИЙ"
+
 msgid "INSTANT"
+msgstr ""
+
+msgid "Reduces power consumption when idle (useful for handhelds)."
 msgstr ""
 
 msgid "SCREEN READER (TEXT TO SPEECH)"
 msgstr ""
 
-msgid "UI MODE"
-msgstr "РЕЖИМ ІНТЕРФЕЙСУ"
+msgid "USER INTERFACE MODE"
+msgstr ""
+
+msgid "Lock down certain config menus for use with guest users/kids."
+msgstr ""
 
 msgid ""
-"You are changing the UI to a restricted mode:\n"
+"You are changing the user interface to a restricted mode:\n"
 "This will hide most menu options to prevent changes to the system.\n"
-"To unlock and return to the full UI, enter this code:"
+"To unlock and return to the full user interface, enter this code:"
 msgstr ""
 
 msgid "Do you want to proceed?"
@@ -1551,31 +2128,13 @@ msgstr "АВТОЗАПУСК KODI"
 msgid "HARDWARE"
 msgstr "ЗАЛІЗО"
 
-msgid "BRIGHTNESS"
-msgstr "ЯСКРАВІСТЬ"
-
-msgid "VIDEO OUTPUT"
-msgstr "ВІДЕО ВИХІД"
-
 msgid "AUDIO OUTPUT"
 msgstr "АУДІО ВИХІД"
 
 msgid "AUDIO PROFILE"
 msgstr ""
 
-msgid "SCREEN ROTATION"
-msgstr ""
-
-msgid "0 DEGREES (AUTO)"
-msgstr ""
-
-msgid "90 DEGREES"
-msgstr ""
-
-msgid "180 DEGREES"
-msgstr ""
-
-msgid "270 DEGREES"
+msgid "Available options can change depending on current audio output."
 msgstr ""
 
 msgid "BOOT SPLASH"
@@ -1592,12 +2151,6 @@ msgstr ""
 
 msgid "SPLASH SETTING"
 msgstr ""
-
-msgid "RETROACHIEVEMENT SETTINGS"
-msgstr ""
-
-msgid "NETPLAY SETTINGS"
-msgstr "НАЛАШТУВАННЯ NETPLAY"
 
 msgid "CHECK BIOS FILES BEFORE RUNNING A GAME"
 msgstr ""
@@ -1659,9 +2212,6 @@ msgstr "ПРИСТРІЙ ЗБЕРІГАННЯ"
 msgid "BACKUP USER DATA"
 msgstr "РЕЗЕРВНА КОПІЯ"
 
-msgid "INSTALL BATOCERA ON A NEW DISK"
-msgstr "ВСТАНОВЛЕННЯ BATOCERA НА НОВИЙ ДИСК"
-
 msgid "ADVANCED"
 msgstr "РОЗШИРЕННІ"
 
@@ -1670,6 +2220,9 @@ msgstr "БЕЗПЕКА"
 
 msgid "ENFORCE SECURITY"
 msgstr "ПІДСИЛЕНА БЕЗПЕА"
+
+msgid "Require a password for accessing the network share."
+msgstr ""
 
 msgid "ROOT PASSWORD"
 msgstr "ПАРОЛЬ АДМИНІСТРАТОРА"
@@ -1680,58 +2233,88 @@ msgstr "ЗМЕНШЕННЯ ЗАТРИМКИ"
 msgid "RUN-AHEAD FRAMES"
 msgstr "RUN-AHEAD FRAMES"
 
-msgid "USE RUN-AHEAD FRAMES"
-msgstr "USE RUN-AHEAD FRAMES"
-
-msgid "RUN-AHEAD USE SECOND INSTANCE"
-msgstr "RUN-AHEAD USE SECOND INSTANCE"
-
-msgid "HARDCORE MODE"
-msgstr "ХАРДКОР РЕЖИМ"
-
-msgid "LEADERBOARDS"
-msgstr "ДОШКА ЛІДЕРІВ"
-
-msgid "VERBOSE MODE"
-msgstr "ДОКЛАДНИЙ РЕЖИМ"
-
-msgid "AUTOMATIC SCREENSHOT"
-msgstr "АВТОМАТИЧНИЙ СКРІНШОТ"
-
-msgid "RETROACHIEVEMENT UNLOCK SOUND"
+msgid "High numbers can result in visible jitter."
 msgstr ""
 
-msgid "UNLOCK SOUND"
+msgid "USE SECOND INSTANCE FOR RUN-AHEAD"
 msgstr ""
 
-msgid "SHOW RETROACHIEVEMENTS ENTRY IN MAIN MENU"
+msgid "Can prevent audio skips on button presses."
 msgstr ""
 
-msgid "GAME INDEXES"
+msgid "AUTOMATIC FRAME DELAY"
 msgstr ""
 
-msgid "INDEX NEW GAMES AT STARTUP"
+msgid "AUTO FRAME DELAY"
 msgstr ""
 
-msgid "INDEX GAMES"
+msgid ""
+"Automatically decrease frame delay temporarily to prevent frame drops. Can "
+"introduce stuttering."
 msgstr ""
 
-msgid "UNABLE TO ACTIVATE RETROACHIEVEMENTS:"
+msgid "VARIABLE REFRESH RATE (G-SYNC, FREESYNC)"
 msgstr ""
 
-msgid "ENABLE NETPLAY"
-msgstr "УВІМКНУТИ NETPLAY"
+msgid "VARIABLE REFRESH RATE"
+msgstr ""
 
-msgid "NICKNAME"
-msgstr "НІК"
-
-msgid "PORT"
-msgstr "ПОРТ"
-
-msgid "USE RELAY SERVER"
+msgid ""
+"Don't deviate from core requested timing. G-Sync, FreeSync, HDMI 2.1 VRR."
 msgstr ""
 
 msgid "DECORATION SET"
+msgstr ""
+
+msgid "Current setting"
+msgstr ""
+
+msgid "ACCOUNTS"
+msgstr ""
+
+msgid "BIOS SETTINGS"
+msgstr ""
+
+msgid "SAVESTATES"
+msgstr ""
+
+msgid "AUTO SAVE/LOAD"
+msgstr ""
+
+msgid "Load latest savestate on game launch and savestate when exiting game."
+msgstr ""
+
+msgid "INCREMENTAL SAVESTATES"
+msgstr ""
+
+msgid "INCREMENT PER SAVE"
+msgstr ""
+
+msgid "Never overwrite old savestates, always make new ones."
+msgstr ""
+
+msgid "INCREMENT SLOT"
+msgstr ""
+
+msgid "Increment slot on a new game."
+msgstr ""
+
+msgid "DO NOT INCREMENT"
+msgstr ""
+
+msgid "Use current slot on a new game."
+msgstr ""
+
+msgid "SHOW SAVESTATE MANAGER"
+msgstr ""
+
+msgid "ALWAYS"
+msgstr ""
+
+msgid "IF NOT EMPTY"
+msgstr ""
+
+msgid "Display savestate manager before launching a game."
 msgstr ""
 
 msgid "DEFAULT GLOBAL SETTINGS"
@@ -1740,8 +2323,12 @@ msgstr ""
 msgid "GAME ASPECT RATIO"
 msgstr ""
 
-msgid "VIDEO MODE"
-msgstr "ВІДЕО РЕЖИМ"
+msgid "Force the game to render in this aspect ratio."
+msgstr ""
+
+msgid ""
+"Sets the display's resolution. Does not affect the rendering resolution."
+msgstr ""
 
 msgid "SMOOTH GAMES (BILINEAR FILTERING)"
 msgstr ""
@@ -1749,23 +2336,17 @@ msgstr ""
 msgid "REWIND"
 msgstr "ПЕРЕМОТКА"
 
+msgid "Store past states to rewind to in realtime, if the core supports it."
+msgstr ""
+
 msgid "INTEGER SCALING (PIXEL PERFECT)"
 msgstr "ЦІЛЕ МАСШТАБУВАННЯ (ІДЕАЛЬНО)"
 
-msgid "AUTO SAVE/LOAD ON GAME LAUNCH"
-msgstr "АВТО ЗБЕРЕЖЕННЯ/ЗАВАНТАЖЕННЯ"
-
-msgid "SHOW SAVE STATES"
-msgstr ""
-
-msgid "SHOW SAVE STATES IF NOT EMPTY"
-msgstr ""
-
-msgid "INCREMENTAL SAVESTATES"
-msgstr ""
-
 msgid "SHADER SET"
 msgstr "ШЕЙДЕРИ"
+
+msgid "VIDEO FILTER"
+msgstr ""
 
 msgid "DECORATIONS"
 msgstr "РАМКИ (ОВЕРЛЕЇ)"
@@ -1773,16 +2354,19 @@ msgstr "РАМКИ (ОВЕРЛЕЇ)"
 msgid "STRETCH BEZELS (4K & ULTRAWIDE)"
 msgstr ""
 
-msgid "SHOW CONTROLLER OVERLAYS"
+msgid "SHOW TATTOO OVER BEZEL"
 msgstr ""
 
 msgid "SYSTEM CONTROLLERS"
 msgstr ""
 
-msgid "CUSTOM .PNG IMAGE"
+msgid "CUSTOM IMAGE"
 msgstr ""
 
-msgid "OVERLAY CORNER"
+msgid "Show an image overlaid on top of the bezel."
+msgstr ""
+
+msgid "TATTOO CORNER"
 msgstr ""
 
 msgid "NORTH WEST"
@@ -1800,6 +2384,12 @@ msgstr ""
 msgid "CUSTOM .PNG IMAGE PATH"
 msgstr ""
 
+msgid "RESIZE TATTOO"
+msgstr ""
+
+msgid "Shrink/expand tattoo to fit within the bezel's border."
+msgstr ""
+
 msgid "AI GAME TRANSLATION"
 msgstr "АВТОМАТИЧНИЙ ПЕРЕКЛАД ГРИ"
 
@@ -1815,40 +2405,19 @@ msgstr ""
 msgid "PAUSE ON TRANSLATED SCREEN"
 msgstr "ПАУЗА ТРАНСЛЯЦІЇ ЕКРАНА"
 
+msgid "AUTOCONFIGURE CONTROLLERS"
+msgstr ""
+
 msgid "PER SYSTEM ADVANCED CONFIGURATION"
 msgstr "ДОДАТКОВІ НАЛАШТУВАННЯ СИСТЕМИ"
+
+msgid "SCRAPER IS RUNNING. DO YOU WANT TO STOP IT?"
+msgstr ""
 
 msgid "GAME HASHING IS RUNNING. DO YOU WANT TO STOP IT?"
 msgstr "ХЕШУВАННЯ ЗАПУЩЕНО. ХОЧЕТЕ ЗУПИНИТИ?"
 
 msgid "REALLY UPDATE GAMELISTS?"
-msgstr ""
-
-msgid "CONTROLLER MAPPING"
-msgstr ""
-
-msgid ""
-"YOU ARE GOING TO MAP A CONTROLLER. MAP BASED ON THE BUTTON'S POSITION "
-"RELATIVE TO ITS EQUIVALENT ON A SNES CONTROLLER, NOT ITS PHYSICAL LABEL. IF "
-"YOU DO NOT HAVE A SPECIAL KEY FOR HOTKEY, USE THE SELECT BUTTON. SKIP ALL "
-"BUTTONS/STICKS YOU DO NOT HAVE BY HOLDING ANY KEY. PRESS THE SOUTH BUTTON TO "
-"CONFIRM WHEN DONE."
-msgstr ""
-
-msgid "PAIR A BLUETOOTH DEVICE"
-msgstr ""
-
-#, c-format
-msgid "P%i'S CONTROLLER"
-msgstr ""
-
-msgid "default"
-msgstr "за замовчуванням"
-
-msgid "SHOW CONTROLLER ACTIVITY"
-msgstr "ПОКАЗАТИ АКТИВНІСТЬ КОНТРОЛЕРА"
-
-msgid "SHOW CONTROLLER BATTERY LEVEL"
 msgstr ""
 
 msgid "YOU MUST APPLY THE THEME BEFORE EDITING ITS CONFIGURATION"
@@ -1911,6 +2480,15 @@ msgstr ""
 msgid "SHOW MANUAL ICON"
 msgstr ""
 
+msgid "SHOW RETROACHIEVEMENTS ICON"
+msgstr ""
+
+msgid "SHOW GUN ICON"
+msgstr ""
+
+msgid "SHOW WHEEL ICON"
+msgstr ""
+
 msgid "SHOW FILENAMES INSTEAD"
 msgstr "ПОКАЗАТИ СПРАВЖНЮ НАЗВУ ФАЙЛУ"
 
@@ -1932,13 +2510,16 @@ msgstr "відео"
 msgid "grid"
 msgstr "сітка"
 
-msgid "DISPLAY OPTIONS"
-msgstr "ОПЦІЇ ЕКРАНУ"
+msgid "LIST TRANSITION"
+msgstr ""
 
-msgid "LIST TRANSITION STYLE"
-msgstr "СТИЛЬ ПЕРЕХОДІВ"
+msgid "auto"
+msgstr ""
 
 msgid "GAME LAUNCH TRANSITION"
+msgstr ""
+
+msgid "GAME MEDIAS DURING FAST SCROLLING"
 msgstr ""
 
 msgid "SHOW CLOCK"
@@ -1956,7 +2537,13 @@ msgstr ""
 msgid "ICON AND TEXT"
 msgstr ""
 
+msgid "SHOW FOLDERS FIRST"
+msgstr ""
+
 msgid "IGNORE LEADING ARTICLES WHEN SORTING"
+msgstr ""
+
+msgid "Ignore 'The' and 'A' if at the start."
 msgstr ""
 
 msgid "VOLUME"
@@ -2007,9 +2594,6 @@ msgstr "IP-АДРЕСА"
 msgid "CONNECTED"
 msgstr "ПІДКЛЮЧЕНО"
 
-msgid "NOT CONNECTED"
-msgstr "НЕ ПІДКЛЮЧЕНО"
-
 msgid "INTERNET STATUS"
 msgstr "СТАТУС ІНТЕРНЕТУ"
 
@@ -2034,26 +2618,35 @@ msgstr "ПОМИЛКА КОНФІГУРАЦІЇ WI-FI"
 msgid "QUICK ACCESS"
 msgstr "ШВИДКИЙ ДОСТУП"
 
-msgid "SKIP TO NEXT SONG"
-msgstr "НАСТУПНА ПІСНЯ"
+msgid "SKIP TO THE NEXT SONG"
+msgstr ""
 
-msgid "LISTENING NOW"
-msgstr "ГРАЄ ЗАРАЗ"
+msgid "NOW PLAYING"
+msgstr ""
 
 msgid "LAUNCH SCREENSAVER"
 msgstr "ЗАСТАВКА"
 
-msgid "VIEW USER'S MANUAL"
-msgstr "ПЕРЕГЛЯД МАНУАЛУ КОРИСТУВАЧІВ"
+msgid "VIEW USER MANUAL"
+msgstr ""
 
-msgid "VIEW BATOCERA MANUAL"
-msgstr "ПЕРЕГЛЯД МАНУАЛУ BATOCERA"
+msgid "DISABLE PLANE MODE"
+msgstr ""
+
+msgid "ENABLE PLANE MODE"
+msgstr ""
 
 msgid "RESTART SYSTEM"
 msgstr "ПЕРЕЗАВАНТАЖИТИ СИСТЕМУ"
 
 msgid "REALLY RESTART?"
 msgstr "ПЕРЕЗАВАНТАЖИТИ ЗАРАЗ?"
+
+msgid "SUSPEND SYSTEM"
+msgstr ""
+
+msgid "REALLY SUSPEND ?"
+msgstr ""
 
 msgid "SHUTDOWN SYSTEM"
 msgstr "ВИМКНУТИ СИСТЕМУ"
@@ -2064,6 +2657,9 @@ msgstr "ВИМКНУТИ СИСТЕМУ ЗАРАЗ?"
 msgid "FAST SHUTDOWN SYSTEM"
 msgstr "ШВИДКО ВИМКНУТИ СИСТЕМУ"
 
+msgid "Shutdown without saving metadata."
+msgstr ""
+
 msgid "REALLY SHUTDOWN WITHOUT SAVING METADATA?"
 msgstr "ВИМКНУТИ БЕЗ ЗБЕРІГАННЯ МЕТАДАНИХ?"
 
@@ -2072,6 +2668,21 @@ msgstr "ВИЙТИ З EMULATIONSTATION"
 
 msgid "REALLY QUIT?"
 msgstr "ВИЙТИ ЗАРАЗ?"
+
+msgid "AUTO SAVE/LOAD ON GAME LAUNCH"
+msgstr "АВТО ЗБЕРЕЖЕННЯ/ЗАВАНТАЖЕННЯ"
+
+msgid "Load latest save state on game launch and save state when exiting game."
+msgstr ""
+
+msgid "SHOW CONTROLLER OVERLAYS"
+msgstr ""
+
+msgid "CUSTOM .PNG IMAGE"
+msgstr ""
+
+msgid "OVERLAY CORNER"
+msgstr ""
 
 msgid "COLORIZATION"
 msgstr "РОЗФАРБУВАННЯ"
@@ -2093,9 +2704,6 @@ msgstr "БІК О БІК"
 
 msgid "INTERNAL RESOLUTION"
 msgstr "ВНУТРІШНЄ РОЗШИРЕННЯ"
-
-msgid "AUTOCONFIGURE CONTROLLERS"
-msgstr ""
 
 msgid "LAUNCH THIS GAME AT STARTUP"
 msgstr ""
@@ -2147,6 +2755,9 @@ msgstr ""
 msgid "GAMES TO INDEX"
 msgstr ""
 
+msgid "ONLY MISSING"
+msgstr ""
+
 msgid "SYSTEM INFO"
 msgstr "ІНФОРМАЦІЯ СИСТЕМИ"
 
@@ -2195,6 +2806,9 @@ msgstr[2] ""
 msgid "RANDOM"
 msgstr "ВИПАДКОВО"
 
+msgid "NAVIGATION BAR"
+msgstr ""
+
 msgid "FILES"
 msgstr "ФАЙЛИ"
 
@@ -2231,6 +2845,9 @@ msgstr ""
 msgid "Kid"
 msgstr ""
 
+msgid "Basic"
+msgstr ""
+
 msgid "Released"
 msgstr "Вихід"
 
@@ -2244,16 +2861,29 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-msgid "No Entries Found"
-msgstr "Записів не знайдено"
-
 msgid "Games similar to"
+msgstr ""
+
+msgid "SAVE STATES (HOLD)"
+msgstr ""
+
+msgid "GAME OPTIONS (HOLD)"
 msgstr ""
 
 msgid "GAME OPTIONS"
 msgstr "ОПЦІЇ ГРИ"
 
 msgid "FAVORITE"
+msgstr ""
+
+#, c-format
+msgid "Back to %s"
+msgstr ""
+
+msgid "No Entries Found"
+msgstr "Записів не знайдено"
+
+msgid "INVALID CONTENT"
 msgstr ""
 
 msgid ""
@@ -2276,6 +2906,9 @@ msgstr "ПРОПУСТИТИ"
 msgid "Downloading"
 msgstr ""
 
+msgid "SEARCH FOR"
+msgstr ""
+
 msgid "ACCEPT RESULT"
 msgstr "ПРИЙНЯТИ РЕЗУЛЬТАТ"
 
@@ -2284,6 +2917,9 @@ msgstr "Завантаження системних налаштувань..."
 
 msgid "SAVING METADATAS. PLEASE WAIT..."
 msgstr "ЗБЕРЕЖЕННЯ МЕТАДАННИХ. ЗАЧЕКАЙТЕ, БУДЬ ЛАСКА..."
+
+msgid "DO YOU WANT TO SWITCH THE SCREEN ?"
+msgstr ""
 
 msgid "Collections"
 msgstr ""
@@ -2390,6 +3026,27 @@ msgstr ""
 msgid "UPDATE GAMELISTS TO APPLY CHANGES."
 msgstr ""
 
+msgid "THE EMULATOR EXITED UNEXPECTEDLY"
+msgstr ""
+
+msgid "BAD COMMAND LINE ARGUMENTS"
+msgstr ""
+
+msgid "INVALID CONFIGURATION"
+msgstr ""
+
+msgid "UNKNOWN EMULATOR"
+msgstr ""
+
+msgid "EMULATOR IS MISSING"
+msgstr ""
+
+msgid "CORE IS MISSING"
+msgstr ""
+
+msgid "UKNOWN ERROR"
+msgstr ""
+
 msgid "GENRE"
 msgstr "ЖАНР"
 
@@ -2423,6 +3080,18 @@ msgstr ""
 msgid "VERTICAL"
 msgstr ""
 
+msgid "LIGHTGUN"
+msgstr ""
+
+msgid "STEERING WHEEL"
+msgstr ""
+
+msgid "HAVING MEDIAS"
+msgstr ""
+
+msgid "MISSING MEDIAS"
+msgstr ""
+
 msgid "SCRAPING"
 msgstr "SCRAPING"
 
@@ -2430,6 +3099,11 @@ msgid "SCRAPE FAILED"
 msgstr ""
 
 msgid "SCRAPING FINISHED"
+msgstr ""
+
+msgid ""
+"CALIBRATING GUN\n"
+"Fire on targets to calibrate"
 msgstr ""
 
 #, c-format
@@ -2452,44 +3126,105 @@ msgstr "SHIFT"
 msgid "SPACE"
 msgstr "ПРОБІЛ"
 
-msgid "UP"
-msgstr "ВВЕРХ"
+msgctxt "joystick"
+msgid "NORTH"
+msgstr ""
 
-msgid "DOWN"
-msgstr "ВНИЗ"
+msgctxt "joystick"
+msgid "SOUTH"
+msgstr ""
 
-msgid "LEFT"
-msgstr "ЛІВОРУЧ"
+msgctxt "joystick"
+msgid "EAST"
+msgstr ""
 
-msgid "RIGHT"
-msgstr "ПРАВОРУЧ"
+msgctxt "joystick"
+msgid "WEST"
+msgstr ""
 
+msgctxt "joystick"
+msgid "START"
+msgstr ""
+
+msgctxt "joystick"
+msgid "SELECT"
+msgstr ""
+
+msgctxt "joystick"
+msgid "D-PAD UP"
+msgstr ""
+
+msgctxt "joystick"
+msgid "D-PAD DOWN"
+msgstr ""
+
+msgctxt "joystick"
+msgid "D-PAD LEFT"
+msgstr ""
+
+msgctxt "joystick"
+msgid "D-PAD RIGHT"
+msgstr ""
+
+msgctxt "joystick"
 msgid "LEFT ANALOG UP"
-msgstr "ЛІВИЙ АНАЛОГ ВГОРУ"
+msgstr ""
 
+msgctxt "joystick"
 msgid "LEFT ANALOG DOWN"
-msgstr "ЛІВИЙ АНАЛОГ ВНИЗ"
+msgstr ""
 
+msgctxt "joystick"
 msgid "LEFT ANALOG LEFT"
-msgstr "ЛІВИЙ АНАЛОГ ЛІВОРУЧ"
+msgstr ""
 
+msgctxt "joystick"
 msgid "LEFT ANALOG RIGHT"
-msgstr "ЛІВИЙ АНАЛОГ ПРАВОРУЧ"
+msgstr ""
 
+msgctxt "joystick"
 msgid "RIGHT ANALOG UP"
-msgstr "ПРАВИЙ АНАЛОГ ВГОРУ"
+msgstr ""
 
+msgctxt "joystick"
 msgid "RIGHT ANALOG DOWN"
-msgstr "ПРАВИЙ АНАЛОГ ВНИЗ"
+msgstr ""
 
+msgctxt "joystick"
 msgid "RIGHT ANALOG LEFT"
-msgstr "ПРАВИЙ АНАЛОГ ЛІВОРУЧ"
+msgstr ""
 
+msgctxt "joystick"
 msgid "RIGHT ANALOG RIGHT"
-msgstr "ПРАВИЙ АНАЛОГ ПРАВОРУЧ"
+msgstr ""
 
+msgctxt "joystick"
+msgid "LEFT SHOULDER"
+msgstr ""
+
+msgctxt "joystick"
+msgid "RIGHT SHOULDER"
+msgstr ""
+
+msgctxt "joystick"
+msgid "LEFT TRIGGER"
+msgstr ""
+
+msgctxt "joystick"
+msgid "RIGHT TRIGGER"
+msgstr ""
+
+msgctxt "joystick"
+msgid "LEFT STICK PRESS"
+msgstr ""
+
+msgctxt "joystick"
+msgid "RIGHT STICK PRESS"
+msgstr ""
+
+msgctxt "joystick"
 msgid "HOTKEY"
-msgstr "ГАРЯЧА КНОПКА"
+msgstr ""
 
 msgid "CONFIGURING"
 msgstr "НАЛАШТУВАННЯ"
@@ -2550,6 +3285,12 @@ msgstr "КОНТРОЛЕРИ НЕ ЗНАЙДЕНІ"
 msgid "HOLD A BUTTON ON YOUR DEVICE TO CONFIGURE IT."
 msgstr "УТРИМУЙТЕ КНОПКУ НА ПРИСТРОЇ ДЛЯ НАЛАШТУВАННЯ."
 
+msgid "PRESS ESC TO CANCEL."
+msgstr ""
+
+msgid "PRESS ESC OR A HOTKEY TO CANCEL."
+msgstr ""
+
 msgid "DISCARD CHANGES"
 msgstr "ВІДМІНІТЬ ЗНІНИ"
 
@@ -2590,6 +3331,32 @@ msgstr "РЕДАГУВАТИ"
 msgid "ENABLED"
 msgstr ""
 
+msgid "WORKING..."
+msgstr "ОБРОБКА..."
+
+#, c-format
+msgid "%d d"
+msgstr ""
+
+#, c-format
+msgid "%d h"
+msgstr ""
+
+#, c-format
+msgid "%d mn"
+msgstr ""
+
+#, c-format
+msgid "%d sec"
+msgstr ""
+
+#, c-format
+msgid "%d year ago"
+msgid_plural "%d years ago"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+
 #, c-format
 msgid "%d day ago"
 msgid_plural "%d days ago"
@@ -2618,26 +3385,134 @@ msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-msgid "WORKING..."
-msgstr "ОБРОБКА..."
-
-#, c-format
-msgid "%d h"
-msgstr ""
-
-#, c-format
-msgid "%d m"
-msgstr ""
-
-#, c-format
-msgid "%d s"
-msgstr ""
-
 msgid "SCREEN READER ENABLED"
 msgstr ""
 
 msgid "SCREEN READER DISABLED"
 msgstr ""
+
+#~ msgid "CREATE NEW CUSTOM COLLECTION FROM THEME"
+#~ msgstr "СТВОРИТИ ТЕМАТИЧНУ КОЛЕКЦІЮ"
+
+#~ msgid "SELECT THEME FOLDER"
+#~ msgstr "ВИБЕРІТЬ ПАПКУ ТЕМИ"
+
+#~ msgid "GROUP UNTHEMED CUSTOM COLLECTIONS"
+#~ msgstr "ГРУПУВАТИ ВЛАСНІ КОЛЕКЦІЇ"
+
+#~ msgid "SWITCH A & B BUTTONS IN EMULATIONSTATION"
+#~ msgstr "ЗМІНИТИ МІСЦЯМИ КНОПКИ А/В"
+
+#~ msgid "SCRAPE RATINGS"
+#~ msgstr "ЗАВАНТАЖЕННЯ РЕЙТИНГІВ"
+
+#~ msgid "SCRAPE VIDEOS"
+#~ msgstr "ЗАВАНТАЖЕННЯ ВІДЕО"
+
+#~ msgid "SCRAPE FANART"
+#~ msgstr "ЗАВАНТАЖИТИ ФАН АРТ"
+
+#~ msgid "SCRAPE MANUAL"
+#~ msgstr "ЗАВАНТАЖИТИ МАНУАЛ"
+
+#~ msgid "UI SETTINGS"
+#~ msgstr "НАЛАШТУВАННЯ ІНТЕРФЕЙСУ"
+
+#~ msgid "DEVELOPER"
+#~ msgstr "РОЗРОБНИК"
+
+#~ msgid "CREATE A SUPPORT FILE?"
+#~ msgstr "СТВОРИТИ ФАЙЛ ПІДТРИМКИ?"
+
+#~ msgid "ENABLE FILTERS"
+#~ msgstr "ВМИКНУТИ ФІЛЬТРИ"
+
+#~ msgid "PARSE GAMESLISTS ONLY"
+#~ msgstr "АНАЛІЗУВАТИ ТІЛЬКИ СПИСОК ІГР"
+
+#~ msgid "POWER SAVER MODES"
+#~ msgstr "РЕЖИМ ЕНЕРГОЗБЕРЕЖЕННЯ"
+
+#~ msgid "UI MODE"
+#~ msgstr "РЕЖИМ ІНТЕРФЕЙСУ"
+
+#~ msgid "LIST TRANSITION STYLE"
+#~ msgstr "СТИЛЬ ПЕРЕХОДІВ"
+
+#~ msgid "VIEW USER'S MANUAL"
+#~ msgstr "ПЕРЕГЛЯД МАНУАЛУ КОРИСТУВАЧІВ"
+
+#~ msgid "REBOOT SYSTEM TO APPLY THE UPDATE"
+#~ msgstr "ПЕРЕЗАВАНТАЖЕННЯ СИСТЕМИ ДЛЯ ЗАСТОСУВАННЯ"
+
+#~ msgid "UPDATING BATOCERA"
+#~ msgstr "ОНОВЛЕННЯ BATOCERA"
+
+#~ msgid "INSTALL BATOCERA"
+#~ msgstr "ВСТАНОВИТИ BATOCERA"
+
+#~ msgid "AUTOCONFIGURE EMULATORS CONTROLLERS"
+#~ msgstr "АВТОНАЛАШТУВАННЯ КОНТРОЛЛЕРІВ"
+
+#~ msgid "INSTALL BATOCERA ON A NEW DISK"
+#~ msgstr "ВСТАНОВЛЕННЯ BATOCERA НА НОВИЙ ДИСК"
+
+#~ msgid "VIEW BATOCERA MANUAL"
+#~ msgstr "ПЕРЕГЛЯД МАНУАЛУ BATOCERA"
+
+#~ msgid "USE RUN-AHEAD FRAMES"
+#~ msgstr "USE RUN-AHEAD FRAMES"
+
+#~ msgid "RUN-AHEAD USE SECOND INSTANCE"
+#~ msgstr "RUN-AHEAD USE SECOND INSTANCE"
+
+#~ msgid "SCANLINES"
+#~ msgstr "SCANLINES"
+
+#~ msgid "RETRO"
+#~ msgstr "РЕТРО"
+
+#~ msgid "CURVATURE"
+#~ msgstr "КРИВИЗНА"
+
+#~ msgid "UP"
+#~ msgstr "ВВЕРХ"
+
+#~ msgid "DOWN"
+#~ msgstr "ВНИЗ"
+
+#~ msgid "LEFT ANALOG UP"
+#~ msgstr "ЛІВИЙ АНАЛОГ ВГОРУ"
+
+#~ msgid "LEFT ANALOG DOWN"
+#~ msgstr "ЛІВИЙ АНАЛОГ ВНИЗ"
+
+#~ msgid "LEFT ANALOG LEFT"
+#~ msgstr "ЛІВИЙ АНАЛОГ ЛІВОРУЧ"
+
+#~ msgid "LEFT ANALOG RIGHT"
+#~ msgstr "ЛІВИЙ АНАЛОГ ПРАВОРУЧ"
+
+#~ msgid "RIGHT ANALOG UP"
+#~ msgstr "ПРАВИЙ АНАЛОГ ВГОРУ"
+
+#~ msgid "RIGHT ANALOG DOWN"
+#~ msgstr "ПРАВИЙ АНАЛОГ ВНИЗ"
+
+#~ msgid "RIGHT ANALOG LEFT"
+#~ msgstr "ПРАВИЙ АНАЛОГ ЛІВОРУЧ"
+
+#~ msgid "RIGHT ANALOG RIGHT"
+#~ msgstr "ПРАВИЙ АНАЛОГ ПРАВОРУЧ"
+
+#~ msgid "HOTKEY"
+#~ msgstr "ГАРЯЧА КНОПКА"
+
+#~ msgid "SKIP TO NEXT SONG"
+#~ msgstr "НАСТУПНА ПІСНЯ"
+
+#~ msgid "LISTENING NOW"
+#~ msgstr "ГРАЄ ЗАРАЗ"
 
 #~ msgid "PRELOAD UI"
 #~ msgstr "ПРЕДЗАВАНТАЖЕННЯ ІНТЕРФЕЙСУ"
@@ -2726,9 +3601,6 @@ msgstr ""
 #~ msgid "SELECT THEMES TO INSTALL / REMOVE"
 #~ msgstr "ВИБРАТИ ТЕМУ ДЛЯ ВСТАНОВЛЕННЯ/ВИДАЛЕННЯ"
 
-#~ msgid "SCRAPE NOW"
-#~ msgstr "ЗАВАНТАЖИТИ ДАНІ"
-
 #~ msgid "SCRAPE THESE GAMES"
 #~ msgstr "ЗАВАНТАЖИТИ ДАНІ ІГОР"
 
@@ -2758,9 +3630,6 @@ msgstr ""
 
 #~ msgid "INFORMATIONS"
 #~ msgstr "ДАННІ"
-
-#~ msgid "SCRAPE FROM"
-#~ msgstr "ЗАВАНТАЖЕННЯ З"
 
 #~ msgid "ARE YOU SURE YOU WANT TO CONFIGURE INPUT?"
 #~ msgstr "ВИ ВПЕВНЕНІ, ЩО ХОЧЕТЕ НАЛАШТУВАТИ КЕРУВАННЯ?"
@@ -2963,14 +3832,14 @@ msgstr ""
 #~ "THE \"RANDOM VIDEO\" SCREENSAVER SHOWS VIDEOS FROM YOUR GAMELIST.\n"
 #~ "IF YOU DON'T HAVE VIDEOS, OR IF NONE OF THEM CAN BE PLAYED AFTER A FEW "
 #~ "ATTEMPTS, IT WILL DEFAULT TO \"BLACK\".\n"
-#~ "MORE OPTIONS IN THE \"UI SETTINGS\" -> \"RANDOM VIDEO SCREENSAVER SETTINGS"
-#~ "\" MENU."
+#~ "MORE OPTIONS IN THE \"UI SETTINGS\" -> \"RANDOM VIDEO SCREENSAVER "
+#~ "SETTINGS\" MENU."
 #~ msgstr ""
 #~ "\"ВИПАДКОВЕ ВІДЕО\" ЗАСТАВКА ПОКАЗУЄ ВІДЕО З ВАШОГО СПИСКУ ІГР.\n"
 #~ "ЯКЩО У ВАС НЕМАЄ ВІДЕО, АБО ЖОДНЕ З НИХ НЕ БУДЕ УВІМКНУТЕ ПІСЛЯ ДЕКІЛЬКОХ "
 #~ "СПРОБ, ЗА ЗАМОВЧУВАННЯМ БУДЕ ВИКОРИСТАНО ЗНАЧЕННЯ \"BLACK\".\n"
-#~ "БІЛЬШЕ ОПЦІЙ В \"НАЛАШТУВАННЯ ІНТЕРФЕЙСУ\"-> \"НАЛАШТУВАННЯ ВІДЕО ЗАСТАВКИ"
-#~ "\" МЕНЮ."
+#~ "БІЛЬШЕ ОПЦІЙ В \"НАЛАШТУВАННЯ ІНТЕРФЕЙСУ\"-> \"НАЛАШТУВАННЯ ВІДЕО "
+#~ "ЗАСТАВКИ\" МЕНЮ."
 
 #~ msgid "VIDEO SCREENSAVER"
 #~ msgstr "ВІДЕО ЗАСТАВКА"

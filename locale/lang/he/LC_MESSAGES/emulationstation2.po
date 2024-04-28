@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: emulationstation\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-11-16 07:49+0100\n"
+"POT-Creation-Date: 2021-12-15 23:48+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -21,13 +21,13 @@ msgid "Name"
 msgstr "שם"
 
 msgid "this game's name"
-msgstr ""
+msgstr ":שם המשחק"
 
 msgid "Description"
 msgstr "תיאור"
 
 msgid "this game's description"
-msgstr ""
+msgstr ":תיאור"
 
 msgid "Emulator"
 msgstr "אמולטור (חַקַּאי)"
@@ -95,6 +95,12 @@ msgstr "מפה"
 msgid "enter path to map"
 msgstr "הזן נתיב קובץ למפה"
 
+msgid "Bezel (16:9)"
+msgstr ""
+
+msgid "enter path to bezel (16:9)"
+msgstr ""
+
 msgid "Cartridge"
 msgstr "מחסנית"
 
@@ -147,7 +153,7 @@ msgid "Publisher"
 msgstr "מפרסם"
 
 msgid "this game's publisher"
-msgstr ""
+msgstr ":מפרסם המשחק"
 
 msgid "Genre"
 msgstr "ז'אנר"
@@ -177,7 +183,7 @@ msgid "Players"
 msgstr "שחקנים"
 
 msgid "this game's number of players"
-msgstr ""
+msgstr "מספר השחקנים למשחק"
 
 msgid "Favorite"
 msgstr "מועדף"
@@ -231,7 +237,7 @@ msgid "Languages"
 msgstr "שפות"
 
 msgid "this game's languages"
-msgstr ""
+msgstr "שפת המשחק"
 
 msgid "Region"
 msgstr "איזור"
@@ -281,6 +287,9 @@ msgstr "'ארקייד' אנכי"
 msgid "lightgun games"
 msgstr "משחקי אקדח"
 
+msgid "wheel games"
+msgstr ""
+
 msgid "collections"
 msgstr "אוספים"
 
@@ -314,7 +323,7 @@ msgid "SCANNING BLUETOOTH"
 msgstr "סורק בלו-טות'"
 
 msgid "Searching for devices..."
-msgstr ""
+msgstr "מחפש התקנים"
 
 msgid "BLUETOOTH SCAN IS ALREADY RUNNING."
 msgstr ""
@@ -323,13 +332,13 @@ msgid "FORMATTING DEVICE"
 msgstr ""
 
 msgid "Formatting"
-msgstr ""
+msgstr "בתהליך פרמוט"
 
 msgid "A REBOOT IS REQUIRED TO COMPLETE THE OPERATION"
-msgstr ""
+msgstr "הפעלה מחדש דרושה בכדי לסיים את הפעולה"
 
 msgid "A DRIVE IS ALREADY BEING FORMATTED."
-msgstr ""
+msgstr "הכונן כבר פורמט"
 
 msgid "DOWNLOADING"
 msgstr "מוריד"
@@ -337,7 +346,7 @@ msgstr "מוריד"
 msgid "THEME INSTALLED SUCCESSFULLY"
 msgstr "ערכת נושא הותקנה בהצלחה"
 
-msgid "AN ERROR OCCURED"
+msgid "AN ERROR OCCURRED"
 msgstr "אירעה שגיאה"
 
 msgid "THEME UNINSTALLED SUCCESSFULLY"
@@ -354,6 +363,95 @@ msgstr "חבילה הותקנה בהצלחה"
 
 msgid "PACKAGE REMOVED SUCCESSFULLY"
 msgstr "חבילה הוסרה בהצלחה"
+
+msgid "RETROACHIEVEMENT SETTINGS"
+msgstr ""
+
+msgid "SETTINGS"
+msgstr "הגדרות"
+
+msgid "RETROACHIEVEMENTS"
+msgstr "RETROACHIEVEMENTS הישגי"
+
+msgid "USERNAME"
+msgstr "שם משתמש"
+
+msgid "PASSWORD"
+msgstr "סיסמה"
+
+msgid "OPTIONS"
+msgstr "אפשרויות"
+
+msgid "HARDCORE MODE"
+msgstr "מצב קשה-מאוד"
+
+msgid "Disable loading states, rewind and cheats for more points."
+msgstr ""
+
+msgid "LEADERBOARDS"
+msgstr "לוחות מובילים"
+
+msgid "Compete in high-score and best time leaderboards (requires hardcore)."
+msgstr ""
+
+msgid "VERBOSE MODE"
+msgstr "מצב מילולי"
+
+msgid "Show achievement progression on game launch and other notifications."
+msgstr ""
+
+msgid "RICH PRESENCE"
+msgstr ""
+
+msgid "ENCORE MODE"
+msgstr ""
+
+msgid "Unlocked achievements can be earned again."
+msgstr ""
+
+msgid "AUTOMATIC SCREENSHOT"
+msgstr "צילום מסך אוטומטי"
+
+msgid "Automatically take a screenshot when an achievement is earned."
+msgstr "ביצוע צילום מסך אוטומטי בעת זכייה בהישג"
+
+msgid "CHALLENGE INDICATORS"
+msgstr ""
+
+msgid ""
+"Shows icons in the bottom right corner when eligible achievements can be "
+"earned."
+msgstr ""
+
+msgid "RETROACHIEVEMENT UNLOCK SOUND"
+msgstr ""
+
+msgid "none"
+msgstr "ללא"
+
+msgid "UNLOCK SOUND"
+msgstr "ביטול נעילת שמע"
+
+msgid "SHOW RETROACHIEVEMENTS ENTRY IN MAIN MENU"
+msgstr ""
+
+msgid "View your RetroAchievement stats right from the main menu!"
+msgstr ""
+
+msgid "GAME INDEXES"
+msgstr "אינדקס משחקים"
+
+msgid "INDEX NEW GAMES AT STARTUP"
+msgstr ""
+
+msgid "INDEX GAMES"
+msgstr ""
+
+msgid "UNABLE TO ACTIVATE RETROACHIEVEMENTS:"
+msgstr ""
+
+msgid "OK"
+msgstr "אישור"
 
 msgid "FILTER GAMELIST BY"
 msgstr "סנן רשימת משחקים לפי"
@@ -397,23 +495,20 @@ msgstr "קבוצות מערכות"
 msgid "CREATE CUSTOM COLLECTION"
 msgstr "יצירת אוסף מותאם אישית"
 
-msgid "CREATE NEW CUSTOM COLLECTION FROM THEME"
-msgstr "יצירת אוסף מותאם אישית מערכת נושא"
+msgid "New Collection Name"
+msgstr "שם לאוסף חדש"
 
-msgid "SELECT THEME FOLDER"
-msgstr "בחירת ספריית ערכת נושא"
+msgid "ENTER NAME"
+msgstr "הזן שם"
+
+msgid "CREATE FROM THEME"
+msgstr ""
 
 msgid "CREATE NEW EDITABLE COLLECTION"
 msgstr "יצירת אוסף חדש הניתן לעריכה"
 
-msgid "New Collection Name"
-msgstr "שם לאוסף חדש"
-
 msgid "CREATE NEW DYNAMIC COLLECTION"
 msgstr "יצירת אוסף דינמי חדש"
-
-msgid "OPTIONS"
-msgstr "אפשרויות"
 
 msgid "SORT COLLECTIONS AND SYSTEMS"
 msgstr "מיון אוספים ומערכת"
@@ -426,6 +521,9 @@ msgstr "לפי  יצרן"
 
 msgid "BY HARDWARE TYPE"
 msgstr "לפי סוג חומרה"
+
+msgid "BY MANUFACTURER AND TYPE"
+msgstr "לפי יצרן וסוג חומרה"
 
 msgid "BY RELEASE YEAR"
 msgstr "לפי שנה הוצאה לאור"
@@ -445,8 +543,11 @@ msgstr "שחזר בחירה אחרונה"
 msgid "START ON GAMELIST"
 msgstr "התחלת ברשימת משחקים"
 
-msgid "GROUP UNTHEMED CUSTOM COLLECTIONS"
-msgstr "צור קבוצת אוספים מותאמים אישית ללא ערכות נושא"
+msgid "GROUP CUSTOM COLLECTIONS"
+msgstr ""
+
+msgid "UNTHEMED"
+msgstr ""
 
 msgid "SHOW SYSTEM NAME IN COLLECTIONS"
 msgstr "הצג שם מערכת באוסף"
@@ -454,8 +555,11 @@ msgstr "הצג שם מערכת באוסף"
 msgid "SHOW GAMES OF HIDDEN SYSTEMS IN COLLECTIONS"
 msgstr "הצג משחקים של מערכות נסתרות באוספי משחקים"
 
+msgid "SHOW EMPTY SYSTEMS"
+msgstr "הצג מערכות ללא משחקים"
+
 msgid "UPDATE GAMELISTS"
-msgstr ""
+msgstr "עדכן רשימת משחקים"
 
 msgid "Loading..."
 msgstr "טוען..."
@@ -488,14 +592,22 @@ msgid "PLEASE WAIT"
 msgstr "נא להמתין"
 
 #, c-format
+msgid "%d of %d softcore points"
+msgstr ""
+
+#, c-format
+msgid "%d of %d hardcore points"
+msgstr ""
+
+#, c-format
 msgid "%d%% (%d of %d)"
 msgstr "%d%% (%d מתוך %d)"
 
-msgid "RETROACHIEVEMENTS"
-msgstr "RETROACHIEVEMENTS הישגי"
+msgid "Softcore points"
+msgstr ""
 
-msgid "Points"
-msgstr "נקודות"
+msgid "Points (hardcore)"
+msgstr ""
 
 msgid "Rank"
 msgstr "דירוג"
@@ -506,11 +618,41 @@ msgstr "צפייה בפרטים"
 msgid "LAUNCH"
 msgstr "הפעל"
 
+msgid "NETPLAY SETTINGS"
+msgstr "הגדרות NETPLAY"
+
+msgid "ENABLE NETPLAY"
+msgstr "הפוך NETPLAY לזמין"
+
+msgid "NICKNAME"
+msgstr "כינוי"
+
+msgid "PORT"
+msgstr "יציאה"
+
+msgid "USE RELAY SERVER"
+msgstr ""
+
+msgid "NEW YORK"
+msgstr ""
+
+msgid "MADRID"
+msgstr ""
+
+msgid "MONTREAL"
+msgstr ""
+
+msgid "SAO PAULO"
+msgstr ""
+
+msgid "SHOW UNAVAILABLE GAMES"
+msgstr "הצג משחקים לא זמינים"
+
+msgid "Show rooms for games not present on this machine."
+msgstr "הצג חדרי משחק שלא זמינים במכונה זו"
+
 msgid "FINISHED"
 msgstr "הסתיים"
-
-msgid "OK"
-msgstr "אישור"
 
 msgid "VIEW OPTIONS"
 msgstr "צפייה באפשרויות"
@@ -521,23 +663,29 @@ msgstr "חזרה"
 msgid "NAVIGATION"
 msgstr "ניווט"
 
-msgid "JUMP TO GAME BEGINNING WITH THE LETTER"
-msgstr ""
+msgid "OTHER FILTERS"
+msgstr "מסננים אחרים"
 
 msgid "SELECT RANDOM GAME"
 msgstr "בחירת משחק אקראית"
 
+msgid "JUMP TO GAME BEGINNING WITH THE LETTER"
+msgstr ""
+
 msgid "SORT GAMES BY"
 msgstr "מיון משחקים לפי"
 
-msgid "OTHER FILTERS"
-msgstr "מסננים אחרים"
+msgid "DYNAMIC COLLECTION"
+msgstr "אוסף דינמי"
 
-msgid "COLLECTION"
-msgstr "אוסף"
+msgid "CUSTOM COLLECTION"
+msgstr "אוסף מותאם אישית"
 
 msgid "DELETE COLLECTION"
 msgstr "מחיקת אוסף"
+
+msgid "COLLECTION"
+msgstr "אוסף"
 
 msgid "GAMELIST VIEW STYLE"
 msgstr "סגנון צפייה ברשימת משחקים"
@@ -567,7 +715,26 @@ msgid "CLOSE"
 msgstr "סגור"
 
 msgid "ARE YOU SURE YOU WANT TO DELETE THIS ITEM?"
-msgstr ""
+msgstr "?האם אתה בטוח שאתה רוצה למחוק פריט זה"
+
+msgid "FORGET A BLUETOOTH DEVICE"
+msgstr "שכח התקן בלו-טות'"
+
+msgid "REMOVE ALL"
+msgstr "הסר הכל"
+
+msgid "NO BLUETOOTH DEVICES FOUND"
+msgstr "לא נמצא התקן בלו-טות'"
+
+msgid "REMOVE"
+msgstr "הסרה"
+
+msgid "BLUETOOTH DEVICES HAVE BEEN DELETED."
+msgstr "התקן בלו-טות' נמחק."
+
+#, c-format
+msgid "ARE YOU SURE YOU WANT TO REMOVE '%s' ?"
+msgstr "האם אתה בטוח שאתה רוצה למחוק את '%s'?"
 
 msgid "INPUT"
 msgstr "קלט"
@@ -582,7 +749,7 @@ msgid "CONNECT TO NETPLAY"
 msgstr "התחברות לרשת NETPLAY"
 
 msgid "Select a game lobby to join"
-msgstr ""
+msgstr "בחר לובי משחק בכדי להתחבר"
 
 msgid "REFRESH"
 msgstr "ריענון"
@@ -609,7 +776,7 @@ msgid "UNAVAILABLE GAMES"
 msgstr "משחקים לא זמינים"
 
 msgid "NO GAMES FOUND"
-msgstr ""
+msgstr "לא נמצאו משחקים"
 
 msgid "JOIN GAME"
 msgstr "הצטרפות למשחק"
@@ -618,25 +785,22 @@ msgid "WATCH GAME"
 msgstr "צפייה במשחק"
 
 msgid "INPUT MANUALLY"
-msgstr ""
+msgstr "הזן ידנית"
 
 msgid "NO WI-FI NETWORKS FOUND"
-msgstr ""
+msgstr "לא נמצאו רשתות אלחוטיות"
 
 msgid "SEARCHING WI-FI NETWORKS"
-msgstr ""
+msgstr "סורק רשתות אלחוטיות"
 
-msgid "FORGET A BLUETOOTH DEVICE"
-msgstr "שכח התקן בלו-טות'"
+msgid "YOU ARE NOT CONNECTED TO A NETWORK"
+msgstr "המערכת אינה מחוברת לרשת"
 
-msgid "REMOVE ALL"
-msgstr "הסר הכל"
+msgid "PAIR A BLUETOOTH DEVICE"
+msgstr "הצמדת בתקן בלו-טות'"
 
-msgid "NO BLUETOOTH DEVICES FOUND"
-msgstr "לא נמצא התקן בלו-טות'"
-
-msgid "BLUETOOTH DEVICES HAVE BEEN DELETED."
-msgstr "התקן בלו-טות' נמחק."
+msgid "PAIR"
+msgstr "חבר"
 
 msgid "FILE BROWSER"
 msgstr "סייר קבצים"
@@ -656,17 +820,206 @@ msgstr "בחירה"
 msgid "ADD COMBINATION KEY"
 msgstr "הוסף מקש צירופים"
 
+msgid "CONTROLLER SETTINGS"
+msgstr "הגדרות שלט"
+
+msgid "CONTROLLER & BLUETOOTH SETTINGS"
+msgstr "הגדרות בקרים ובלו-טות'"
+
+msgid "CONTROLLERS PRIORITY"
+msgstr "עדיפות מקשים"
+
+msgid "PLAYER ASSIGNMENTS"
+msgstr ""
+
+#, c-format
+msgid "CONTROLLER #%i"
+msgstr "#%i שלט "
+
+#, c-format
+msgid "P%i'S CONTROLLER"
+msgstr "שלטי P%i' "
+
+msgid "CONTROLLER MAPPING"
+msgstr "מיפוי תצורת שלט"
+
+msgid ""
+"YOU ARE GOING TO MAP A CONTROLLER. MAP BASED ON THE BUTTON'S POSITION, NOT "
+"ITS PHYSICAL LABEL. IF YOU DO NOT HAVE A SPECIAL BUTTON FOR HOTKEY, USE THE "
+"SELECT BUTTON. SKIP ALL BUTTONS/STICKS YOU DO NOT HAVE BY HOLDING ANY "
+"BUTTON. PRESS THE SOUTH BUTTON TO CONFIRM WHEN DONE."
+msgstr ""
+
+msgid "SINDEN GUN SETTINGS"
+msgstr ""
+
+msgid "WIIMOTE GUN SETTINGS"
+msgstr ""
+
+msgid "STEAMDECK MOUSE/GUN SETTINGS"
+msgstr ""
+
+msgid "BLUETOOTH"
+msgstr ""
+
+msgid "ENABLE BLUETOOTH"
+msgstr ""
+
+msgid "PAIR BLUETOOTH PADS AUTOMATICALLY"
+msgstr ""
+
+msgid "PAIR A BLUETOOTH DEVICE MANUALLY"
+msgstr ""
+
+msgid "DISPLAY OPTIONS"
+msgstr "הצגת אפשרויות"
+
+msgid "SHOW CONTROLLER NOTIFICATIONS"
+msgstr ""
+
+msgid "SHOW CONTROLLER ACTIVITY"
+msgstr "הצגת פעילות בקר"
+
+msgid "SHOW CONTROLLER BATTERY LEVEL"
+msgstr "הצגת רמת סוללה לבקר"
+
+msgid "default"
+msgstr "ברירת מחדל"
+
+msgid "NOT CONNECTED"
+msgstr "לא מחובר"
+
+msgid "BORDER SIZE"
+msgstr ""
+
+msgid "AUTO"
+msgstr "אוטומטי"
+
+msgid "THIN"
+msgstr ""
+
+msgid "MEDIUM"
+msgstr "בינוני"
+
+msgid "BIG"
+msgstr "גדול"
+
+msgid "BORDER MODE"
+msgstr ""
+
+msgid "NORMAL"
+msgstr "רגיל"
+
+msgid "IN GAME ONLY"
+msgstr "במשחק בלבד"
+
+msgid "HIDDEN"
+msgstr "מוסתר"
+
+msgid "BORDER COLOR"
+msgstr ""
+
+msgid "WHITE"
+msgstr ""
+
+msgid "RED"
+msgstr ""
+
+msgid "GREEN"
+msgstr ""
+
+msgid "BLUE"
+msgstr ""
+
+msgid "CAMERA CONTRAST"
+msgstr ""
+
+msgid "Daytime/Bright Sunlight (40)"
+msgstr ""
+
+msgid "Default (50)"
+msgstr "ברירת מחדל(50)"
+
+msgid "Dim Display/Evening (60)"
+msgstr ""
+
+msgid "CAMERA BRIGHTNESS"
+msgstr "בהירות מצלמה"
+
+msgid "Daytime/Bright Sunlight (80)"
+msgstr ""
+
+msgid "Default (100)"
+msgstr "ברירת מחדל(100)"
+
+msgid "Dim Display/Evening (120)"
+msgstr ""
+
+msgid "CAMERA EXPOSURE"
+msgstr ""
+
+msgid "Projector/CRT (-5)"
+msgstr ""
+
+msgid "Projector/CRT (-6)"
+msgstr ""
+
+msgid "Default (-7)"
+msgstr "ברירת מחדל(-7)"
+
+msgid "Other (-8)"
+msgstr "אחר(-8)"
+
+msgid "Other (-9)"
+msgstr "אחר(-9)"
+
+msgid "RECOIL"
+msgstr ""
+
+msgid "DISABLED"
+msgstr "מבוטל"
+
+msgid "GUN"
+msgstr "נשק"
+
+msgid "MACHINE GUN"
+msgstr ""
+
+msgid "QUIET GUN"
+msgstr ""
+
+msgid "QUIET MACHINE GUN"
+msgstr ""
+
+msgid "MODE"
+msgstr "מצב"
+
+msgid "JOYSTICK"
+msgstr ""
+
+msgid "MOUSE ONLY"
+msgstr "עכבר בלבד"
+
+msgid "HAND"
+msgstr "יד"
+
+msgid "LEFT"
+msgstr "שמאל"
+
+msgid "RIGHT"
+msgstr "ימין"
+
 msgid "CONTENT DOWNLOADER"
 msgstr "מוריד התכנים"
 
 msgid "SELECT CONTENT TO INSTALL/REMOVE"
-msgstr ""
+msgstr "בחר תוכן להתקנה/הסרה"
 
 msgid "UPDATE INSTALLED CONTENT"
 msgstr "עידכון תוכן מותקן"
 
 msgid "No items"
-msgstr ""
+msgstr "אין פריטים"
 
 msgid "MISC"
 msgstr "שונות"
@@ -677,9 +1030,6 @@ msgstr "עידכון"
 #, c-format
 msgid "'%s' ADDED TO DOWNLOAD QUEUE"
 msgstr "'%s' נוסף לתור הורדות"
-
-msgid "REMOVE"
-msgstr "הסרה"
 
 msgid "UNINSTALLATION ADDED TO QUEUE"
 msgstr ""
@@ -697,6 +1047,15 @@ msgstr ""
 msgid "MISSING BIOS CHECK"
 msgstr ""
 
+msgid "Installed systems"
+msgstr ""
+
+msgid "All"
+msgstr "הכל"
+
+msgid "refresh"
+msgstr ""
+
 msgid "NO MISSING BIOS"
 msgstr "אין חוסר BIOS"
 
@@ -712,6 +1071,9 @@ msgstr "סרטון אקראי"
 msgid "slideshow"
 msgstr "מצגת"
 
+msgid "suspend"
+msgstr ""
+
 msgid "always"
 msgstr "תמיד"
 
@@ -720,9 +1082,6 @@ msgstr "התחלה וסיום"
 
 msgid "never"
 msgstr "אף פעם"
-
-msgid "none"
-msgstr "ללא"
 
 msgid "systems"
 msgstr "מערכות"
@@ -733,14 +1092,11 @@ msgstr "אקראי"
 msgid "SCREENSAVER SETTINGS"
 msgstr "הגדרות שומר מסך"
 
-msgid "SETTINGS"
-msgstr "הגדרות"
-
 msgid "START SCREENSAVER AFTER"
-msgstr ""
+msgstr "התחל שומר מסך לאחר..."
 
 msgid "SCREENSAVER TYPE"
-msgstr ""
+msgstr "סוג שומר המסך"
 
 msgid "STOP MUSIC ON SCREENSAVER"
 msgstr "הפסקת מוזיקה בשומר מסך"
@@ -749,7 +1105,7 @@ msgid "RANDOM VIDEO SCREENSAVER SETTINGS"
 msgstr "הגדרות סרטון אקראי בשומר מסך"
 
 msgid "VIDEO DURATION (SECS)"
-msgstr ""
+msgstr "זמן הוידיאו(שניות)"
 
 msgid "USE OMX PLAYER FOR SCREENSAVER"
 msgstr "שימוש בנגן OMX לשומר מסך"
@@ -788,7 +1144,7 @@ msgid "SLIDESHOW SCREENSAVER SETTINGS"
 msgstr "הגדרות מצגת שומר מסך"
 
 msgid "IMAGE DURATION (SECS)"
-msgstr ""
+msgstr "זמן התמונה(שניות)"
 
 msgid "STRETCH IMAGES"
 msgstr "מתיחת תמונות"
@@ -854,20 +1210,17 @@ msgid "SAVE CHANGES?"
 msgstr "שמירת שינויים ?"
 
 msgid "ARE YOU SURE?"
-msgstr ""
+msgstr "האם אתה בטוח?"
 
 #, c-format
 msgid "UPDATING %s"
 msgstr "מעדכן %s"
 
-msgid "UPDATING BATOCERA"
-msgstr "מעדכן את מערכת ההפעלה"
-
 msgid "UPDATE IS READY"
 msgstr "עדכון מוכן להתקנה"
 
-msgid "REBOOT SYSTEM TO APPLY THE UPDATE"
-msgstr ""
+msgid "REBOOT TO APPLY"
+msgstr "הפעל מחדש בכדי להחיל הגדרות"
 
 msgid "REALLY UPDATE?"
 msgstr "באמת לעדכן ?"
@@ -878,14 +1231,21 @@ msgid ""
 "DO YOU WANT TO UPDATE TO VERSION %s?"
 msgstr ""
 
+#, c-format
+msgid ""
+"UNOFFICIAL SYSTEM MODIFICATIONS DETECTED.\n"
+"UPGRADING COULD BREAK YOUR SYSTEM.\n"
+"DO YOU WANT TO UPDATE TO VERSION %s?"
+msgstr ""
+
 msgid "NETWORK CONNECTION NEEDED"
 msgstr "נדרש חיבור לרשת"
 
 msgid "NO UPDATE AVAILABLE"
 msgstr "אין עדכון זמין"
 
-msgid "INSTALL BATOCERA"
-msgstr "התקנת מערכת הפעלה BATOCERA"
+msgid "INSTALL ON A NEW DISK"
+msgstr "התקנה על כונן חדש"
 
 msgid "TARGET DEVICE"
 msgstr "התקן יעד"
@@ -912,7 +1272,7 @@ msgid "VIEW GAME MAP"
 msgstr "צפייה במפת משחק"
 
 msgid "VIEW FULLSCREEN VIDEO"
-msgstr ""
+msgstr "הצגה במסך מלא"
 
 msgid "VIEW GAME MEDIA"
 msgstr ""
@@ -930,12 +1290,12 @@ msgid "GAME"
 msgstr "משחק"
 
 msgid "SAVE STATES"
-msgstr ""
+msgstr "שמור סטטיסטיקות"
 
 msgid "OPEN"
 msgstr "פתיחה"
 
-msgid "NETPLAY HOSTING/OPTIONS"
+msgid "START A NETPLAY GAME"
 msgstr ""
 
 msgid "NETPLAY"
@@ -944,20 +1304,17 @@ msgstr "NETPLAY"
 msgid "START GAME"
 msgstr "התחל משחק"
 
-msgid "BEGIN HOSTING A NETPLAY SESSION"
-msgstr ""
-
-msgid "YOU ARE NOT CONNECTED TO A NETWORK"
-msgstr "המערכת אינה מחוברת לרשת"
+msgid "HOST A NETPLAY GAME"
+msgstr "ארח משחק רשת"
 
 msgid "PUBLICLY ANNOUNCE GAME"
 msgstr "הכרז ציבורית על משחק"
 
-msgid "SET PLAYER PASSWORD"
-msgstr "קביעת סיסמה לשחקן"
+msgid "PLAYER PASSWORD"
+msgstr "סיסמת שחקן"
 
-msgid "SET VIEWER PASSWORD"
-msgstr "קביעת סיסמה לצופה"
+msgid "VIEWER PASSWORD"
+msgstr ""
 
 msgid "FIND SIMILAR GAMES..."
 msgstr "מציאת משחקים דומים..."
@@ -1014,9 +1371,17 @@ msgstr "מוריד ערכות הנושא"
 msgid "SELECT THEMES TO INSTALL/REMOVE"
 msgstr ""
 
-#, c-format
+msgid "Installed"
+msgstr "מותקן"
+
+msgid "Available"
+msgstr "זמין"
+
 msgid "CURRENT THEME"
 msgstr "ערכת נושא נוכחית"
+
+msgid "Points"
+msgstr "נקודות"
 
 msgid "Unlocked on"
 msgstr "נעילה בוטלה"
@@ -1024,21 +1389,24 @@ msgstr "נעילה בוטלה"
 msgid "THIS GAME HAS NO ACHIEVEMENTS YET"
 msgstr ""
 
-msgid "Achievements won"
-msgstr "זכייה בהישגים"
+msgid "Achievements (softcore)"
+msgstr ""
+
+msgid "Achievements (hardcore)"
+msgstr ""
 
 #, c-format
 msgid "%d%% complete"
 msgstr "%d%% הושלם"
 
-msgid "SAVE STATE MANAGER"
+msgid "SAVESTATE MANAGER"
 msgstr ""
 
 msgid "START NEW GAME"
 msgstr "התחלת משחק חדש"
 
-msgid "START AUTO SAVE"
-msgstr "התחלת שמירה אוטומטית"
+msgid "START NEW AUTO SAVE"
+msgstr "התחל שמירה אוטומטית חדשה"
 
 msgid "AUTO SAVE"
 msgstr "שמירה אוטומטית"
@@ -1049,20 +1417,140 @@ msgstr "חריץ"
 msgid "COPY TO FREE SLOT"
 msgstr "העתק לחריץ פנוי"
 
-msgid "SCRAPE CRITERIA"
+msgid "SCRAPER SETTINGS"
 msgstr ""
 
-msgid "MEDIA TO SCRAPE FOR"
+msgid "IMAGE SOURCE"
+msgstr "מקור תמונה"
+
+msgid "SCREENSHOT"
+msgstr "צילום מסך"
+
+msgid "TITLE SCREENSHOT"
+msgstr "צילום מסך מנצח"
+
+msgid "MIX V1"
+msgstr "עירבול 1"
+
+msgid "MIX V2"
+msgstr "עירבול 2"
+
+msgid "BOX 2D"
+msgstr "קופסה דו מימדית"
+
+msgid "BOX 3D"
+msgstr "קופסה תלת מימדית"
+
+msgid "FAN ART"
+msgstr "אומנות מעריצים"
+
+msgid "BOX SOURCE"
+msgstr "מקור קופסה"
+
+msgid "LOGO SOURCE"
+msgstr "מקור סמל"
+
+msgid "WHEEL"
+msgstr "גלגל"
+
+msgid "MARQUEE"
+msgstr "דגל"
+
+msgid "PREFERED REGION"
+msgstr "איזור מועדף"
+
+msgid "OVERWRITE DESCRIPTIONS"
+msgstr ""
+
+msgid "OVERWRITE MEDIAS"
+msgstr ""
+
+msgid "SCRAPE FOR"
+msgstr ""
+
+msgid "SHORT NAME"
+msgstr "שם מקוצר"
+
+msgid "COMMUNITY RATING"
+msgstr "דירוג קהילה"
+
+msgid "VIDEO"
+msgstr ""
+
+msgid "FANART"
+msgstr ""
+
+msgid "BEZEL (16:9)"
+msgstr ""
+
+msgid "BOX BACKSIDE"
+msgstr ""
+
+msgid "MAP"
+msgstr ""
+
+msgid "MANUAL"
+msgstr "ידני"
+
+msgid "PADTOKEY SETTINGS"
+msgstr ""
+
+msgid "ACCOUNT"
+msgstr "חשבון"
+
+msgid "SCRAPER"
+msgstr "SCRAPER"
+
+msgid "SCRAPING DATABASE"
+msgstr ""
+
+msgid "SOURCE"
+msgstr "מקור"
+
+msgid "SCRAPE FROM"
+msgstr "SCARPE מתוך יעד"
+
+msgid "FILTERS"
+msgstr "סינון"
+
+msgid "GAMES TO SCRAPE FOR"
 msgstr ""
 
 msgid "ALL"
+msgstr "הכל"
+
+msgid "GAMES MISSING ANY MEDIA"
 msgstr ""
 
-msgid "ONLY MISSING"
+msgid "GAMES MISSING ALL MEDIA"
 msgstr ""
+
+msgid "IGNORE RECENTLY SCRAPED GAMES"
+msgstr ""
+
+msgid "LAST DAY"
+msgstr "היום"
+
+msgid "LAST WEEK"
+msgstr "שבוע אחרון"
+
+msgid "LAST 15 DAYS"
+msgstr "15 הימים האחרונים"
+
+msgid "LAST MONTH"
+msgstr "החודש האחרון"
+
+msgid "LAST 3 MONTHS"
+msgstr "3 חודשים אחורה"
+
+msgid "LAST YEAR"
+msgstr "השנה"
 
 msgid "SYSTEMS INCLUDED"
 msgstr ""
+
+msgid "SCRAPE NOW"
+msgstr "הפעל SCRAPE"
 
 msgid "START"
 msgstr "התחלה"
@@ -1078,6 +1566,24 @@ msgstr ""
 
 msgid "NO GAMES FIT THAT CRITERIA."
 msgstr "אין משחק שמתאים לקריטריון."
+
+msgid "INFORMATION"
+msgstr "מידע"
+
+msgid "VERSION"
+msgstr "גרסה"
+
+msgid "USER DISK USAGE"
+msgstr "שימוש משתמש ב'דיסק'"
+
+msgid "SYSTEM DISK USAGE"
+msgstr "שימוש מערכת ב'דיסק'"
+
+msgid "SYSTEM"
+msgstr "מערכת"
+
+msgid "VIDEO DRIVER"
+msgstr "מנהל התקן וידאו"
 
 msgid "THE BEZEL PROJECT"
 msgstr "פרויקט BEZEL"
@@ -1130,26 +1636,37 @@ msgstr "תדר שיא למעבד"
 msgid "Cpu feature"
 msgstr "מאפיין מעבד"
 
+msgctxt "game_options"
+msgid "SHARP-BILINEAR-SIMPLE"
+msgstr ""
+
+msgctxt "game_options"
 msgid "SCANLINES"
-msgstr "שורות סריקה"
+msgstr ""
 
+msgctxt "game_options"
 msgid "RETRO"
-msgstr "'רטרו'"
+msgstr ""
 
+msgctxt "game_options"
 msgid "ENHANCED"
-msgstr "משופר"
+msgstr ""
 
+msgctxt "game_options"
 msgid "CURVATURE"
-msgstr "קשת"
+msgstr ""
 
+msgctxt "game_options"
 msgid "ZFAST"
-msgstr "ZFAST"
+msgstr ""
 
+msgctxt "game_options"
 msgid "FLATTEN-GLOW"
-msgstr "שיטוח בוהק"
+msgstr ""
 
+msgctxt "game_options"
 msgid "RGA SCALING"
-msgstr "RGA SCALING"
+msgstr ""
 
 msgid "VENDOR"
 msgstr "ספק"
@@ -1157,17 +1674,20 @@ msgstr "ספק"
 msgid "RENDERER"
 msgstr "'מרנדר'"
 
-msgid "VERSION"
-msgstr "גרסה"
-
 msgid "SHADERS"
 msgstr "מצלילים"
 
-msgid "CONTROLLER SETTINGS"
+msgid "INTERNAL"
 msgstr ""
 
-msgid "CONTROLLER & BLUETOOTH SETTINGS"
-msgstr "הגדרות בקרים ובלו-טות'"
+msgid "ANY EXTERNAL"
+msgstr ""
+
+msgid "maximum 1920x1080"
+msgstr ""
+
+msgid "maximum 640x480"
+msgstr ""
 
 msgid "MAIN MENU"
 msgstr "תפריט ראשי"
@@ -1176,9 +1696,9 @@ msgid "KODI MEDIA CENTER"
 msgstr "מרכז מדיה של KODI"
 
 msgid "GAME SETTINGS"
-msgstr ""
+msgstr "הגדרות משחק"
 
-msgid "UI SETTINGS"
+msgid "USER INTERFACE SETTINGS"
 msgstr "הגדרות ממשק משתמש"
 
 msgid "SOUND SETTINGS"
@@ -1193,95 +1713,17 @@ msgstr "הגדר קלט"
 msgid "EMULATOR SETTINGS"
 msgstr "הגדרות אמולטור (חַקַּאי)"
 
-msgid "SCRAPER"
-msgstr "SCRAPER"
-
 msgid "UPDATES & DOWNLOADS"
 msgstr "עדכונים והורדות"
 
 msgid "SYSTEM SETTINGS"
 msgstr "הגדרות מערכת"
 
-msgid "INFORMATION"
-msgstr "מידע"
-
-msgid "UNLOCK UI MODE"
-msgstr "ביטול נעילת מצב ממשק משתמש"
+msgid "UNLOCK USER INTERFACE MODE"
+msgstr "בטל נעיחלת"
 
 msgid "QUIT"
 msgstr "יציאה"
-
-msgid "SCRAPER IS RUNNING. DO YOU WANT TO STOP IT?"
-msgstr ""
-
-msgid "NEXT"
-msgstr ""
-
-msgid "SCRAPING DATABASE"
-msgstr ""
-
-msgid "IMAGE SOURCE"
-msgstr "מקור תמונה"
-
-msgid "SCREENSHOT"
-msgstr "צילום מסך"
-
-msgid "TITLE SCREENSHOT"
-msgstr "צילום מסך מנצח"
-
-msgid "MIX V1"
-msgstr "עירבול 1"
-
-msgid "MIX V2"
-msgstr "עירבול 2"
-
-msgid "BOX 2D"
-msgstr "קופסה דו מימדית"
-
-msgid "BOX 3D"
-msgstr "קופסה תלת מימדית"
-
-msgid "FAN ART"
-msgstr "אומנות מעריצים"
-
-msgid "BOX SOURCE"
-msgstr "מקור קופסה"
-
-msgid "LOGO SOURCE"
-msgstr "מקור סמל"
-
-msgid "WHEEL"
-msgstr "גלגל"
-
-msgid "MARQUEE"
-msgstr "דגל"
-
-msgid "SCRAPE RATINGS"
-msgstr "SCRAPE דירוגים"
-
-msgid "SCRAPE VIDEOS"
-msgstr "SCRAPE סרטונים"
-
-msgid "SCRAPE FANART"
-msgstr "SCRAPE  אמנות מעריצים"
-
-msgid "SCRAPE BOX BACKSIDE"
-msgstr "SCARPE  עטיפות פנים"
-
-msgid "SCRAPE MAP"
-msgstr "SCRAPE מפה"
-
-msgid "SCRAPE MANUAL"
-msgstr "SCRAPE מדריך"
-
-msgid "SCRAPE PADTOKEY SETTINGS"
-msgstr "SCRAPE  הגדרות משטח ללחצן"
-
-msgid "USERNAME"
-msgstr "שם משתמש"
-
-msgid "PASSWORD"
-msgstr "סיסמה"
 
 msgid "ARE YOU SURE YOU WANT TO CONFIGURE THE INPUT?"
 msgstr ""
@@ -1289,26 +1731,92 @@ msgstr ""
 msgid "CHOOSE"
 msgstr "בחירה"
 
-msgid "THE UI MODE IS NOW UNLOCKED"
+msgid "THE USER INTERFACE MODE IS NOW UNLOCKED"
 msgstr ""
 
-msgid "ENTER THE CODE TO UNLOCK THE CURRENT UI MODE"
+msgid "ENTER THE CODE NOW TO UNLOCK"
+msgstr "הזן את הקוד בכדי לשחרר את הנעילה"
+
+msgid "SERVICES"
+msgstr "שירותים"
+
+msgid "DMD"
 msgstr ""
 
-msgid "USER DISK USAGE"
-msgstr "שימוש משתמש ב'דיסק'"
+msgid "SERVER"
+msgstr ""
 
-msgid "SYSTEM DISK USAGE"
-msgstr "שימוש מערכת ב'דיסק'"
+msgid "DMDSERVER (for real dmd)"
+msgstr ""
 
-msgid "SYSTEM"
-msgstr "מערכת"
+msgid "SIMULATOR (for web dmd)"
+msgstr ""
 
-msgid "VIDEO DRIVER"
-msgstr "מנהל התקן וידאו"
+msgid "dmd server"
+msgstr ""
 
-msgid "DEVELOPER"
-msgstr "מפתח"
+msgid "FORMAT"
+msgstr ""
+
+msgid "dmd matrix size"
+msgstr ""
+
+msgid "MATRIX"
+msgstr ""
+
+msgid "rgb dmd order"
+msgstr ""
+
+msgid "BRIGHTNESS"
+msgstr "בהירות"
+
+msgid "DMDSERVER stopped"
+msgstr ""
+
+msgid "DMDSERVER restarted"
+msgstr ""
+
+msgid "DMDSERVER started"
+msgstr ""
+
+msgid "MULTISCREENS"
+msgstr ""
+
+msgid "BACKGLASS / INFORMATION SCREEN"
+msgstr ""
+
+msgid "VIDEO OUTPUT"
+msgstr "פלט וידאו"
+
+msgid "VIDEO MODE"
+msgstr "מצד וידאו"
+
+msgid "Sets the display's resolution."
+msgstr ""
+
+msgid "ROTATION"
+msgstr ""
+
+msgid "0 DEGREES"
+msgstr "0 מעלות"
+
+msgid "90 DEGREES"
+msgstr "90 מעלות"
+
+msgid "180 DEGREES"
+msgstr "180 מעלות"
+
+msgid "270 DEGREES"
+msgstr "270 מעלות"
+
+msgid "SCREEN ROTATION"
+msgstr "סיבוב מסך"
+
+msgid "DMD SCREEN"
+msgstr ""
+
+msgid "FRONTEND DEVELOPER OPTIONS"
+msgstr "הגדרות מפתח מתקדמות"
 
 msgid "VIDEO OPTIONS"
 msgstr "אפשרויות וידאו"
@@ -1319,11 +1827,17 @@ msgstr "מגבלת VRAM"
 msgid "SHOW FRAMERATE"
 msgstr "הצג קצב רענון פריימים"
 
+msgid "Also turns on the emulator's native FPS counter, if available."
+msgstr ""
+
 msgid "VSYNC"
 msgstr "VSYNC"
 
 msgid "OVERSCAN"
 msgstr "OVERSCAN"
+
+msgid "Sets the display's resolution for emulationstation."
+msgstr ""
 
 msgid "USE OMX PLAYER (HARDWARE ACCELERATED)"
 msgstr ""
@@ -1334,15 +1848,12 @@ msgstr "כלים"
 msgid "STOP LAUNCHING THIS GAME AT STARTUP"
 msgstr ""
 
-msgid "ENABLE PUBLIC WEB ACCESS"
-msgstr "אפשר גישה פומבית מהרשת"
+msgid "ENABLE PUBLIC WEB API ACCESS"
+msgstr ""
 
 #, c-format
 msgid "Allow public web access API using %s"
 msgstr "Allow public web access API using %s"
-
-msgid "REBOOT REQUIRED TO APPLY THE NEW CONFIGURATION"
-msgstr ""
 
 msgid "LOG LEVEL"
 msgstr "רמת חיבור"
@@ -1350,7 +1861,7 @@ msgstr "רמת חיבור"
 msgid "CREATE A SUPPORT FILE"
 msgstr "יצירת קובץ תמיכה"
 
-msgid "CREATE A SUPPORT FILE?"
+msgid "CREATE A SUPPORT FILE? THIS INCLUDES ALL DATA IN YOUR SYSTEM FOLDER."
 msgstr ""
 
 msgid "SUPPORT FILE CREATED IN SAVES FOLDER"
@@ -1365,8 +1876,29 @@ msgstr "מחיקת כונן"
 msgid "CLEAN GAMELISTS & REMOVE UNUSED MEDIA"
 msgstr ""
 
-msgid "Cleaning"
+msgid "Remove unused entries, and clean references to missing medias."
 msgstr ""
+
+msgid "Cleaning"
+msgstr "מנקה"
+
+msgid "RESET GAMELISTS USAGE DATA"
+msgstr ""
+
+msgid "Reset values of GameTime, PlayCount and LastPlayed metadatas."
+msgstr ""
+
+msgid "RESET FILE EXTENSIONS"
+msgstr "איפוס סיומות קבצים"
+
+msgid "Reset customized file extensions filters to default."
+msgstr ""
+
+msgid "REDETECT ALL GAMES' LANG/REGION"
+msgstr ""
+
+msgid "FIND ALL GAMES WITH NETPLAY/ACHIEVEMENTS"
+msgstr "מציאת כל המשחקים בעלי NETPLAY או ACHIEVMENTS"
 
 msgid "CLEAR CACHES"
 msgstr "מנקה CACHES"
@@ -1377,14 +1909,23 @@ msgstr "בניית תמונת CACHES"
 msgid "Building image cache"
 msgstr "בניית תמונת CACHES מתבצעת"
 
-msgid "RESET FILE EXTENSIONS"
-msgstr "איפוס סיומות קבצים"
-
-msgid "REDETECT ALL GAMES' LANG/REGION"
+msgid "DISPLAY SETTINGS"
 msgstr ""
 
-msgid "FIND ALL GAMES WITH NETPLAY/ACHIEVEMENTS"
-msgstr "מציאת כל המשחקים בעלי NETPLAY או ACHIEVMENTS"
+msgid "MENU FONT SCALE"
+msgstr ""
+
+msgid "FONT SCALE"
+msgstr ""
+
+msgid "THEME FONT SCALE"
+msgstr ""
+
+msgid "FULL SCREEN MENUS"
+msgstr ""
+
+msgid "FORCE SMALL SCREEN THEMING"
+msgstr ""
 
 msgid "DATA MANAGEMENT"
 msgstr "ניהול DATA"
@@ -1392,19 +1933,31 @@ msgstr "ניהול DATA"
 msgid "IGNORE MULTI-FILE DISK CONTENT (CUE/GDI/CCD/M3U)"
 msgstr ""
 
-msgid "ENABLE FILTERS"
-msgstr "אפשר מסננים"
+msgid "ENABLE GAME FILTERING"
+msgstr ""
+
+msgid ""
+"Whether to show or hide game filtering related settings in the view options."
+msgstr ""
 
 msgid "SAVE METADATA ON EXIT"
 msgstr "שמרית METADATA ביציאה"
 
-msgid "PARSE GAMESLISTS ONLY"
-msgstr "ניתוח רשימות משחקים בלבד"
+msgid "PARSE GAMELISTS ONLY"
+msgstr ""
+
+msgid "Debug tool: Don't check if the ROMs actually exist. Can cause problems!"
+msgstr ""
 
 msgid "SEARCH FOR LOCAL ART"
 msgstr "סרוק לאמנות במערכת מקומית"
 
-msgid "UI"
+msgid ""
+"If no image is specified in the gamelist, try to find media with the same "
+"filename to use."
+msgstr ""
+
+msgid "USER INTERFACE"
 msgstr "ממשק משתמש"
 
 msgid "CAROUSEL TRANSITIONS"
@@ -1425,13 +1978,10 @@ msgstr "השלמת תפריט יציאה"
 msgid "RETROARCH MENU DRIVER"
 msgstr "תפריט מנהל התקן RETROARCH"
 
-msgid "AUTO"
-msgstr "אוטומטי"
+msgid "SWITCH CONFIRM & CANCEL BUTTONS IN EMULATIONSTATION"
+msgstr ""
 
-msgid "AUTOCONFIGURE EMULATORS CONTROLLERS"
-msgstr "הגדר אוטומטית בקרי אמולטור (חַקַּאי)"
-
-msgid "SWITCH A & B BUTTONS IN EMULATIONSTATION"
+msgid "Switches the South and East buttons' functionality"
 msgstr ""
 
 msgid "ACCESS GAME OPTIONS WITH NORTH BUTTON"
@@ -1445,22 +1995,37 @@ msgstr ""
 msgid "CONTROL EMULATIONSTATION WITH FIRST JOYSTICK ONLY"
 msgstr ""
 
+msgid "GUN MOVE TOLERENCE"
+msgstr ""
+
+msgid "ENABLE PS3 CONTROLLER SUPPORT"
+msgstr ""
+
+msgid "Might have negative impact on security."
+msgstr ""
+
+msgid "ENABLE HID JOYSTICK DRIVERS"
+msgstr ""
+
 msgid "SHOW NETWORK INDICATOR"
 msgstr "הצג מחוון רשת"
 
 msgid "OPTIMIZATIONS"
 msgstr "התאמות לייעול מלא"
 
-msgid "PRELOAD UI ELEMENTS"
+msgid "PRELOAD UI ELEMENTS ON BOOT"
 msgstr ""
 
-msgid "Reduce overall menu lag at the cost of storage space"
+msgid ""
+"Reduces lag when entering gamelists from the system menu, increases boot time"
 msgstr ""
 
-msgid "PRELOAD METADATA MEDIA"
+msgid "PRELOAD METADATA MEDIA ON BOOT"
 msgstr ""
 
-msgid "Reduce gamelist lag at the cost of storage space"
+msgid ""
+"Reduces lag when scrolling through a fully scraped gamelist, increases boot "
+"time"
 msgstr ""
 
 msgid "THREADED LOADING"
@@ -1474,6 +2039,9 @@ msgstr "התאם ליעילות מלאה שימוש תמונה ב VRAM"
 
 msgid "OPTIMIZE VIDEO VRAM USAGE"
 msgstr ""
+
+msgid "REBOOT REQUIRED TO APPLY THE NEW CONFIGURATION"
+msgstr "דרושה הפעלה מחדש בכדי להחיל את ההגדרות"
 
 msgid "DOWNLOADS"
 msgstr "הורדות"
@@ -1502,41 +2070,50 @@ msgstr ""
 msgid "LANGUAGE"
 msgstr "שפה"
 
+msgid "LANGUAGE (REGION)"
+msgstr "שפה(איזור)"
+
 msgid "SELECT YOUR TIME ZONE"
-msgstr ""
+msgstr "בחר איזור זמן"
 
 msgid "TIME ZONE"
-msgstr ""
+msgstr "איזור זמן"
 
 msgid "SHOW CLOCK IN 12-HOUR FORMAT"
 msgstr "הצג שעות בתצורת 12 שעות"
 
-msgid "POWER SAVER MODES"
-msgstr "מצבי חיסכון באנרגיה"
-
-msgid "DISABLED"
-msgstr ""
+msgid "POWER SAVING MODE"
+msgstr "מצב חיסכון בסוללה"
 
 msgid "DEFAULT"
-msgstr ""
+msgstr "ברירת מחדל"
+
+msgid "ENHANCED"
+msgstr "משופר"
 
 msgid "INSTANT"
+msgstr ""
+
+msgid "Reduces power consumption when idle (useful for handhelds)."
 msgstr ""
 
 msgid "SCREEN READER (TEXT TO SPEECH)"
 msgstr ""
 
-msgid "UI MODE"
-msgstr "מצב ממשק משתמש"
+msgid "USER INTERFACE MODE"
+msgstr ""
+
+msgid "Lock down certain config menus for use with guest users/kids."
+msgstr ""
 
 msgid ""
-"You are changing the UI to a restricted mode:\n"
+"You are changing the user interface to a restricted mode:\n"
 "This will hide most menu options to prevent changes to the system.\n"
-"To unlock and return to the full UI, enter this code:"
+"To unlock and return to the full user interface, enter this code:"
 msgstr ""
 
 msgid "Do you want to proceed?"
-msgstr ""
+msgstr "האם אתה רוצה להתקדם?"
 
 msgid "KODI SETTINGS"
 msgstr "הגדרות KODI"
@@ -1545,16 +2122,10 @@ msgid "ENABLE KODI"
 msgstr "הפוך KODI לזמין"
 
 msgid "LAUNCH KODI AT BOOT"
-msgstr ""
+msgstr "הפעל את קודי בהפעלה"
 
 msgid "HARDWARE"
 msgstr "חומרה"
-
-msgid "BRIGHTNESS"
-msgstr "בהירות"
-
-msgid "VIDEO OUTPUT"
-msgstr "פלט וידאו"
 
 msgid "AUDIO OUTPUT"
 msgstr "פלט שמע"
@@ -1562,19 +2133,7 @@ msgstr "פלט שמע"
 msgid "AUDIO PROFILE"
 msgstr "פרופיל שמע"
 
-msgid "SCREEN ROTATION"
-msgstr "סיבוב מסך"
-
-msgid "0 DEGREES (AUTO)"
-msgstr ""
-
-msgid "90 DEGREES"
-msgstr ""
-
-msgid "180 DEGREES"
-msgstr ""
-
-msgid "270 DEGREES"
+msgid "Available options can change depending on current audio output."
 msgstr ""
 
 msgid "BOOT SPLASH"
@@ -1591,12 +2150,6 @@ msgstr ""
 
 msgid "SPLASH SETTING"
 msgstr ""
-
-msgid "RETROACHIEVEMENT SETTINGS"
-msgstr ""
-
-msgid "NETPLAY SETTINGS"
-msgstr "הגדרות NETPLAY"
 
 msgid "CHECK BIOS FILES BEFORE RUNNING A GAME"
 msgstr ""
@@ -1658,9 +2211,6 @@ msgstr "התקן איחסון"
 msgid "BACKUP USER DATA"
 msgstr "גיבוי מידע משתמש"
 
-msgid "INSTALL BATOCERA ON A NEW DISK"
-msgstr "התקנת BATOCERA על דיסק חדש"
-
 msgid "ADVANCED"
 msgstr "מתקדם"
 
@@ -1669,6 +2219,9 @@ msgstr "אבטחה"
 
 msgid "ENFORCE SECURITY"
 msgstr "אכיפת אבטחה"
+
+msgid "Require a password for accessing the network share."
+msgstr ""
 
 msgid "ROOT PASSWORD"
 msgstr "סיסמת שורש ROOT PASSWORD"
@@ -1679,58 +2232,88 @@ msgstr "הפחתת השהייה"
 msgid "RUN-AHEAD FRAMES"
 msgstr "RUN-AHEAD FRAMES"
 
-msgid "USE RUN-AHEAD FRAMES"
-msgstr "USE RUN-AHEAD FRAMES"
-
-msgid "RUN-AHEAD USE SECOND INSTANCE"
-msgstr "RUN-AHEAD USE SECOND INSTANCE"
-
-msgid "HARDCORE MODE"
-msgstr "מצב קשה-מאוד"
-
-msgid "LEADERBOARDS"
-msgstr "לוחות מובילים"
-
-msgid "VERBOSE MODE"
-msgstr "מצב מילולי"
-
-msgid "AUTOMATIC SCREENSHOT"
-msgstr "צילום מסך אוטומטי"
-
-msgid "RETROACHIEVEMENT UNLOCK SOUND"
+msgid "High numbers can result in visible jitter."
 msgstr ""
 
-msgid "UNLOCK SOUND"
-msgstr "ביטול נעילת שמע"
-
-msgid "SHOW RETROACHIEVEMENTS ENTRY IN MAIN MENU"
+msgid "USE SECOND INSTANCE FOR RUN-AHEAD"
 msgstr ""
 
-msgid "GAME INDEXES"
-msgstr "אינדקס משחקים"
-
-msgid "INDEX NEW GAMES AT STARTUP"
+msgid "Can prevent audio skips on button presses."
 msgstr ""
 
-msgid "INDEX GAMES"
+msgid "AUTOMATIC FRAME DELAY"
 msgstr ""
 
-msgid "UNABLE TO ACTIVATE RETROACHIEVEMENTS:"
+msgid "AUTO FRAME DELAY"
 msgstr ""
 
-msgid "ENABLE NETPLAY"
-msgstr "הפוך NETPLAY לזמין"
-
-msgid "NICKNAME"
-msgstr "כינוי"
-
-msgid "PORT"
+msgid ""
+"Automatically decrease frame delay temporarily to prevent frame drops. Can "
+"introduce stuttering."
 msgstr ""
 
-msgid "USE RELAY SERVER"
+msgid "VARIABLE REFRESH RATE (G-SYNC, FREESYNC)"
+msgstr ""
+
+msgid "VARIABLE REFRESH RATE"
+msgstr ""
+
+msgid ""
+"Don't deviate from core requested timing. G-Sync, FreeSync, HDMI 2.1 VRR."
 msgstr ""
 
 msgid "DECORATION SET"
+msgstr ""
+
+msgid "Current setting"
+msgstr "הגדרות נוכחיות"
+
+msgid "ACCOUNTS"
+msgstr "חשבונות"
+
+msgid "BIOS SETTINGS"
+msgstr "הגדרות BIOS"
+
+msgid "SAVESTATES"
+msgstr ""
+
+msgid "AUTO SAVE/LOAD"
+msgstr "שמירה/טעינה אוטומטית"
+
+msgid "Load latest savestate on game launch and savestate when exiting game."
+msgstr ""
+
+msgid "INCREMENTAL SAVESTATES"
+msgstr ""
+
+msgid "INCREMENT PER SAVE"
+msgstr ""
+
+msgid "Never overwrite old savestates, always make new ones."
+msgstr ""
+
+msgid "INCREMENT SLOT"
+msgstr ""
+
+msgid "Increment slot on a new game."
+msgstr ""
+
+msgid "DO NOT INCREMENT"
+msgstr ""
+
+msgid "Use current slot on a new game."
+msgstr ""
+
+msgid "SHOW SAVESTATE MANAGER"
+msgstr ""
+
+msgid "ALWAYS"
+msgstr "תמיד"
+
+msgid "IF NOT EMPTY"
+msgstr ""
+
+msgid "Display savestate manager before launching a game."
 msgstr ""
 
 msgid "DEFAULT GLOBAL SETTINGS"
@@ -1739,8 +2322,12 @@ msgstr ""
 msgid "GAME ASPECT RATIO"
 msgstr ""
 
-msgid "VIDEO MODE"
-msgstr "מצד וידאו"
+msgid "Force the game to render in this aspect ratio."
+msgstr ""
+
+msgid ""
+"Sets the display's resolution. Does not affect the rendering resolution."
+msgstr ""
 
 msgid "SMOOTH GAMES (BILINEAR FILTERING)"
 msgstr ""
@@ -1748,22 +2335,16 @@ msgstr ""
 msgid "REWIND"
 msgstr "החזרה לאחור"
 
+msgid "Store past states to rewind to in realtime, if the core supports it."
+msgstr ""
+
 msgid "INTEGER SCALING (PIXEL PERFECT)"
 msgstr ""
 
-msgid "AUTO SAVE/LOAD ON GAME LAUNCH"
-msgstr ""
-
-msgid "SHOW SAVE STATES"
-msgstr ""
-
-msgid "SHOW SAVE STATES IF NOT EMPTY"
-msgstr ""
-
-msgid "INCREMENTAL SAVESTATES"
-msgstr ""
-
 msgid "SHADER SET"
+msgstr ""
+
+msgid "VIDEO FILTER"
 msgstr ""
 
 msgid "DECORATIONS"
@@ -1772,16 +2353,19 @@ msgstr "קישוטים"
 msgid "STRETCH BEZELS (4K & ULTRAWIDE)"
 msgstr "מתיחת BEZEL  (למסכים רחבים או 4K)"
 
-msgid "SHOW CONTROLLER OVERLAYS"
+msgid "SHOW TATTOO OVER BEZEL"
 msgstr ""
 
 msgid "SYSTEM CONTROLLERS"
 msgstr ""
 
-msgid "CUSTOM .PNG IMAGE"
+msgid "CUSTOM IMAGE"
 msgstr ""
 
-msgid "OVERLAY CORNER"
+msgid "Show an image overlaid on top of the bezel."
+msgstr ""
+
+msgid "TATTOO CORNER"
 msgstr ""
 
 msgid "NORTH WEST"
@@ -1799,6 +2383,12 @@ msgstr ""
 msgid "CUSTOM .PNG IMAGE PATH"
 msgstr ""
 
+msgid "RESIZE TATTOO"
+msgstr ""
+
+msgid "Shrink/expand tattoo to fit within the bezel's border."
+msgstr ""
+
 msgid "AI GAME TRANSLATION"
 msgstr "תרגום משחק באינטיליגנציה מלאכותית"
 
@@ -1814,41 +2404,20 @@ msgstr ""
 msgid "PAUSE ON TRANSLATED SCREEN"
 msgstr "השהה במסך מתורגם"
 
+msgid "AUTOCONFIGURE CONTROLLERS"
+msgstr "תצורת בקרים אוטומטית"
+
 msgid "PER SYSTEM ADVANCED CONFIGURATION"
 msgstr "הגדרות מתקדמות לפי מערכת"
+
+msgid "SCRAPER IS RUNNING. DO YOU WANT TO STOP IT?"
+msgstr ""
 
 msgid "GAME HASHING IS RUNNING. DO YOU WANT TO STOP IT?"
 msgstr ""
 
 msgid "REALLY UPDATE GAMELISTS?"
 msgstr ""
-
-msgid "CONTROLLER MAPPING"
-msgstr ""
-
-msgid ""
-"YOU ARE GOING TO MAP A CONTROLLER. MAP BASED ON THE BUTTON'S POSITION "
-"RELATIVE TO ITS EQUIVALENT ON A SNES CONTROLLER, NOT ITS PHYSICAL LABEL. IF "
-"YOU DO NOT HAVE A SPECIAL KEY FOR HOTKEY, USE THE SELECT BUTTON. SKIP ALL "
-"BUTTONS/STICKS YOU DO NOT HAVE BY HOLDING ANY KEY. PRESS THE SOUTH BUTTON TO "
-"CONFIRM WHEN DONE."
-msgstr ""
-
-msgid "PAIR A BLUETOOTH DEVICE"
-msgstr "הצמדת בתקן בלו-טות'"
-
-#, c-format
-msgid "P%i'S CONTROLLER"
-msgstr ""
-
-msgid "default"
-msgstr "ברירת מחדל"
-
-msgid "SHOW CONTROLLER ACTIVITY"
-msgstr "הצגת פעילות בקר"
-
-msgid "SHOW CONTROLLER BATTERY LEVEL"
-msgstr "הצגת רמת סוללה לבקר"
 
 msgid "YOU MUST APPLY THE THEME BEFORE EDITING ITS CONFIGURATION"
 msgstr ""
@@ -1902,12 +2471,21 @@ msgid "AFTER NAME"
 msgstr "שם נוסף"
 
 msgid "SHOW REGION FLAG"
-msgstr ""
+msgstr "הצג דגל איזור"
 
 msgid "SHOW SAVESTATE ICON"
 msgstr ""
 
 msgid "SHOW MANUAL ICON"
+msgstr ""
+
+msgid "SHOW RETROACHIEVEMENTS ICON"
+msgstr ""
+
+msgid "SHOW GUN ICON"
+msgstr ""
+
+msgid "SHOW WHEEL ICON"
 msgstr ""
 
 msgid "SHOW FILENAMES INSTEAD"
@@ -1931,14 +2509,17 @@ msgstr "וידאו"
 msgid "grid"
 msgstr "רשת"
 
-msgid "DISPLAY OPTIONS"
-msgstr "הצגת אפשרויות"
-
-msgid "LIST TRANSITION STYLE"
+msgid "LIST TRANSITION"
 msgstr ""
+
+msgid "auto"
+msgstr "אוטומטי"
 
 msgid "GAME LAUNCH TRANSITION"
 msgstr "מעבר הפעלת משחק"
+
+msgid "GAME MEDIAS DURING FAST SCROLLING"
+msgstr ""
 
 msgid "SHOW CLOCK"
 msgstr "הצגת שעון"
@@ -1955,7 +2536,13 @@ msgstr "סמל"
 msgid "ICON AND TEXT"
 msgstr "סמל וטקסט"
 
+msgid "SHOW FOLDERS FIRST"
+msgstr "הצג תיקיות קודם"
+
 msgid "IGNORE LEADING ARTICLES WHEN SORTING"
+msgstr ""
+
+msgid "Ignore 'The' and 'A' if at the start."
 msgstr ""
 
 msgid "VOLUME"
@@ -2006,14 +2593,11 @@ msgstr "כתובת IP"
 msgid "CONNECTED"
 msgstr "מחובר"
 
-msgid "NOT CONNECTED"
-msgstr "לא מחובר"
-
 msgid "INTERNET STATUS"
 msgstr "מצב אינטרנט"
 
 msgid "HOSTNAME"
-msgstr "שם HOST"
+msgstr "שם מארח"
 
 msgid "ENABLE WIFI"
 msgstr "הפוך WIFI לזמין"
@@ -2033,26 +2617,35 @@ msgstr "שגיאה בתצורת WIFI"
 msgid "QUICK ACCESS"
 msgstr "גישה מהירה "
 
-msgid "SKIP TO NEXT SONG"
-msgstr "דילוג לשיר הבא"
+msgid "SKIP TO THE NEXT SONG"
+msgstr "דילוג על השיר הבא"
 
-msgid "LISTENING NOW"
-msgstr "בהאזנה כעת"
+msgid "NOW PLAYING"
+msgstr "מנגן"
 
 msgid "LAUNCH SCREENSAVER"
 msgstr "הפעלת שומר מסך"
 
-msgid "VIEW USER'S MANUAL"
-msgstr "צפייה במדריך למשתמש"
+msgid "VIEW USER MANUAL"
+msgstr ""
 
-msgid "VIEW BATOCERA MANUAL"
-msgstr "צפייה במדריך 'בטוסרה' (BATOCERA)"
+msgid "DISABLE PLANE MODE"
+msgstr "ביטול מצב טיסה"
+
+msgid "ENABLE PLANE MODE"
+msgstr "הפעלת מצב טיסה"
 
 msgid "RESTART SYSTEM"
 msgstr "הפעלה מחדש"
 
 msgid "REALLY RESTART?"
 msgstr "תתבצע הפעלה מחדש?"
+
+msgid "SUSPEND SYSTEM"
+msgstr ""
+
+msgid "REALLY SUSPEND ?"
+msgstr ""
 
 msgid "SHUTDOWN SYSTEM"
 msgstr "כיבוי "
@@ -2063,6 +2656,9 @@ msgstr "בטוח?"
 msgid "FAST SHUTDOWN SYSTEM"
 msgstr "כיבוי מהיר"
 
+msgid "Shutdown without saving metadata."
+msgstr ""
+
 msgid "REALLY SHUTDOWN WITHOUT SAVING METADATA?"
 msgstr ""
 
@@ -2071,6 +2667,21 @@ msgstr "יציאה מהאימולטור"
 
 msgid "REALLY QUIT?"
 msgstr "לצאת, בטוח?"
+
+msgid "AUTO SAVE/LOAD ON GAME LAUNCH"
+msgstr ""
+
+msgid "Load latest save state on game launch and save state when exiting game."
+msgstr ""
+
+msgid "SHOW CONTROLLER OVERLAYS"
+msgstr ""
+
+msgid "CUSTOM .PNG IMAGE"
+msgstr ""
+
+msgid "OVERLAY CORNER"
+msgstr ""
 
 msgid "COLORIZATION"
 msgstr "הוספת צבע"
@@ -2093,9 +2704,6 @@ msgstr "צד לצד"
 msgid "INTERNAL RESOLUTION"
 msgstr "רזולוציה פנימית"
 
-msgid "AUTOCONFIGURE CONTROLLERS"
-msgstr "תצורת בקרים אוטומטית"
-
 msgid "LAUNCH THIS GAME AT STARTUP"
 msgstr ""
 
@@ -2115,7 +2723,7 @@ msgid "SELECTED OPTIONS ARE INVALID"
 msgstr "האפשרויות שנבחרו אינן תקפות"
 
 msgid "ARE YOU SURE YOU WANT TO FORMAT THIS DRIVE?"
-msgstr ""
+msgstr "האם אתה בטוח שאתה רוצה לאתחל את הכונן?"
 
 msgid "EDIT METADATA"
 msgstr ""
@@ -2129,7 +2737,7 @@ msgid ""
 msgstr ""
 
 msgid "NO DEVICE FOUND"
-msgstr ""
+msgstr "לא נמצאו התקנים"
 
 msgid "ZOOM OUT"
 msgstr ""
@@ -2146,14 +2754,17 @@ msgstr ""
 msgid "GAMES TO INDEX"
 msgstr ""
 
-msgid "SYSTEM INFO"
+msgid "ONLY MISSING"
 msgstr ""
+
+msgid "SYSTEM INFO"
+msgstr "מידע מערכת"
 
 msgid "ERROR: EVERY SYSTEM IS HIDDEN, RE-DISPLAYING ALL OF THEM NOW"
 msgstr ""
 
 msgid "QUICK SEARCH"
-msgstr ""
+msgstr "חיפוש מהיר"
 
 msgid "GO TO LETTER"
 msgstr ""
@@ -2168,7 +2779,7 @@ msgid "GO TO DECADE"
 msgstr ""
 
 msgid "CONFIGURATION"
-msgstr ""
+msgstr "תצורה"
 
 #, c-format
 msgid "%i COLLECTION"
@@ -2195,10 +2806,13 @@ msgstr[2] ""
 msgstr[3] ""
 
 msgid "RANDOM"
+msgstr "אקראי"
+
+msgid "NAVIGATION BAR"
 msgstr ""
 
 msgid "FILES"
-msgstr ""
+msgstr "קבצים"
 
 msgid ""
 "WARNING: THE EMULATOR/CORE CURRENTLY SET DOES NOT SUPPORT THIS GAME'S FILE "
@@ -2216,13 +2830,13 @@ msgid "Preloading UI"
 msgstr ""
 
 msgid "Loading theme"
-msgstr ""
+msgstr "טוען ערכת נושא"
 
 msgid "Loading gamelists"
-msgstr ""
+msgstr "טוען רשימת משחקים"
 
 msgid "MENU"
-msgstr ""
+msgstr "תפריט"
 
 msgid "Full"
 msgstr ""
@@ -2232,6 +2846,9 @@ msgstr ""
 
 msgid "Kid"
 msgstr ""
+
+msgid "Basic"
+msgstr "בסיסי"
 
 msgid "Released"
 msgstr ""
@@ -2247,17 +2864,30 @@ msgstr[1] ""
 msgstr[2] ""
 msgstr[3] ""
 
-msgid "No Entries Found"
+msgid "Games similar to"
 msgstr ""
 
-msgid "Games similar to"
+msgid "SAVE STATES (HOLD)"
+msgstr ""
+
+msgid "GAME OPTIONS (HOLD)"
 msgstr ""
 
 msgid "GAME OPTIONS"
 msgstr ""
 
 msgid "FAVORITE"
+msgstr "מועדף"
+
+#, c-format
+msgid "Back to %s"
 msgstr ""
+
+msgid "No Entries Found"
+msgstr ""
+
+msgid "INVALID CONTENT"
+msgstr "תוכן שגוי"
 
 msgid ""
 "A valid account is required. Please register an account on https://"
@@ -2265,7 +2895,7 @@ msgid ""
 msgstr ""
 
 msgid "Searching"
-msgstr ""
+msgstr "מחפש"
 
 msgid "NO GAMES FOUND - SKIP"
 msgstr ""
@@ -2277,15 +2907,21 @@ msgid "SKIP"
 msgstr ""
 
 msgid "Downloading"
+msgstr "בהורדה"
+
+msgid "SEARCH FOR"
 msgstr ""
 
 msgid "ACCEPT RESULT"
 msgstr ""
 
 msgid "Loading system config..."
-msgstr ""
+msgstr "טוען הגדרות מערכת"
 
 msgid "SAVING METADATAS. PLEASE WAIT..."
+msgstr ""
+
+msgid "DO YOU WANT TO SWITCH THE SCREEN ?"
 msgstr ""
 
 msgid "Collections"
@@ -2379,7 +3015,7 @@ msgid "A,AN,THE"
 msgstr ""
 
 msgid "Extracting"
-msgstr ""
+msgstr "מחלץ"
 
 msgid "SEARCHING RETROACHIEVEMENTS"
 msgstr ""
@@ -2393,37 +3029,70 @@ msgstr ""
 msgid "UPDATE GAMELISTS TO APPLY CHANGES."
 msgstr ""
 
-msgid "GENRE"
+msgid "THE EMULATOR EXITED UNEXPECTEDLY"
 msgstr ""
+
+msgid "BAD COMMAND LINE ARGUMENTS"
+msgstr ""
+
+msgid "INVALID CONFIGURATION"
+msgstr ""
+
+msgid "UNKNOWN EMULATOR"
+msgstr ""
+
+msgid "EMULATOR IS MISSING"
+msgstr ""
+
+msgid "CORE IS MISSING"
+msgstr ""
+
+msgid "UKNOWN ERROR"
+msgstr ""
+
+msgid "GENRE"
+msgstr "ז'אנר"
 
 msgid "FAMILY"
 msgstr ""
 
 msgid "PLAYERS"
-msgstr ""
+msgstr "שחקנים"
 
 msgid "PUBLISHER/DEVELOPER"
 msgstr ""
 
 msgid "RATING"
-msgstr ""
+msgstr "דירוג"
 
 msgid "YEAR"
-msgstr ""
+msgstr "שנה"
 
 msgid "REGION"
-msgstr ""
+msgstr "איזור"
 
 msgid "KIDGAME"
-msgstr ""
+msgstr "לילדים"
 
 msgid "ALREADY PLAYED"
-msgstr ""
+msgstr "שוחק בעבר"
 
 msgid "HAS ACHIEVEMENTS"
 msgstr ""
 
 msgid "VERTICAL"
+msgstr ""
+
+msgid "LIGHTGUN"
+msgstr ""
+
+msgid "STEERING WHEEL"
+msgstr ""
+
+msgid "HAVING MEDIAS"
+msgstr ""
+
+msgid "MISSING MEDIAS"
 msgstr ""
 
 msgid "SCRAPING"
@@ -2433,6 +3102,11 @@ msgid "SCRAPE FAILED"
 msgstr ""
 
 msgid "SCRAPING FINISHED"
+msgstr ""
+
+msgid ""
+"CALIBRATING GUN\n"
+"Fire on targets to calibrate"
 msgstr ""
 
 #, c-format
@@ -2455,50 +3129,111 @@ msgstr ""
 msgid "SPACE"
 msgstr ""
 
-msgid "UP"
+msgctxt "joystick"
+msgid "NORTH"
 msgstr ""
 
-msgid "DOWN"
+msgctxt "joystick"
+msgid "SOUTH"
 msgstr ""
 
-msgid "LEFT"
+msgctxt "joystick"
+msgid "EAST"
 msgstr ""
 
-msgid "RIGHT"
+msgctxt "joystick"
+msgid "WEST"
 msgstr ""
 
+msgctxt "joystick"
+msgid "START"
+msgstr ""
+
+msgctxt "joystick"
+msgid "SELECT"
+msgstr ""
+
+msgctxt "joystick"
+msgid "D-PAD UP"
+msgstr ""
+
+msgctxt "joystick"
+msgid "D-PAD DOWN"
+msgstr ""
+
+msgctxt "joystick"
+msgid "D-PAD LEFT"
+msgstr ""
+
+msgctxt "joystick"
+msgid "D-PAD RIGHT"
+msgstr ""
+
+msgctxt "joystick"
 msgid "LEFT ANALOG UP"
 msgstr ""
 
+msgctxt "joystick"
 msgid "LEFT ANALOG DOWN"
 msgstr ""
 
+msgctxt "joystick"
 msgid "LEFT ANALOG LEFT"
 msgstr ""
 
+msgctxt "joystick"
 msgid "LEFT ANALOG RIGHT"
 msgstr ""
 
+msgctxt "joystick"
 msgid "RIGHT ANALOG UP"
 msgstr ""
 
+msgctxt "joystick"
 msgid "RIGHT ANALOG DOWN"
 msgstr ""
 
+msgctxt "joystick"
 msgid "RIGHT ANALOG LEFT"
 msgstr ""
 
+msgctxt "joystick"
 msgid "RIGHT ANALOG RIGHT"
 msgstr ""
 
+msgctxt "joystick"
+msgid "LEFT SHOULDER"
+msgstr ""
+
+msgctxt "joystick"
+msgid "RIGHT SHOULDER"
+msgstr ""
+
+msgctxt "joystick"
+msgid "LEFT TRIGGER"
+msgstr ""
+
+msgctxt "joystick"
+msgid "RIGHT TRIGGER"
+msgstr ""
+
+msgctxt "joystick"
+msgid "LEFT STICK PRESS"
+msgstr ""
+
+msgctxt "joystick"
+msgid "RIGHT STICK PRESS"
+msgstr ""
+
+msgctxt "joystick"
 msgid "HOTKEY"
 msgstr ""
 
 msgid "CONFIGURING"
-msgstr ""
+msgstr "הגדרות"
 
 msgid "KEYBOARD"
-msgstr ""
+msgstr "מקלדת"
 
 msgid "CEC"
 msgstr ""
@@ -2539,7 +3274,7 @@ msgid "ALREADY TAKEN"
 msgstr ""
 
 msgid "WELCOME"
-msgstr ""
+msgstr "ברוכים הבאים"
 
 #, c-format
 msgid "%i GAMEPAD DETECTED"
@@ -2555,6 +3290,12 @@ msgstr ""
 msgid "HOLD A BUTTON ON YOUR DEVICE TO CONFIGURE IT."
 msgstr ""
 
+msgid "PRESS ESC TO CANCEL."
+msgstr ""
+
+msgid "PRESS ESC OR A HOTKEY TO CANCEL."
+msgstr ""
+
 msgid "DISCARD CHANGES"
 msgstr ""
 
@@ -2565,10 +3306,10 @@ msgid "accept"
 msgstr ""
 
 msgid "SELECT ALL"
-msgstr ""
+msgstr "בחר הכל"
 
 msgid "select all"
-msgstr ""
+msgstr "בחר הכל"
 
 msgid "SELECT NONE"
 msgstr ""
@@ -2591,10 +3332,37 @@ msgid "MOVE CURSOR"
 msgstr ""
 
 msgid "EDIT"
-msgstr ""
+msgstr "עריכה"
 
 msgid "ENABLED"
+msgstr "מופעל"
+
+msgid "WORKING..."
 msgstr ""
+
+#, c-format
+msgid "%d d"
+msgstr ""
+
+#, c-format
+msgid "%d h"
+msgstr ""
+
+#, c-format
+msgid "%d mn"
+msgstr ""
+
+#, c-format
+msgid "%d sec"
+msgstr ""
+
+#, c-format
+msgid "%d year ago"
+msgid_plural "%d years ago"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #, c-format
 msgid "%d day ago"
@@ -2628,26 +3396,128 @@ msgstr[1] ""
 msgstr[2] ""
 msgstr[3] ""
 
-msgid "WORKING..."
-msgstr ""
-
-#, c-format
-msgid "%d h"
-msgstr ""
-
-#, c-format
-msgid "%d m"
-msgstr ""
-
-#, c-format
-msgid "%d s"
-msgstr ""
-
 msgid "SCREEN READER ENABLED"
 msgstr ""
 
 msgid "SCREEN READER DISABLED"
 msgstr ""
+
+#~ msgid "Achievements won"
+#~ msgstr "זכייה בהישגים"
+
+#~ msgid "CREATE NEW CUSTOM COLLECTION FROM THEME"
+#~ msgstr "יצירת אוסף מותאם אישית מערכת נושא"
+
+#~ msgid "SELECT THEME FOLDER"
+#~ msgstr "בחירת ספריית ערכת נושא"
+
+#~ msgid "GROUP UNTHEMED CUSTOM COLLECTIONS"
+#~ msgstr "צור קבוצת אוספים מותאמים אישית ללא ערכות נושא"
+
+#~ msgid "SCRAPE RATINGS"
+#~ msgstr "SCRAPE דירוגים"
+
+#~ msgid "SCRAPE VIDEOS"
+#~ msgstr "SCRAPE סרטונים"
+
+#~ msgid "SCRAPE FANART"
+#~ msgstr "SCRAPE  אמנות מעריצים"
+
+#~ msgid "SCRAPE BOX BACKSIDE"
+#~ msgstr "SCARPE  עטיפות פנים"
+
+#~ msgid "SCRAPE MAP"
+#~ msgstr "SCRAPE מפה"
+
+#~ msgid "SCRAPE MANUAL"
+#~ msgstr "SCRAPE מדריך"
+
+#~ msgid "SCRAPE PADTOKEY SETTINGS"
+#~ msgstr "SCRAPE  הגדרות משטח ללחצן"
+
+#~ msgid "UI SETTINGS"
+#~ msgstr "הגדרות ממשק משתמש"
+
+#~ msgid "UNLOCK UI MODE"
+#~ msgstr "ביטול נעילת מצב ממשק משתמש"
+
+#~ msgid "DEVELOPER"
+#~ msgstr "מפתח"
+
+#~ msgid "ENABLE PUBLIC WEB ACCESS"
+#~ msgstr "אפשר גישה פומבית מהרשת"
+
+#~ msgid "ENABLE FILTERS"
+#~ msgstr "אפשר מסננים"
+
+#~ msgid "PARSE GAMESLISTS ONLY"
+#~ msgstr "ניתוח רשימות משחקים בלבד"
+
+#~ msgid "UI"
+#~ msgstr "ממשק משתמש"
+
+#~ msgid "POWER SAVER MODES"
+#~ msgstr "מצבי חיסכון באנרגיה"
+
+#~ msgid "UI MODE"
+#~ msgstr "מצב ממשק משתמש"
+
+#~ msgid "VIEW USER'S MANUAL"
+#~ msgstr "צפייה במדריך למשתמש"
+
+#~ msgid "UPDATING BATOCERA"
+#~ msgstr "מעדכן את מערכת ההפעלה"
+
+#~ msgid "INSTALL BATOCERA"
+#~ msgstr "התקנת מערכת הפעלה BATOCERA"
+
+#~ msgid "AUTOCONFIGURE EMULATORS CONTROLLERS"
+#~ msgstr "הגדר אוטומטית בקרי אמולטור (חַקַּאי)"
+
+#~ msgid "INSTALL BATOCERA ON A NEW DISK"
+#~ msgstr "התקנת BATOCERA על דיסק חדש"
+
+#~ msgid "VIEW BATOCERA MANUAL"
+#~ msgstr "צפייה במדריך 'בטוסרה' (BATOCERA)"
+
+#~ msgid "USE RUN-AHEAD FRAMES"
+#~ msgstr "USE RUN-AHEAD FRAMES"
+
+#~ msgid "RUN-AHEAD USE SECOND INSTANCE"
+#~ msgstr "RUN-AHEAD USE SECOND INSTANCE"
+
+#~ msgid "SCANLINES"
+#~ msgstr "שורות סריקה"
+
+#~ msgid "RETRO"
+#~ msgstr "'רטרו'"
+
+#~ msgid "CURVATURE"
+#~ msgstr "קשת"
+
+#~ msgid "ZFAST"
+#~ msgstr "ZFAST"
+
+#~ msgid "FLATTEN-GLOW"
+#~ msgstr "שיטוח בוהק"
+
+#~ msgid "RGA SCALING"
+#~ msgstr "RGA SCALING"
+
+#~ msgid "SET PLAYER PASSWORD"
+#~ msgstr "קביעת סיסמה לשחקן"
+
+#~ msgid "SET VIEWER PASSWORD"
+#~ msgstr "קביעת סיסמה לצופה"
+
+#~ msgid "START AUTO SAVE"
+#~ msgstr "התחלת שמירה אוטומטית"
+
+#~ msgid "SKIP TO NEXT SONG"
+#~ msgstr "דילוג לשיר הבא"
+
+#~ msgid "LISTENING NOW"
+#~ msgstr "בהאזנה כעת"
 
 #~ msgid "PRELOAD UI"
 #~ msgstr "טעינה מראש של ממשק משתמש"
@@ -2758,9 +3628,6 @@ msgstr ""
 #~ msgid "SELECT THEMES TO INSTALL / REMOVE"
 #~ msgstr "בחר ערכות נושא להתקנה/הסרה"
 
-#~ msgid "SCRAPE NOW"
-#~ msgstr "הפעל SCRAPE"
-
 #~ msgid "SCRAPE THESE GAMES"
 #~ msgstr "הפעלת SCRAPE על משחקים אלו"
 
@@ -2790,9 +3657,6 @@ msgstr ""
 
 #~ msgid "INFORMATIONS"
 #~ msgstr "מידע"
-
-#~ msgid "SCRAPE FROM"
-#~ msgstr "SCARPE מתוך יעד"
 
 #~ msgid "ARE YOU SURE YOU WANT TO CONFIGURE INPUT?"
 #~ msgstr "ברצונך להגדיר קלט?"
@@ -3008,9 +3872,6 @@ msgstr ""
 #~ msgid "INTEGER SCALE (PIXEL PERFECT)"
 #~ msgstr "קנה מידה לפיקסל (PIXEL PERFECT)"
 
-#~ msgid "AUTO SAVE/LOAD"
-#~ msgstr "שמירה/טעינה אוטומטית"
-
 #~ msgid "SHADERS SET"
 #~ msgstr "ערכת SHADERS"
 
@@ -3061,6 +3922,3 @@ msgstr ""
 
 #~ msgid "REALLY SHUTDOWN WITHOUT SAVING METADATAS?"
 #~ msgstr "בטוח לכבות בלי לשמור METADATA"
-
-#~ msgid "AN UPDATE IS AVAILABLE FOR BATOCERA.LINUX"
-#~ msgstr "Διαθέσιμη αναβάθμιση για το BATOCERA.LINUX"
