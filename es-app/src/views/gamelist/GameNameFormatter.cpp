@@ -59,7 +59,7 @@ GameNameFormatter::GameNameFormatter(SystemData* system)
 {
 	mSortId = system->getSortId();
 
-	mShowCheevosIcon = system->getShowCheevosIcon();
+	mShowCheevosIcon = system->getShowCheevosIcon() && system->getBoolSetting("ShowCheevosIcon");
 	mShowFavoriteIcon = system->getShowFavoritesIcon();
 
 	mShowManualIcon = system->getBoolSetting("ShowManualIcon");

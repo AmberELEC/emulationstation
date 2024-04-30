@@ -4096,6 +4096,20 @@ void GuiMenu::openThemeConfiguration(Window* mWindow, GuiComponent* s, std::shar
 				themeconfig->setVariable("reloadAll", true);
 		});
 
+		// Show Cheevos
+		auto defCI = Settings::getInstance()->getBool("ShowCheevosIcon") ? _("YES") : _("NO");
+		auto curCI = Settings::getInstance()->getString(system->getName() + ".ShowCheevosIcon");
+		auto showCheevos = std::make_shared<OptionListComponent<std::string>>(mWindow, _("SHOW RETROACHIEVEMENTS ICON"), false);
+		showCheevos->add(_("AUTO"), "", curCI == "" || curCI == "auto");
+		showCheevos->add(_("YES"), "1", curCI == "1");
+		showCheevos->add(_("NO"), "0", curCI == "0");
+		themeconfig->addWithDescription(_("SHOW RETROACHIEVEMENTS ICON"), _("DEFAULT VALUE") + " : " + defCI, showCheevos);
+		themeconfig->addSaveFunc([themeconfig, showCheevos, system]
+			{
+				if (Settings::getInstance()->setString(system->getName() + ".ShowCheevosIcon", showCheevos->getSelected()))
+					themeconfig->setVariable("reloadAll", true);
+			});
+
 		// Show filenames
 		auto defFn = Settings::getInstance()->getBool("ShowFilenames") ? _("YES") : _("NO");
 		auto curFn = Settings::getInstance()->getString(system->getName() + ".ShowFilenames");
@@ -4673,6 +4687,16 @@ void GuiMenu::openUISettings()
 	s->addSaveFunc([s, showManual]
 	{
 		if (Settings::getInstance()->setBool("ShowManualIcon", showManual->getState()))
+			s->setVariable("reloadAll", true);
+	});
+
+	// Show Cheevos
+	auto ShowCheevos = std::make_shared<SwitchComponent>(mWindow);
+	ShowCheevos->setState(Settings::getInstance()->getBool("ShowCheevosIcon"));
+	s->addWithLabel(_("SHOW RETROACHIEVEMENTS ICON"), ShowCheevos);
+	s->addSaveFunc([s, ShowCheevos]
+	{
+		if (Settings::getInstance()->setBool("ShowCheevosIcon", ShowCheevos->getState()))
 			s->setVariable("reloadAll", true);
 	});
 

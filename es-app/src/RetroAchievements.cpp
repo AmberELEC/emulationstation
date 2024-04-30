@@ -455,8 +455,6 @@ std::map<std::string, std::string> RetroAchievements::getCheevosHashes()
 			if (!ogdoc.HasMember("Response"))
 				return ret;
 
-			std::map<int, std::string> officialGames;
-
 			const rapidjson::Value& response = ogdoc["Response"];
 			for (auto it = response.MemberBegin(); it != response.MemberEnd(); ++it)
 			{

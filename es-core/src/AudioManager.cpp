@@ -496,7 +496,9 @@ void AudioManager::setVideoPlaying(bool state)
 
 int AudioManager::getMaxMusicVolume()
 {
-	int ret = (Settings::getInstance()->getInt("MusicVolume") * MIX_MAX_VOLUME) / 100;
+	int linearVolume = Settings::getInstance()->getInt("MusicVolume");
+	double logarithmicVolume = (linearVolume == 0) ? 0 : std::pow(10.0, (linearVolume - 100) / 40.0) * MIX_MAX_VOLUME;
+	int ret = static_cast<int>(logarithmicVolume);
 	if (ret > MIX_MAX_VOLUME)
 		return MIX_MAX_VOLUME;
 

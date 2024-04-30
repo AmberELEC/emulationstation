@@ -194,6 +194,7 @@ void Settings::setDefaults()
 	mBoolMap["SlideshowScreenSaverGameName"] = true;
 	mStringMap["ScreenSaverDecorations"] = "systems";
 
+	mBoolMap["ShowCheevosIcon"] = true;
 
 	mBoolMap["SlideshowScreenSaverCustomVideoSource"] = false;
 #ifdef _ENABLEEMUELEC
