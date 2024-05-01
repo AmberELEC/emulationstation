@@ -1423,34 +1423,6 @@ std::vector<std::string> ApiSystem::executeEnumerationScript(const std::string c
 	return res;
 }
 
-
-std::vector<std::string> ApiSystem::getWifiNetworks(bool scan)
-{
-	return executeEnumerationScript(scan ? "batocera-wifi scanlist" : "batocera-wifi list");
-}
-
-std::vector<std::string> ApiSystem::executeEnumerationScript(const std::string command)
-{
-	LOG(LogDebug) << "ApiSystem::executeEnumerationScript -> " << command;
-
-	std::vector<std::string> res;
-
-	FILE *pipe = popen(command.c_str(), "r");
-
-	if (pipe == NULL)
-		return res;
-
-	char line[1024];
-	while (fgets(line, 1024, pipe))
-	{
-		strtok(line, "\n");
-		res.push_back(std::string(line));
-	}
-
-	pclose(pipe);
-	return res;
-}
-
 std::pair<std::string, int> ApiSystem::executeScript(const std::string command, const std::function<void(const std::string)>& func)
 {
 	LOG(LogInfo) << "ApiSystem::executeScript -> " << command;
