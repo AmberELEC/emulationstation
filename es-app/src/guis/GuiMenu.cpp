@@ -1050,21 +1050,21 @@ void GuiMenu::openDangerZone(Window* mWindow, std::string configName)
     dangerZone->addEntry(_("BACKUP CONFIGURATIONS"), true, [mWindow] {
     mWindow->pushGui(new GuiMsgBox(mWindow, _("WARNING THIS WILL RESTART EMULATIONSTATION!\n\nAFTER THE SCRIPT IS DONE REMEMBER TO COPY THE FILE /storage/roms/backup/AmberELEC_BACKUP.zip TO SOME PLACE SAFE OR IT WILL BE DELETED ON NEXT REBOOT!\n\nBACKUP CURRENT CONFIG AND RESTART?"), _("YES"),
 				[] {
-				runSystemCommand("systemd-run /usr/bin/emuelec-utils ee_backup backup", "", nullptr);
+				Utils::Platform::ProcessStartInfo("systemd-run /usr/bin/emuelec-utils ee_backup backup").run();
 				}, _("NO"), nullptr));
      });
 
     dangerZone->addEntry(_("BACKUP IDENTITY"), true, [mWindow] {
     mWindow->pushGui(new GuiMsgBox(mWindow, _("THIS SCRIPT WILL BACK UP THE DEVICE AND USER IDENTITY DATA (PASSWORDS, ETC) SO IT CAN BE RESTORED AFTER FLASHING OR RESTORED ON ANOTHER DEVICE. MOVE /storage/roms/backup/identity.tar.gz SOME PLACE SAFE.\n\nBACKUP DEVICE AND USER IDENTITY?"), _("YES"),
 				[] {
-				runSystemCommand("systemd-run /usr/bin/emuelec-utils identity_backup", "", nullptr);
+				Utils::Platform::ProcessStartInfo("systemd-run /usr/bin/emuelec-utils identity_backup").run();
 				}, _("NO"), nullptr));
      });
 
     dangerZone->addEntry(_("RESTORE FROM BACKUP"), true, [mWindow] {
     mWindow->pushGui(new GuiMsgBox(mWindow, _("WARNING THIS WILL RESTART EMULATIONSTATION AND REBOOT!\n\nYOUR EXISTING CONFIGURATION WILL BE OVERWRITTEN!\n\nRESTORE FROM BACKUP AND RESTART?"), _("YES"),
 				[] {
-				runSystemCommand("systemd-run /usr/bin/emuelec-utils ee_backup restore", "", nullptr);
+				Utils::Platform::ProcessStartInfo("systemd-run /usr/bin/emuelec-utils ee_backup restore").run();
 				}, _("NO"), nullptr));
      });
 
@@ -2367,9 +2367,9 @@ void GuiMenu::openSystemSettings()
 		{
 			if (SystemConf::getInstance()->get("powersave_es") == "1")
 			{
-				runSystemCommand("es_powersave &", "", nullptr);
+				Utils::Platform::ProcessStartInfo("es_powersave &").run();
 			} else {
-				runSystemCommand("es_ondemand &", "", nullptr);
+				Utils::Platform::ProcessStartInfo("es_ondemand &").run();
 			}
 		}
 	});
@@ -4688,7 +4688,7 @@ void GuiMenu::openUISettings()
 			window->pushGui(new GuiMsgBox(window, msg, _("YES"), [selectedLanguage] {
 			SystemConf::getInstance()->set("system.language", selectedLanguage);
 			SystemConf::getInstance()->saveSystemConf();
-					runSystemCommand("systemctl restart emustation", "", nullptr);
+					Utils::Platform::ProcessStartInfo("systemctl restart emustation").run();
 			}, "NO",nullptr));
 #else
 			if (SystemConf::getInstance()->set("system.language", language_choice->getSelected()))
@@ -4948,14 +4948,14 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable)
 		s->addWithLabel(_("ENABLE SSH"), sshd_enabled);
 		sshd_enabled->setOnChangedCallback([sshd_enabled] {
 			if (sshd_enabled->getState() == false) {
-				runSystemCommand("systemctl stop sshd", "", nullptr);
-				runSystemCommand("systemctl disable sshd", "", nullptr);
-				runSystemCommand("rm /storage/.cache/services/sshd.conf", "", nullptr);
+				Utils::Platform::ProcessStartInfo("systemctl stop sshd").run();
+				Utils::Platform::ProcessStartInfo("systemctl disable sshd").run();
+				Utils::Platform::ProcessStartInfo("rm /storage/.cache/services/sshd.conf").run();
 			} else {
-				runSystemCommand("mkdir -p /storage/.cache/services/", "", nullptr);
-				runSystemCommand("touch /storage/.cache/services/sshd.conf", "", nullptr);
-				runSystemCommand("systemctl enable sshd", "", nullptr);
-				runSystemCommand("systemctl start sshd", "", nullptr);
+				Utils::Platform::ProcessStartInfo("mkdir -p /storage/.cache/services/").run();
+				Utils::Platform::ProcessStartInfo("touch /storage/.cache/services/sshd.conf").run();
+				Utils::Platform::ProcessStartInfo("systemctl enable sshd").run();
+				Utils::Platform::ProcessStartInfo("systemctl start sshd").run();
 			}
 		bool sshenabled = sshd_enabled->getState();
 		SystemConf::getInstance()->set("ee_ssh.enabled", sshenabled ? "1" : "0");
@@ -4968,18 +4968,18 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable)
 		s->addWithLabel(_("ENABLE SAMBA"), samba_enabled);
 		samba_enabled->setOnChangedCallback([samba_enabled] {
 			if (samba_enabled->getState() == false) {
-				runSystemCommand("systemctl stop nmbd", "", nullptr);
-				runSystemCommand("systemctl disable nmbd", "", nullptr);
-				runSystemCommand("systemctl stop smbd", "", nullptr);
-				runSystemCommand("systemctl disable smbd", "", nullptr);
-				runSystemCommand("rm /storage/.cache/services/smb.conf", "", nullptr);
+				Utils::Platform::ProcessStartInfo("systemctl stop nmbd").run();
+				Utils::Platform::ProcessStartInfo("systemctl disable nmbd").run();
+				Utils::Platform::ProcessStartInfo("systemctl stop smbd").run();
+				Utils::Platform::ProcessStartInfo("systemctl disable smbd").run();
+				Utils::Platform::ProcessStartInfo("rm /storage/.cache/services/smb.conf").run();
 			} else {
-				runSystemCommand("mkdir -p /storage/.cache/services/", "", nullptr);
-				runSystemCommand("touch /storage/.cache/services/smb.conf", "", nullptr);
-				runSystemCommand("systemctl enable nmbd", "", nullptr);
-				runSystemCommand("systemctl start nmbd", "", nullptr);
-				runSystemCommand("systemctl enable smbd", "", nullptr);
-				runSystemCommand("systemctl start smbd", "", nullptr);
+				Utils::Platform::ProcessStartInfo("mkdir -p /storage/.cache/services/").run();
+				Utils::Platform::ProcessStartInfo("touch /storage/.cache/services/smb.conf").run();
+				Utils::Platform::ProcessStartInfo("systemctl enable nmbd").run();
+				Utils::Platform::ProcessStartInfo("systemctl start nmbd").run();
+				Utils::Platform::ProcessStartInfo("systemctl enable smbd").run();
+				Utils::Platform::ProcessStartInfo("systemctl start smbd").run();
 			}
 		bool sambaenabled = samba_enabled->getState();
 		SystemConf::getInstance()->set("ee_samba.enabled", sambaenabled ? "1" : "0");
@@ -4993,9 +4993,9 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable)
 		s->addWithDescription(_("ENABLE SYNCTHING"),_(syncthing_location.c_str()), syncthing_enabled);
                 syncthing_enabled->setOnChangedCallback([syncthing_enabled] {
                         if (syncthing_enabled->getState() == false) {
-                                runSystemCommand("systemctl stop syncthing", "", nullptr);
+                                Utils::Platform::ProcessStartInfo("systemctl stop syncthing").run();
                         } else {
-                                runSystemCommand("systemctl start syncthing", "", nullptr);
+                                Utils::Platform::ProcessStartInfo("systemctl start syncthing").run();
                         }
                 bool syncthingenabled = syncthing_enabled->getState();
                 SystemConf::getInstance()->set("ee_syncthing.enabled", syncthingenabled ? "1" : "0");
@@ -5011,14 +5011,14 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable)
 		s->addWithDescription(_("ENABLE WEB UI"),_(web_ui_location.c_str()), webui_enabled);
 		webui_enabled->setOnChangedCallback([webui_enabled] {
 			if (webui_enabled->getState() == false) {
-				runSystemCommand("systemctl stop webui", "", nullptr);
-				runSystemCommand("systemctl disable webui", "", nullptr);
-				runSystemCommand("rm /storage/.cache/services/webui.conf", "", nullptr);
+				Utils::Platform::ProcessStartInfo("systemctl stop webui").run();
+				Utils::Platform::ProcessStartInfo("systemctl disable webui").run();
+				Utils::Platform::ProcessStartInfo("rm /storage/.cache/services/webui.conf").run();
 			} else {
-				runSystemCommand("mkdir -p /storage/.cache/services/", "", nullptr);
-				runSystemCommand("touch /storage/.cache/services/webui.conf", "", nullptr);
-				runSystemCommand("systemctl enable webui", "", nullptr);
-				runSystemCommand("systemctl start webui", "", nullptr);
+				Utils::Platform::ProcessStartInfo("mkdir -p /storage/.cache/services/").run();
+				Utils::Platform::ProcessStartInfo("touch /storage/.cache/services/webui.conf").run();
+				Utils::Platform::ProcessStartInfo("systemctl enable webui").run();
+				Utils::Platform::ProcessStartInfo("systemctl start webui").run();
 			}
 			bool webuienabled = webui_enabled->getState();
 			SystemConf::getInstance()->set("ee_webui.enabled", webuienabled ? "1" : "0");
@@ -5096,7 +5096,7 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable)
 			const std::string interalWifiDisableString = (disableInternalWifi->getState()) ? "disable" : "enable";
 			SystemConf::getInstance()->setBool("wifi.internal.disabled", disableInternalWifi->getState());
 			LOG(LogDebug) << "Calling: batocera-internal-wifi " << interalWifiDisableString;
-			runSystemCommand("/usr/bin/batocera-internal-wifi "+interalWifiDisableString+" &", "", nullptr);
+			Utils::Platform::ProcessStartInfo("/usr/bin/batocera-internal-wifi "+interalWifiDisableString+" &").run();
 		});
 	}
 #endif
