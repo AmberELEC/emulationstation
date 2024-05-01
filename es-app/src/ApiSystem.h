@@ -167,6 +167,8 @@ public:
 
 	virtual std::string getIpAdress();
 
+	bool enableBluetooth();
+	bool disableBluetooth();
 	void startBluetoothLiveDevices(const std::function<void(const std::string)>& func);
 	void stopBluetoothLiveDevices();
 	bool pairBluetoothDevice(const std::string& deviceName);
@@ -183,6 +185,7 @@ public:
     std::vector<std::string> getAvailableOverclocking();
     std::vector<BiosSystem> getBiosInformations(const std::string system = "");
     virtual std::vector<std::string> getVideoModes();
+	std::vector<std::string> getCustomRunners();
 
 	virtual std::vector<std::string> getAvailableStorageDevices();
 	virtual std::vector<std::string> getSystemInformations();

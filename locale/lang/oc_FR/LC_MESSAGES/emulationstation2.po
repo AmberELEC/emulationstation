@@ -866,6 +866,9 @@ msgstr ""
 msgid "BLUETOOTH"
 msgstr ""
 
+msgid "ENABLE BLUETOOTH"
+msgstr ""
+
 msgid "PAIR BLUETOOTH PADS AUTOMATICALLY"
 msgstr ""
 
@@ -874,6 +877,9 @@ msgstr ""
 
 msgid "DISPLAY OPTIONS"
 msgstr "OPCIONS D'AFICHATGE"
+
+msgid "SHOW CONTROLLER NOTIFICATIONS"
+msgstr ""
 
 msgid "SHOW CONTROLLER ACTIVITY"
 msgstr ""
@@ -1738,6 +1744,81 @@ msgstr ""
 msgid "SERVICES"
 msgstr ""
 
+msgid "DMD"
+msgstr ""
+
+msgid "SERVER"
+msgstr ""
+
+msgid "DMDSERVER (for real dmd)"
+msgstr ""
+
+msgid "SIMULATOR (for web dmd)"
+msgstr ""
+
+msgid "dmd server"
+msgstr ""
+
+msgid "FORMAT"
+msgstr ""
+
+msgid "dmd matrix size"
+msgstr ""
+
+msgid "MATRIX"
+msgstr ""
+
+msgid "rgb dmd order"
+msgstr ""
+
+msgid "BRIGHTNESS"
+msgstr "LUMINOSITAT"
+
+msgid "DMDSERVER stopped"
+msgstr ""
+
+msgid "DMDSERVER restarted"
+msgstr ""
+
+msgid "DMDSERVER started"
+msgstr ""
+
+msgid "MULTISCREENS"
+msgstr ""
+
+msgid "BACKGLASS / INFORMATION SCREEN"
+msgstr ""
+
+msgid "VIDEO OUTPUT"
+msgstr "SORTIDA VIDÈO"
+
+msgid "VIDEO MODE"
+msgstr "MÒDE VIDÈO"
+
+msgid "Sets the display's resolution."
+msgstr ""
+
+msgid "ROTATION"
+msgstr ""
+
+msgid "0 DEGREES"
+msgstr ""
+
+msgid "90 DEGREES"
+msgstr ""
+
+msgid "180 DEGREES"
+msgstr ""
+
+msgid "270 DEGREES"
+msgstr ""
+
+msgid "SCREEN ROTATION"
+msgstr ""
+
+msgid "DMD SCREEN"
+msgstr ""
+
 msgid "FRONTEND DEVELOPER OPTIONS"
 msgstr ""
 
@@ -1758,9 +1839,6 @@ msgstr ""
 
 msgid "OVERSCAN"
 msgstr ""
-
-msgid "VIDEO MODE"
-msgstr "MÒDE VIDÈO"
 
 msgid "Sets the display's resolution for emulationstation."
 msgstr ""
@@ -1924,6 +2002,12 @@ msgstr ""
 msgid "GUN MOVE TOLERENCE"
 msgstr ""
 
+msgid "ENABLE PS3 CONTROLLER SUPPORT"
+msgstr ""
+
+msgid "Might have negative impact on security."
+msgstr ""
+
 msgid "ENABLE HID JOYSTICK DRIVERS"
 msgstr ""
 
@@ -2047,12 +2131,6 @@ msgstr "KODI A L’AVIADA"
 msgid "HARDWARE"
 msgstr "MATERIAL"
 
-msgid "BRIGHTNESS"
-msgstr "LUMINOSITAT"
-
-msgid "VIDEO OUTPUT"
-msgstr "SORTIDA VIDÈO"
-
 msgid "AUDIO OUTPUT"
 msgstr "SORTIDA ÀUDIO"
 
@@ -2060,21 +2138,6 @@ msgid "AUDIO PROFILE"
 msgstr ""
 
 msgid "Available options can change depending on current audio output."
-msgstr ""
-
-msgid "SCREEN ROTATION"
-msgstr ""
-
-msgid "0 DEGREES"
-msgstr ""
-
-msgid "90 DEGREES"
-msgstr ""
-
-msgid "180 DEGREES"
-msgstr ""
-
-msgid "270 DEGREES"
 msgstr ""
 
 msgid "BOOT SPLASH"

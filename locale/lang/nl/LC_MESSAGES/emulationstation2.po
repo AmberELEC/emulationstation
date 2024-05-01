@@ -3,17 +3,17 @@ msgstr ""
 "Project-Id-Version: emulationstation\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-15 23:48+0100\n"
-"PO-Revision-Date: 2024-02-05 14:34+0000\n"
+"PO-Revision-Date: 2024-04-24 09:34+0000\n"
 "Last-Translator: THa MuSHeR\n"
 "Language-Team: Dutch (Netherlands)\n"
 "Language: nl-NL\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Loco-Source-Locale: nl_NL\n"
 "X-Generator: Loco https://localise.biz/\n"
-"X-Loco-Parser: loco_parse_po"
+"X-Loco-Parser: loco_parse_po\n"
 
 msgid "UPDATE AVAILABLE"
 msgstr "EEN UPDATE IS BESCHIKBAAR"
@@ -851,8 +851,8 @@ msgstr "CONTROLLER MAPPING"
 msgid ""
 "YOU ARE GOING TO MAP A CONTROLLER. MAP BASED ON THE BUTTON'S POSITION, NOT "
 "ITS PHYSICAL LABEL. IF YOU DO NOT HAVE A SPECIAL BUTTON FOR HOTKEY, USE THE "
-"SELECT BUTTON. SKIP ALL BUTTONS/STICKS YOU DO NOT HAVE BY HOLDING ANY BUTTON."
-" PRESS THE SOUTH BUTTON TO CONFIRM WHEN DONE."
+"SELECT BUTTON. SKIP ALL BUTTONS/STICKS YOU DO NOT HAVE BY HOLDING ANY "
+"BUTTON. PRESS THE SOUTH BUTTON TO CONFIRM WHEN DONE."
 msgstr ""
 "JE GAAT EEN CONTROLLER MAPPEN. MAP GEBASEERD OP DE POSITIE VAN DE KNOP, NIET "
 "OP HET FYSIEKE LABEL. ALS U GEEN SPECIALE KNOP VOOR SNELTOETS HEBT, GEBRUIK "
@@ -872,6 +872,9 @@ msgstr "STEAMDECK MUIS/GUN INSTELLINGEN"
 msgid "BLUETOOTH"
 msgstr "BLUETOOTH"
 
+msgid "ENABLE BLUETOOTH"
+msgstr "BLUETOOTH INSCHAKELEN"
+
 msgid "PAIR BLUETOOTH PADS AUTOMATICALLY"
 msgstr "KOPPEL BLUETOOTH PADS AUTOMATISCH"
 
@@ -880,6 +883,9 @@ msgstr "KOPPEL EEN BLUETOOTH APPARAAT HANDMATIG"
 
 msgid "DISPLAY OPTIONS"
 msgstr "WEERGAVE OPTIES"
+
+msgid "SHOW CONTROLLER NOTIFICATIONS"
+msgstr "TOON CONTROLLERMELDINGEN"
 
 msgid "SHOW CONTROLLER ACTIVITY"
 msgstr "TOON ACTIVITEIT CONTROLLER"
@@ -1752,6 +1758,81 @@ msgstr "VOER NU DE CODE IN OM TE ONTGRENDELEN"
 msgid "SERVICES"
 msgstr "SERVICES"
 
+msgid "DMD"
+msgstr "DMD"
+
+msgid "SERVER"
+msgstr "SERVER"
+
+msgid "DMDSERVER (for real dmd)"
+msgstr "DMDSERVER (voor echte dmd)"
+
+msgid "SIMULATOR (for web dmd)"
+msgstr "SIMULATOR (voor web dmd)"
+
+msgid "dmd server"
+msgstr "dmd server"
+
+msgid "FORMAT"
+msgstr "FORMAT"
+
+msgid "dmd matrix size"
+msgstr "dmd matrix grootte"
+
+msgid "MATRIX"
+msgstr "MATRIX"
+
+msgid "rgb dmd order"
+msgstr "rgb dmd volgorde"
+
+msgid "BRIGHTNESS"
+msgstr "HELDERHEID"
+
+msgid "DMDSERVER stopped"
+msgstr "DMDSERVER gestopt"
+
+msgid "DMDSERVER restarted"
+msgstr "DMDSERVER opnieuw opgestart"
+
+msgid "DMDSERVER started"
+msgstr "DMDSERVER gestart"
+
+msgid "MULTISCREENS"
+msgstr "MULTISCREENS"
+
+msgid "BACKGLASS / INFORMATION SCREEN"
+msgstr "KOPRUIT / INFORMATIESCHERM"
+
+msgid "VIDEO OUTPUT"
+msgstr "VIDEO OUTPUT"
+
+msgid "VIDEO MODE"
+msgstr "VIDEO MODUS"
+
+msgid "Sets the display's resolution."
+msgstr "Stelt de resolutie van het beeldscherm in."
+
+msgid "ROTATION"
+msgstr "ROTATIE"
+
+msgid "0 DEGREES"
+msgstr "0 GRADEN"
+
+msgid "90 DEGREES"
+msgstr "90 GRADEN"
+
+msgid "180 DEGREES"
+msgstr "180 GRADEN"
+
+msgid "270 DEGREES"
+msgstr "270 GRADEN"
+
+msgid "SCREEN ROTATION"
+msgstr "SCHERMROTATIE"
+
+msgid "DMD SCREEN"
+msgstr "DMD SCHERM"
+
 msgid "FRONTEND DEVELOPER OPTIONS"
 msgstr "FRONTEND ONTWIKKELAARSOPTIES"
 
@@ -1773,9 +1854,6 @@ msgstr "V-SYNC"
 
 msgid "OVERSCAN"
 msgstr "OVERSCAN"
-
-msgid "VIDEO MODE"
-msgstr "VIDEO MODUS"
 
 msgid "Sets the display's resolution for emulationstation."
 msgstr "Stelt de schermresolutie voor emulationstation in."
@@ -1955,6 +2033,12 @@ msgstr "BESTUUR EMULATIONSTATION ALLEEN MET DE EERSTE JOYSTICK"
 msgid "GUN MOVE TOLERENCE"
 msgstr "GUN BEWEGING TOLERANTIE"
 
+msgid "ENABLE PS3 CONTROLLER SUPPORT"
+msgstr "PS3 CONTROLLER SUPPORT INSCHAKELEN"
+
+msgid "Might have negative impact on security."
+msgstr "Kan negatieve gevolgen hebben voor de veiligheid."
+
 msgid "ENABLE HID JOYSTICK DRIVERS"
 msgstr "INSCHAKELEN VAN HID-JOYSTICK DRIVERS"
 
@@ -2061,8 +2145,8 @@ msgstr "GEBRUIKSINTERFACE MODUS"
 
 msgid "Lock down certain config menus for use with guest users/kids."
 msgstr ""
-"Vergrendel bepaalde configuratiemenu's voor gebruik door "
-"gastgebruikers/kinderen."
+"Vergrendel bepaalde configuratiemenu's voor gebruik door gastgebruikers/"
+"kinderen."
 
 msgid ""
 "You are changing the user interface to a restricted mode:\n"
@@ -2090,12 +2174,6 @@ msgstr "START KODI BIJ HET OPSTARTEN"
 msgid "HARDWARE"
 msgstr "HARDWARE"
 
-msgid "BRIGHTNESS"
-msgstr "HELDERHEID"
-
-msgid "VIDEO OUTPUT"
-msgstr "VIDEO OUTPUT"
-
 msgid "AUDIO OUTPUT"
 msgstr "AUDIO UITVOER"
 
@@ -2106,21 +2184,6 @@ msgid "Available options can change depending on current audio output."
 msgstr ""
 "Beschikbare opties kunnen veranderen afhankelijk van de huidige audio-"
 "uitvoer."
-
-msgid "SCREEN ROTATION"
-msgstr "SCHERMROTATIE"
-
-msgid "0 DEGREES"
-msgstr "0 GRADEN"
-
-msgid "90 DEGREES"
-msgstr "90 GRADEN"
-
-msgid "180 DEGREES"
-msgstr "180 GRADEN"
-
-msgid "270 DEGREES"
-msgstr "270 GRADEN"
 
 msgid "BOOT SPLASH"
 msgstr "OPSTART SPLASH"
@@ -2249,8 +2312,8 @@ msgstr "VARIABELE REFRESH RATE"
 msgid ""
 "Don't deviate from core requested timing. G-Sync, FreeSync, HDMI 2.1 VRR."
 msgstr ""
-"Wijk niet af van de door de core gevraagde timing. G-Sync, FreeSync, HDMI 2."
-"1 VRR."
+"Wijk niet af van de door de core gevraagde timing. G-Sync, FreeSync, HDMI "
+"2.1 VRR."
 
 msgid "DECORATION SET"
 msgstr "DECORATIESET"
@@ -2888,11 +2951,11 @@ msgid "INVALID CONTENT"
 msgstr "ONGELDIGE INHOUD"
 
 msgid ""
-"A valid account is required. Please register an account on https:"
-"//retroachievements.org"
+"A valid account is required. Please register an account on https://"
+"retroachievements.org"
 msgstr ""
-"Een geldig account is vereist. Gelieve een account te registreren op https:"
-"//retroachievements.org"
+"Een geldig account is vereist. Gelieve een account te registreren op https://"
+"retroachievements.org"
 
 msgid "Searching"
 msgstr "Zoeken"

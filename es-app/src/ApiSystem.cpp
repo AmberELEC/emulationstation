@@ -520,6 +520,16 @@ std::string ApiSystem::getIpAdress()
 	return result;
 }
 
+bool ApiSystem::enableBluetooth()
+{
+	return executeScript("batocera-bluetooth enable 2>&1 >/dev/null");
+}
+
+bool ApiSystem::disableBluetooth()
+{
+	return executeScript("batocera-bluetooth disable");
+}
+
 void ApiSystem::startBluetoothLiveDevices(const std::function<void(const std::string)>& func)
 {
 	executeScript("batocera-bluetooth live_devices", func);
@@ -561,7 +571,12 @@ std::vector<std::string> ApiSystem::getVideoModes()
 	return executeEnumerationScript("batocera-resolution listModes");
 }
 
-std::vector<std::string> ApiSystem::getAvailableBackupDevices()
+std::vector<std::string> ApiSystem::getCustomRunners() 
+{
+	return executeEnumerationScript("batocera-wine-runners");
+}
+
+std::vector<std::string> ApiSystem::getAvailableBackupDevices() 
 {
 	return executeEnumerationScript("batocera-sync list");
 }

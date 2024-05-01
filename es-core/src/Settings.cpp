@@ -158,7 +158,7 @@ void Settings::setDefaults()
 	mStringMap["INPUT P3"] = "DEFAULT";
 	mStringMap["INPUT P4"] = "DEFAULT";
 	mStringMap["INPUT P5"] = "DEFAULT";
-	mStringMap["Overclock"] = false;
+	mStringMap["Overclock"] = "none";
 
 	mBoolMap["VSync"] = Settings::_VSync;
 	mStringMap["FolderViewMode"] = "never";

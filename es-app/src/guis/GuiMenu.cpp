@@ -1284,16 +1284,284 @@ void GuiMenu::openServicesSettings()
 	  auto service_enabled = std::make_shared<SwitchComponent>(mWindow);
 	  service_enabled->setState(services[i].enabled);
 	  s->addWithLabel(services[i].name, service_enabled);
-	  s->addSaveFunc([services, i, service_enabled]
+	  service_enabled->setOnChangedCallback([services, i, service_enabled]()
 	  {
-	    if (services[i].enabled != service_enabled->getState())
-	      {
-		ApiSystem::getInstance()->enableService(services[i].name, service_enabled->getState());
-	      }
+	    ApiSystem::getInstance()->enableService(services[i].name, service_enabled->getState());
 	  });
 	}
 
 	mWindow->pushGui(s);
+}
+
+void GuiMenu::openDmdSettings()
+{
+	auto s = new GuiSettings(mWindow, _("DMD").c_str());
+	Window* window = mWindow;
+
+	// server
+	auto services = ApiSystem::getInstance()->getServices();
+	std::string current_server = "";
+	for(unsigned int i = 0; i < services.size(); i++) {
+	  if(services[i].enabled) {
+	    if(services[i].name == "dmd_real")      current_server = "dmd_real";
+	    if(services[i].name == "dmd_simulator") current_server = "dmd_simulator";
+	  }
+	}
+	auto server = std::make_shared< OptionListComponent<std::string> >(window, _("SERVER"), false);
+	server->addRange({ { _("DISABLED"), "" }, { _("DMDSERVER (for real dmd)"), "dmd_real" }, { _("SIMULATOR (for web dmd)"), "dmd_simulator" } }, current_server);
+	s->addWithDescription(_("SERVER"), _("dmd server"), server);
+
+	// format
+	auto format = std::make_shared< OptionListComponent<std::string> >(window, _("FORMAT"), false);
+	std::string current_format = SystemConf::getInstance()->get("dmd.format");
+	format->addRange({ { _("AUTO"), "" }, { "SD", "sd" }, { "HD", "hd" } }, current_format);
+	s->addWithDescription(_("FORMAT"), _("dmd matrix size"), format);
+
+	s->addGroup("PIXELCADE");
+
+	// pixelcade.matrix
+	auto pixelcade_matrix = std::make_shared< OptionListComponent<std::string> >(window, _("MATRIX"), false);
+	std::string current_pixelcade_matrix = SystemConf::getInstance()->get("dmd.pixelcade.matrix");
+	pixelcade_matrix->addRange({ { _("AUTO"), "" }, { "RGB", "rgb" }, { "RBG", "rbg" } }, current_pixelcade_matrix);
+	s->addWithDescription(_("MATRIX"), _("rgb dmd order"), pixelcade_matrix);
+
+	s->addGroup("ZEDMD");
+
+	// zedmd.matrix
+	auto zedmd_matrix = std::make_shared< OptionListComponent<std::string> >(window, _("MATRIX"), false);
+	std::string current_zedmd_matrix = SystemConf::getInstance()->get("dmd.zedmd.matrix");
+	zedmd_matrix->addRange({ { _("AUTO"), "" }, { "RGB", "rgb" }, { "RBG", "rbg" }, { "BRG", "brg" }, { "BGR", "bgr" }, { "GRB", "grb" }, { "GBR", "gbr" } }, current_zedmd_matrix);
+	s->addWithDescription(_("MATRIX"), _("rgb dmd order"), zedmd_matrix);
+
+	// zedmd.brightness
+	auto zedmd_brightness = std::make_shared< OptionListComponent<std::string> >(window, _("BRIGHTNESS"), false);
+	std::string current_zedmd_brightness = SystemConf::getInstance()->get("dmd.zedmd.brightness");
+	zedmd_brightness->addRange({ { _("AUTO"), "" }, { "0", "0" }, { "1", "1" }, { "2", "2" }, { "3", "3" }, { "4", "4" }, { "5", "5" }, { "6", "6" }, { "7", "7" }, { "8", "8" }, { "9", "9" }, { "10", "10" }, { "11", "11" }, { "12", "12" }, { "13", "13" }, { "14", "14" }, { "15", "15" } }, current_zedmd_brightness);
+	s->addWithLabel(_("BRIGHTNESS"), zedmd_brightness);
+
+	s->addSaveFunc([window, server, format, pixelcade_matrix, zedmd_matrix, zedmd_brightness, current_server, current_format, current_pixelcade_matrix, current_zedmd_matrix, current_zedmd_brightness] {
+	  bool needRestart = false;
+	  bool needSave    = false;
+
+	  if(current_format != format->getSelected()) {
+	    SystemConf::getInstance()->set("dmd.format", format->getSelected());
+	    needSave = true;
+	  }
+	  if(current_pixelcade_matrix != pixelcade_matrix->getSelected()) {
+	    SystemConf::getInstance()->set("dmd.pixelcade.matrix", pixelcade_matrix->getSelected());
+	    needRestart = true;
+	    needSave = true;
+	  }
+	  if(current_zedmd_matrix != zedmd_matrix->getSelected()) {
+	    SystemConf::getInstance()->set("dmd.zedmd.matrix", zedmd_matrix->getSelected());
+	    needRestart = true;
+	    needSave = true;
+	  }
+	  if(current_zedmd_brightness != zedmd_brightness->getSelected()) {
+	    SystemConf::getInstance()->set("dmd.zedmd.brightness", zedmd_brightness->getSelected());
+	    needRestart = true;
+	    needSave = true;
+	  }
+
+	  if(server->getSelected() != current_server) {
+	    needRestart = true;
+	  }
+
+	  if(needSave) {
+	    SystemConf::getInstance()->saveSystemConf();
+	  }
+
+	  if(needRestart) {
+	    bool stopped = false;
+	    bool started = false;
+
+	    // stop the existing server
+	    if(current_server != "") {
+	      ApiSystem::getInstance()->enableService(current_server, false);
+	      stopped = true;
+	    }
+	    // start the new server
+	    if(server->getSelected() != "") {
+	      ApiSystem::getInstance()->enableService(server->getSelected(), true);
+	      started = true;
+	    }
+
+	    if(stopped && !started) {
+	      window->displayNotificationMessage(_U("\uF011  ") + _("DMDSERVER stopped"));
+	    } else if(stopped && started) {
+	      window->displayNotificationMessage(_U("\uF011  ") + _("DMDSERVER restarted"));
+	    } else if(!stopped && started) {
+	      window->displayNotificationMessage(_U("\uF011  ") + _("DMDSERVER started"));
+	    }
+	  }
+	});
+
+	window->pushGui(s);
+}
+
+void GuiMenu::openMultiScreensSettings()
+{
+	auto s = new GuiSettings(mWindow, _("MULTISCREENS").c_str());
+	Window* window = mWindow;
+
+#ifdef BATOCERA
+	s->addGroup(_("BACKGLASS / INFORMATION SCREEN"));
+
+	// video device2
+	std::vector<std::string> availableVideo2 = ApiSystem::getInstance()->getAvailableVideoOutputDevices();
+	if (availableVideo2.size())
+	{
+		auto optionsVideo2 = std::make_shared<OptionListComponent<std::string> >(mWindow, _("VIDEO OUTPUT"), false);
+		std::string currentDevice2 = SystemConf::getInstance()->get("global.videooutput2");
+		std::string currentDevice = SystemConf::getInstance()->get("global.videooutput");
+		if (currentDevice2.empty()) currentDevice2 = "auto";
+
+		bool vfound = false;
+		for (auto it = availableVideo2.begin(); it != availableVideo2.end(); it++)
+		{
+		        if(currentDevice == (*it)) continue; // ignore the device of the first screen
+			optionsVideo2->add((*it), (*it), currentDevice2 == (*it));
+			if (currentDevice2 == (*it))
+				vfound = true;
+		}
+
+		if (!vfound)
+			optionsVideo2->add(currentDevice2, currentDevice2, true);
+
+		s->addWithLabel(_("VIDEO OUTPUT"), optionsVideo2);
+		s->addSaveFunc([this, optionsVideo2, currentDevice2, s] 
+		{
+			if (optionsVideo2->changed()) 
+			{
+				SystemConf::getInstance()->set("global.videooutput2", optionsVideo2->getSelected());
+				SystemConf::getInstance()->saveSystemConf();
+				s->setVariable("exitreboot", true);
+			}
+		});
+	}
+
+	// video resolution2
+	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::RESOLUTION)) {
+	  auto videoModeOptionList2 = createVideoResolutionModeOptionList(mWindow, "es", "resolution2");
+	  s->addWithDescription(_("VIDEO MODE"), _("Sets the display's resolution."), videoModeOptionList2);
+	  s->addSaveFunc([this, videoModeOptionList2, s] {
+	    if(videoModeOptionList2->changed()) {
+	      SystemConf::getInstance()->set("es.resolution2", videoModeOptionList2->getSelected());
+	      SystemConf::getInstance()->saveSystemConf();
+	      s->setVariable("exitreboot", true);
+	    }
+	  });
+	}
+
+	// video rotation2
+	auto optionsRotation2 = std::make_shared<OptionListComponent<std::string> >(mWindow, _("ROTATION"), false);
+
+	std::string selectedRotation2 = SystemConf::getInstance()->get("display.rotate2");
+	if (selectedRotation2.empty())
+		selectedRotation2 = "auto";
+
+	optionsRotation2->add(_("AUTO"),          "auto", selectedRotation2 == "auto");
+	optionsRotation2->add(_("0 DEGREES"),        "0", selectedRotation2 == "0");
+	optionsRotation2->add(_("90 DEGREES"),       "1", selectedRotation2 == "1");
+	optionsRotation2->add(_("180 DEGREES"),      "2", selectedRotation2 == "2");
+	optionsRotation2->add(_("270 DEGREES"),      "3", selectedRotation2 == "3");
+
+	s->addWithLabel(_("SCREEN ROTATION"), optionsRotation2);
+
+	s->addSaveFunc([this, optionsRotation2, selectedRotation2, s]
+	{
+	  if (optionsRotation2->changed()) {
+	    SystemConf::getInstance()->set("display.rotate2", optionsRotation2->getSelected());
+	    SystemConf::getInstance()->saveSystemConf();
+	    s->setVariable("exitreboot", true);
+	  }
+	});
+
+	s->addGroup(_("DMD SCREEN"));
+
+	// video device3
+	std::vector<std::string> availableVideo3 = ApiSystem::getInstance()->getAvailableVideoOutputDevices();
+	if (availableVideo3.size())
+	{
+		auto optionsVideo3 = std::make_shared<OptionListComponent<std::string> >(mWindow, _("VIDEO OUTPUT"), false);
+		std::string currentDevice3 = SystemConf::getInstance()->get("global.videooutput3");
+		std::string currentDevice = SystemConf::getInstance()->get("global.videooutput");
+		if (currentDevice3.empty()) currentDevice3 = "auto";
+
+		bool vfound = false;
+		for (auto it = availableVideo3.begin(); it != availableVideo3.end(); it++)
+		{
+		        if(currentDevice == (*it)) continue; // ignore the device of the first screen
+			optionsVideo3->add((*it), (*it), currentDevice3 == (*it));
+			if (currentDevice3 == (*it))
+				vfound = true;
+		}
+
+		if (!vfound)
+			optionsVideo3->add(currentDevice3, currentDevice3, true);
+
+		s->addWithLabel(_("VIDEO OUTPUT"), optionsVideo3);
+		s->addSaveFunc([this, optionsVideo3, currentDevice3, s] 
+		{
+			if (optionsVideo3->changed()) 
+			{
+				SystemConf::getInstance()->set("global.videooutput3", optionsVideo3->getSelected());
+				SystemConf::getInstance()->saveSystemConf();
+				s->setVariable("exitreboot", true);
+			}
+		});
+	}
+
+	// video resolution3
+	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::RESOLUTION)) {
+	  auto videoModeOptionList3 = createVideoResolutionModeOptionList(mWindow, "es", "resolution3");
+	  s->addWithDescription(_("VIDEO MODE"), _("Sets the display's resolution."), videoModeOptionList3);
+	  s->addSaveFunc([this, videoModeOptionList3, s] {
+	    if(videoModeOptionList3->changed()) {
+	      SystemConf::getInstance()->set("es.resolution3", videoModeOptionList3->getSelected());
+	      SystemConf::getInstance()->saveSystemConf();
+	      s->setVariable("exitreboot", true);
+	    }
+	  });
+	}
+
+	// video rotation3
+	auto optionsRotation3 = std::make_shared<OptionListComponent<std::string> >(mWindow, _("ROTATION"), false);
+
+	std::string selectedRotation3 = SystemConf::getInstance()->get("display.rotate3");
+	if (selectedRotation3.empty())
+		selectedRotation3 = "auto";
+
+	optionsRotation3->add(_("AUTO"),          "auto", selectedRotation3 == "auto");
+	optionsRotation3->add(_("0 DEGREES"),        "0", selectedRotation3 == "0");
+	optionsRotation3->add(_("90 DEGREES"),       "1", selectedRotation3 == "1");
+	optionsRotation3->add(_("180 DEGREES"),      "2", selectedRotation3 == "2");
+	optionsRotation3->add(_("270 DEGREES"),      "3", selectedRotation3 == "3");
+
+	s->addWithLabel(_("SCREEN ROTATION"), optionsRotation3);
+
+	s->addSaveFunc([this, optionsRotation3, selectedRotation3, s]
+	{
+	  if (optionsRotation3->changed()) 
+{
+	    SystemConf::getInstance()->set("display.rotate3", optionsRotation3->getSelected());
+	    SystemConf::getInstance()->saveSystemConf();
+	    s->setVariable("exitreboot", true);
+	  }
+	});
+
+#endif
+
+	s->onFinalize([s, window]
+	{
+	  if (s->getVariable("exitreboot") && Settings::getInstance()->getBool("ExitOnRebootRequired"))
+	    {
+	      Utils::Platform::quitES(Utils::Platform::QuitMode::QUIT);
+	      return;
+	    }
+	});
+
+	window->pushGui(s);
 }
 
 void GuiMenu::openDeveloperSettings()
@@ -1699,6 +1967,23 @@ void GuiMenu::openDeveloperSettings()
 	  });
 	}
 //#endif
+
+#if defined(BATOCERA)
+	// PS3 controller enable
+	auto enable_ps3 = std::make_shared<SwitchComponent>(mWindow);
+	enable_ps3->setState(SystemConf::getInstance()->getBool("controllers.ps3.enabled"));
+	s->addWithDescription(_("ENABLE PS3 CONTROLLER SUPPORT"), _("Might have negative impact on security."), enable_ps3);
+	s->addSaveFunc([enable_ps3] {
+		bool ps3Enabled = enable_ps3->getState();
+		if (ps3Enabled != SystemConf::getInstance()->getBool("controllers.ps3.enabled"))
+		{
+			SystemConf::getInstance()->setBool("controllers.ps3.enabled", ps3Enabled);
+			SystemConf::getInstance()->saveSystemConf();
+			if(SystemConf::getInstance()->getBool("controllers.bluetooth.enabled"))
+				ApiSystem::getInstance()->enableBluetooth();
+		}
+	});
+#endif
 
 #if defined(WIN32)
 
@@ -2417,6 +2702,16 @@ void GuiMenu::openSystemSettings()
 	}
 
 #ifdef BATOCERA
+	s->addEntry(_("DMD"), true, [this] { openDmdSettings(); });
+#endif
+
+#ifdef BATOCERA
+#ifdef X86_64
+        s->addEntry(_("MULTISCREENS"), true, [this] { openMultiScreensSettings(); });
+#endif
+#endif
+
+#ifdef BATOCERA
 	s->addGroup(_("STORAGE"));
 
 	// Storage device
@@ -2801,6 +3096,16 @@ void GuiMenu::addFeatureItem(Window* window, GuiSettings* settings, const Custom
 			}
 
 			item->add(_(vname.c_str()), tokens.at(0), storedValue == tokens.at(0));
+		}
+	}
+	else if (feat.preset == "runners")
+	{
+		item->add(_("AUTO"), "auto", storedValue.empty() || storedValue == "auto");
+
+		auto runners = ApiSystem::getInstance()->getCustomRunners();
+		for (auto customRunner : runners)
+		{
+			item->add(_(customRunner.c_str()), customRunner, storedValue == customRunner);
 		}
 	}
 	else

@@ -609,7 +609,10 @@ std::string FileData::getlaunchCommand(LaunchGameOptions& options, bool includeC
 		if (!options.netplayClientPassword.empty())
 			pass = " -netplaypass " + options.netplayClientPassword;
 
-		// TODO : Add options.mitm_session when it's available
+		// mitm_session: Should inject this into retroarch -> --mitm-session=ID
+		std::string session;
+		if (!options.session.empty())
+			session = " -netplaysession " + options.session;
 
 #if WIN32
 		if (Utils::String::toLower(command).find("retroarch.exe") != std::string::npos)
@@ -619,7 +622,7 @@ std::string FileData::getlaunchCommand(LaunchGameOptions& options, bool includeC
 #ifdef _ENABLEEMUELEC
 		command = Utils::String::replace(command, "%NETPLAY%", "--netplaymode " + mode + " --connect " + options.ip + " --port " + std::to_string(options.port) + " --nick " + SystemConf::getInstance()->get("global.netplay.nickname") + " --pass" + pass);
 #else
-			command = Utils::String::replace(command, "%NETPLAY%", "-netplaymode " + mode + " -netplayport " + std::to_string(options.port) + " -netplayip " + options.ip + pass);
+			command = Utils::String::replace(command, "%NETPLAY%", "-netplaymode " + mode + " -netplayport " + std::to_string(options.port) + " -netplayip " + options.ip + session + pass);
 #endif
 	}
 	else if (options.netPlayMode == SERVER)

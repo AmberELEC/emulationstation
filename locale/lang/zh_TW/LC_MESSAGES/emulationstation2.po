@@ -863,6 +863,9 @@ msgstr "STEAMDECK 鼠標/槍設定"
 msgid "BLUETOOTH"
 msgstr "藍牙"
 
+msgid "ENABLE BLUETOOTH"
+msgstr ""
+
 msgid "PAIR BLUETOOTH PADS AUTOMATICALLY"
 msgstr "自動配對藍牙手把"
 
@@ -871,6 +874,9 @@ msgstr "手動配對藍牙裝置"
 
 msgid "DISPLAY OPTIONS"
 msgstr "顯示設定"
+
+msgid "SHOW CONTROLLER NOTIFICATIONS"
+msgstr ""
 
 msgid "SHOW CONTROLLER ACTIVITY"
 msgstr "顯示控制器活動狀態"
@@ -1462,7 +1468,7 @@ msgid "PREFERED REGION"
 msgstr ""
 
 msgid "OVERWRITE DESCRIPTIONS"
-msgstr ""
+msgstr "覆寫描述"
 
 msgid "OVERWRITE MEDIAS"
 msgstr ""
@@ -1742,6 +1748,81 @@ msgid "ENTER THE CODE NOW TO UNLOCK"
 msgstr "現在輸入代碼來解鎖"
 
 msgid "SERVICES"
+msgstr "服務"
+
+msgid "DMD"
+msgstr ""
+
+msgid "SERVER"
+msgstr ""
+
+msgid "DMDSERVER (for real dmd)"
+msgstr ""
+
+msgid "SIMULATOR (for web dmd)"
+msgstr ""
+
+msgid "dmd server"
+msgstr ""
+
+msgid "FORMAT"
+msgstr ""
+
+msgid "dmd matrix size"
+msgstr ""
+
+msgid "MATRIX"
+msgstr ""
+
+msgid "rgb dmd order"
+msgstr ""
+
+msgid "BRIGHTNESS"
+msgstr "亮度"
+
+msgid "DMDSERVER stopped"
+msgstr ""
+
+msgid "DMDSERVER restarted"
+msgstr ""
+
+msgid "DMDSERVER started"
+msgstr ""
+
+msgid "MULTISCREENS"
+msgstr ""
+
+msgid "BACKGLASS / INFORMATION SCREEN"
+msgstr ""
+
+msgid "VIDEO OUTPUT"
+msgstr "影像輸出"
+
+msgid "VIDEO MODE"
+msgstr "影像模式"
+
+msgid "Sets the display's resolution."
+msgstr ""
+
+msgid "ROTATION"
+msgstr ""
+
+msgid "0 DEGREES"
+msgstr "0 度"
+
+msgid "90 DEGREES"
+msgstr "90 度"
+
+msgid "180 DEGREES"
+msgstr "180 度"
+
+msgid "270 DEGREES"
+msgstr "270 度"
+
+msgid "SCREEN ROTATION"
+msgstr "螢幕旋轉"
+
+msgid "DMD SCREEN"
 msgstr ""
 
 msgid "FRONTEND DEVELOPER OPTIONS"
@@ -1765,11 +1846,8 @@ msgstr "垂直同步"
 msgid "OVERSCAN"
 msgstr "過掃瞄 (OVERSCAN)"
 
-msgid "VIDEO MODE"
-msgstr "影像模式"
-
 msgid "Sets the display's resolution for emulationstation."
-msgstr ""
+msgstr "設定模擬器的顯示器像素"
 
 msgid "USE OMX PLAYER (HARDWARE ACCELERATED)"
 msgstr "使用 OMX 播放器（硬體加速）"
@@ -1815,7 +1893,7 @@ msgid "Cleaning"
 msgstr "清理中"
 
 msgid "RESET GAMELISTS USAGE DATA"
-msgstr ""
+msgstr "重設遊戲清單使用記錄"
 
 msgid "Reset values of GameTime, PlayCount and LastPlayed metadatas."
 msgstr ""
@@ -1842,19 +1920,19 @@ msgid "Building image cache"
 msgstr "正在建立圖片快取"
 
 msgid "DISPLAY SETTINGS"
-msgstr ""
+msgstr "顯示器設定"
 
 msgid "MENU FONT SCALE"
-msgstr ""
+msgstr "選單字體比例"
 
 msgid "FONT SCALE"
-msgstr ""
+msgstr "字體比例"
 
 msgid "THEME FONT SCALE"
-msgstr ""
+msgstr "主題字體比例"
 
 msgid "FULL SCREEN MENUS"
-msgstr ""
+msgstr "全螢幕選單"
 
 msgid "FORCE SMALL SCREEN THEMING"
 msgstr ""
@@ -1929,6 +2007,12 @@ msgstr "僅透過第一支遊戲搖桿操作 EMULATIONSTATION"
 
 msgid "GUN MOVE TOLERENCE"
 msgstr "光槍移動容忍度"
+
+msgid "ENABLE PS3 CONTROLLER SUPPORT"
+msgstr ""
+
+msgid "Might have negative impact on security."
+msgstr ""
 
 msgid "ENABLE HID JOYSTICK DRIVERS"
 msgstr "啟用 HID 搖桿驅動程式"
@@ -2056,12 +2140,6 @@ msgstr "開機時啟動 KODI"
 msgid "HARDWARE"
 msgstr "硬體"
 
-msgid "BRIGHTNESS"
-msgstr "亮度"
-
-msgid "VIDEO OUTPUT"
-msgstr "影像輸出"
-
 msgid "AUDIO OUTPUT"
 msgstr "聲音輸出"
 
@@ -2070,21 +2148,6 @@ msgstr "音訊設定檔"
 
 msgid "Available options can change depending on current audio output."
 msgstr "可用的選項會依目前的音訊輸出而改變。"
-
-msgid "SCREEN ROTATION"
-msgstr "螢幕旋轉"
-
-msgid "0 DEGREES"
-msgstr "0 度"
-
-msgid "90 DEGREES"
-msgstr "90 度"
-
-msgid "180 DEGREES"
-msgstr "180 度"
-
-msgid "270 DEGREES"
-msgstr "270 度"
 
 msgid "BOOT SPLASH"
 msgstr "開機畫面"
@@ -2219,10 +2282,10 @@ msgid "Current setting"
 msgstr "目前設定"
 
 msgid "ACCOUNTS"
-msgstr ""
+msgstr "帳戶"
 
 msgid "BIOS SETTINGS"
-msgstr ""
+msgstr "BIOS 設定"
 
 msgid "SAVESTATES"
 msgstr "即時存檔"
@@ -2295,7 +2358,7 @@ msgid "SHADER SET"
 msgstr "著色器設定集"
 
 msgid "VIDEO FILTER"
-msgstr ""
+msgstr "影片篩選"
 
 msgid "DECORATIONS"
 msgstr "裝飾框"
@@ -2580,10 +2643,10 @@ msgid "VIEW USER MANUAL"
 msgstr "檢視使用者手冊"
 
 msgid "DISABLE PLANE MODE"
-msgstr ""
+msgstr "停用飛行模式"
 
 msgid "ENABLE PLANE MODE"
-msgstr ""
+msgstr "啟用飛行模式"
 
 msgid "RESTART SYSTEM"
 msgstr "重新啟動系統"
@@ -2831,7 +2894,7 @@ msgid "No Entries Found"
 msgstr "沒有找到項目"
 
 msgid "INVALID CONTENT"
-msgstr ""
+msgstr "無效的內容"
 
 msgid ""
 "A valid account is required. Please register an account on https://"
@@ -3233,10 +3296,10 @@ msgid "HOLD A BUTTON ON YOUR DEVICE TO CONFIGURE IT."
 msgstr "長按您要設定的控制器上的任一按鈕。"
 
 msgid "PRESS ESC TO CANCEL."
-msgstr ""
+msgstr "按 ESC 鍵來取消"
 
 msgid "PRESS ESC OR A HOTKEY TO CANCEL."
-msgstr ""
+msgstr "按 ESC鍵 或 熱鍵 來取消"
 
 msgid "DISCARD CHANGES"
 msgstr "放棄修改"

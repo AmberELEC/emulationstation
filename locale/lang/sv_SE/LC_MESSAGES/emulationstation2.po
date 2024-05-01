@@ -861,6 +861,9 @@ msgstr "STEAMDECK-MUS/PISTOLINSTÄLLNINGAR"
 msgid "BLUETOOTH"
 msgstr "BLÅTAND"
 
+msgid "ENABLE BLUETOOTH"
+msgstr ""
+
 msgid "PAIR BLUETOOTH PADS AUTOMATICALLY"
 msgstr "PARA BLÅTANDSKONTROLLER AUTOMATISKT"
 
@@ -869,6 +872,9 @@ msgstr "PARA EN BLÅTANDSENHET MANUELLT"
 
 msgid "DISPLAY OPTIONS"
 msgstr "VISNINGSALTERNATIV"
+
+msgid "SHOW CONTROLLER NOTIFICATIONS"
+msgstr ""
 
 msgid "SHOW CONTROLLER ACTIVITY"
 msgstr "VISA KONTROLLAKTIVITET"
@@ -1740,6 +1746,81 @@ msgstr "SKRIV IN KODEN FÖR ATT LÅSA UPP"
 msgid "SERVICES"
 msgstr "TJÄNSTER"
 
+msgid "DMD"
+msgstr ""
+
+msgid "SERVER"
+msgstr ""
+
+msgid "DMDSERVER (for real dmd)"
+msgstr ""
+
+msgid "SIMULATOR (for web dmd)"
+msgstr ""
+
+msgid "dmd server"
+msgstr ""
+
+msgid "FORMAT"
+msgstr ""
+
+msgid "dmd matrix size"
+msgstr ""
+
+msgid "MATRIX"
+msgstr ""
+
+msgid "rgb dmd order"
+msgstr ""
+
+msgid "BRIGHTNESS"
+msgstr "LJUSSTYRKA"
+
+msgid "DMDSERVER stopped"
+msgstr ""
+
+msgid "DMDSERVER restarted"
+msgstr ""
+
+msgid "DMDSERVER started"
+msgstr ""
+
+msgid "MULTISCREENS"
+msgstr ""
+
+msgid "BACKGLASS / INFORMATION SCREEN"
+msgstr ""
+
+msgid "VIDEO OUTPUT"
+msgstr "VIDEOUTGÅNG"
+
+msgid "VIDEO MODE"
+msgstr "VIDEOLÄGE"
+
+msgid "Sets the display's resolution."
+msgstr ""
+
+msgid "ROTATION"
+msgstr ""
+
+msgid "0 DEGREES"
+msgstr "0 GRADER"
+
+msgid "90 DEGREES"
+msgstr "90 GRADER"
+
+msgid "180 DEGREES"
+msgstr "180 GRADER"
+
+msgid "270 DEGREES"
+msgstr "270 GRADER"
+
+msgid "SCREEN ROTATION"
+msgstr "SKÄRMROTATION"
+
+msgid "DMD SCREEN"
+msgstr ""
+
 msgid "FRONTEND DEVELOPER OPTIONS"
 msgstr "FRONTEND UTVECKLARALTERNATIV"
 
@@ -1760,9 +1841,6 @@ msgstr "VSYNC"
 
 msgid "OVERSCAN"
 msgstr "OVERSCAN"
-
-msgid "VIDEO MODE"
-msgstr "VIDEOLÄGE"
 
 msgid "Sets the display's resolution for emulationstation."
 msgstr "Väljer skärmens upplösning för emulationstation."
@@ -1928,6 +2006,12 @@ msgstr "KONTROLLERA EMULATIONSTATION ENDAST MED FÖRSTA JOYSTICK"
 msgid "GUN MOVE TOLERENCE"
 msgstr "PISTOLRÖRELSETOLERANS"
 
+msgid "ENABLE PS3 CONTROLLER SUPPORT"
+msgstr ""
+
+msgid "Might have negative impact on security."
+msgstr ""
+
 msgid "ENABLE HID JOYSTICK DRIVERS"
 msgstr "AKTIVERA HID-JOYSTICK-DRIVRUTINER"
 
@@ -2055,12 +2139,6 @@ msgstr "STARTA KODI VID UPPSTART"
 msgid "HARDWARE"
 msgstr "HÅRDVARA"
 
-msgid "BRIGHTNESS"
-msgstr "LJUSSTYRKA"
-
-msgid "VIDEO OUTPUT"
-msgstr "VIDEOUTGÅNG"
-
 msgid "AUDIO OUTPUT"
 msgstr "LJUDUTGÅNG"
 
@@ -2069,21 +2147,6 @@ msgstr "LJUDPROFIL"
 
 msgid "Available options can change depending on current audio output."
 msgstr ""
-
-msgid "SCREEN ROTATION"
-msgstr "SKÄRMROTATION"
-
-msgid "0 DEGREES"
-msgstr "0 GRADER"
-
-msgid "90 DEGREES"
-msgstr "90 GRADER"
-
-msgid "180 DEGREES"
-msgstr "180 GRADER"
-
-msgid "270 DEGREES"
-msgstr "270 GRADER"
 
 msgid "BOOT SPLASH"
 msgstr "UPPSTARTSBILD"

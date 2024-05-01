@@ -871,6 +871,9 @@ msgstr "USTAWIENIA MYSZY/PISTOLETU STEAMDECKA"
 msgid "BLUETOOTH"
 msgstr "BLUETOOTH"
 
+msgid "ENABLE BLUETOOTH"
+msgstr "WŁĄCZ BLUETOOTH"
+
 msgid "PAIR BLUETOOTH PADS AUTOMATICALLY"
 msgstr "SPARUJ AUTOMATYCZNIE PADY BLUETOOTH"
 
@@ -879,6 +882,9 @@ msgstr "SPARUJ RĘCZNIE URZĄDZENIE BLUETOOTH"
 
 msgid "DISPLAY OPTIONS"
 msgstr "OPCJE EKRANU"
+
+msgid "SHOW CONTROLLER NOTIFICATIONS"
+msgstr "POKAŻ POWIADOMIENIA KONTROLERA"
 
 msgid "SHOW CONTROLLER ACTIVITY"
 msgstr "POKAŻ DZIAŁANIE KONTROLERA"
@@ -1753,6 +1759,81 @@ msgstr "WPROWADŹ KOD, ABY ODBLOKOWAĆ"
 msgid "SERVICES"
 msgstr "USŁUGI"
 
+msgid "DMD"
+msgstr "DMD"
+
+msgid "SERVER"
+msgstr "SERWER"
+
+msgid "DMDSERVER (for real dmd)"
+msgstr "SERWER DMD (dla prawdziwego dmd)"
+
+msgid "SIMULATOR (for web dmd)"
+msgstr "SYMULATOR (dla web dmd)"
+
+msgid "dmd server"
+msgstr "serwer dmd"
+
+msgid "FORMAT"
+msgstr "FORMAT"
+
+msgid "dmd matrix size"
+msgstr "rozmiar matrycy dmd"
+
+msgid "MATRIX"
+msgstr "MATRYCA"
+
+msgid "rgb dmd order"
+msgstr "kolejność rgb dmd"
+
+msgid "BRIGHTNESS"
+msgstr "JASNOŚĆ"
+
+msgid "DMDSERVER stopped"
+msgstr "SERWER DMD zatrzymany"
+
+msgid "DMDSERVER restarted"
+msgstr "SERWER DMD zrestartowany"
+
+msgid "DMDSERVER started"
+msgstr "SERWER DMD uruchomiony"
+
+msgid "MULTISCREENS"
+msgstr "MULTIEKRANY"
+
+msgid "BACKGLASS / INFORMATION SCREEN"
+msgstr "BACKGLASS / EKRAN INFORMACJI"
+
+msgid "VIDEO OUTPUT"
+msgstr "WYJŚCIE WIDEO"
+
+msgid "VIDEO MODE"
+msgstr "TRYB WIDEO"
+
+msgid "Sets the display's resolution."
+msgstr ""
+
+msgid "ROTATION"
+msgstr "OBRÓT"
+
+msgid "0 DEGREES"
+msgstr "0 STOPNI"
+
+msgid "90 DEGREES"
+msgstr "90 STOPNI"
+
+msgid "180 DEGREES"
+msgstr "180 STOPNI"
+
+msgid "270 DEGREES"
+msgstr "270 STOPNI"
+
+msgid "SCREEN ROTATION"
+msgstr "OBRÓT EKRANU"
+
+msgid "DMD SCREEN"
+msgstr "EKRAN DMD"
+
 msgid "FRONTEND DEVELOPER OPTIONS"
 msgstr "OPCJE DEWELOPERA INTERFEJSU"
 
@@ -1773,9 +1854,6 @@ msgstr "VSYNC"
 
 msgid "OVERSCAN"
 msgstr "PRZESKALOWANIE"
-
-msgid "VIDEO MODE"
-msgstr "TRYB WIDEO"
 
 msgid "Sets the display's resolution for emulationstation."
 msgstr "Ustawia rozdzielczość ekranu dla EmulationStation."
@@ -1950,6 +2028,12 @@ msgstr "STERUJ EMULATIONSTATION TYLKO Z PIERWSZEGO JOYSTICKA"
 msgid "GUN MOVE TOLERENCE"
 msgstr "TOLERANCJA RUCHU PISTOLETU"
 
+msgid "ENABLE PS3 CONTROLLER SUPPORT"
+msgstr "WŁĄCZ OBSŁUGĘ KONTROLERA PS3"
+
+msgid "Might have negative impact on security."
+msgstr "Może to mieć negatywny wpływ na bezpieczeństwo."
+
 msgid "ENABLE HID JOYSTICK DRIVERS"
 msgstr "WŁĄCZ STEROWNIKI UKRYTYCH JOYSTICKÓW"
 
@@ -2085,12 +2169,6 @@ msgstr "KODI PRZY STARCIE"
 msgid "HARDWARE"
 msgstr "SPRZĘT"
 
-msgid "BRIGHTNESS"
-msgstr "JASNOŚĆ"
-
-msgid "VIDEO OUTPUT"
-msgstr "WYJŚCIE WIDEO"
-
 msgid "AUDIO OUTPUT"
 msgstr "WYJŚCIE AUDIO"
 
@@ -2100,21 +2178,6 @@ msgstr "PROFIL AUDIO"
 msgid "Available options can change depending on current audio output."
 msgstr ""
 "Dostępne opcje mogą się zmieniać w zależności od bieżącego wyjścia audio."
-
-msgid "SCREEN ROTATION"
-msgstr "OBRÓT EKRANU"
-
-msgid "0 DEGREES"
-msgstr "0 STOPNI"
-
-msgid "90 DEGREES"
-msgstr "90 STOPNI"
-
-msgid "180 DEGREES"
-msgstr "180 STOPNI"
-
-msgid "270 DEGREES"
-msgstr "270 STOPNI"
 
 msgid "BOOT SPLASH"
 msgstr "EKRAN STARTOWY"
@@ -3389,6 +3452,9 @@ msgstr "WŁĄCZONY CZYTNIK EKRANU"
 
 msgid "SCREEN READER DISABLED"
 msgstr "WYŁĄCZONY CZYTNIK EKRANU"
+
+#~ msgid "-10 for auto"
+#~ msgstr "-10 dla auto"
 
 #, c-format
 #~ msgid "%d z %d hardcore points"
