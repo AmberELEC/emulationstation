@@ -1360,37 +1360,12 @@ bool ApiSystem::getBrightness(int& value)
 
 	value = 0;
 
-	int fd;
-	int max = 100;
-	char buffer[BACKLIGHT_BUFFER_SIZE + 1];
-	ssize_t count;
-
-	fd = open(BACKLIGHT_BRIGHTNESS_MAX_NAME, O_RDONLY);
-	if (fd < 0)
-		return false;
-
-	memset(buffer, 0, BACKLIGHT_BUFFER_SIZE + 1);
-
-	count = read(fd, buffer, BACKLIGHT_BUFFER_SIZE);
-	if (count > 0)
-		max = atoi(buffer);
-
-	close(fd);
-
+	int max = Utils::String::toInteger(Utils::FileSystem::readAllText(BACKLIGHT_BRIGHTNESS_MAX_NAME));
 	if (max == 0)
-		return 0;
-
-	fd = open(BACKLIGHT_BRIGHTNESS_NAME, O_RDONLY);
-	if (fd < 0)
 		return false;
 
-	memset(buffer, 0, BACKLIGHT_BUFFER_SIZE + 1);
-
-	count = read(fd, buffer, BACKLIGHT_BUFFER_SIZE);
-	if (count > 0)
-		value = atoi(buffer);
-
-	close(fd);
+	if (Utils::FileSystem::exists(BACKLIGHT_BRIGHTNESS_NAME))
+		value = Utils::String::toInteger(Utils::FileSystem::readAllText(BACKLIGHT_BRIGHTNESS_NAME));
 
 	value = (uint32_t) ((value / (float)max * 100.0f) + 0.5f);
 	return true;
@@ -1398,48 +1373,56 @@ bool ApiSystem::getBrightness(int& value)
 
 void ApiSystem::setBrightness(int value)
 {
-#if !WIN32
+#if WIN32	
+	return;
+#endif 
+
+	if (BACKLIGHT_BRIGHTNESS_NAME.empty() || BACKLIGHT_BRIGHTNESS_NAME == "notfound")
+		return;
+
 	if (value < 1)
 		value = 1;
 
 	if (value > 100)
 		value = 100;
 
-	int fd;
-	int max = 100;
-	char buffer[BACKLIGHT_BUFFER_SIZE + 1];
-	ssize_t count;
-
-	fd = open(BACKLIGHT_BRIGHTNESS_MAX_NAME, O_RDONLY);
-	if (fd < 0)
-		return;
-
-	memset(buffer, 0, BACKLIGHT_BUFFER_SIZE + 1);
-
-	count = read(fd, buffer, BACKLIGHT_BUFFER_SIZE);
-	if (count > 0)
-		max = atoi(buffer);
-
-	close(fd);
-
+	int max = Utils::String::toInteger(Utils::FileSystem::readAllText(BACKLIGHT_BRIGHTNESS_MAX_NAME));
 	if (max == 0)
 		return;
 
-	fd = open(BACKLIGHT_BRIGHTNESS_NAME, O_WRONLY);
-	if (fd < 0)
-		return;
-
 	float percent = (value / 100.0f * (float)max) + 0.5f;
-	sprintf(buffer, "%d\n", (uint32_t)percent);
-
-	count = write(fd, buffer, strlen(buffer));
-	if (count < 0)
-		LOG(LogError) << "ApiSystem::setBrightness failed";
-	SystemConf::getInstance()->set("system.brightness", buffer);
-
-	close(fd);
-#endif
+		
+	std::string content = std::to_string((uint32_t) percent) + "\n";
+	Utils::FileSystem::writeAllText(BACKLIGHT_BRIGHTNESS_NAME, content);
 }
+
+std::vector<std::string> ApiSystem::getWifiNetworks(bool scan)
+{
+	return executeEnumerationScript(scan ? "batocera-wifi scanlist" : "batocera-wifi list");
+}
+
+std::vector<std::string> ApiSystem::executeEnumerationScript(const std::string command)
+{
+	LOG(LogDebug) << "ApiSystem::executeEnumerationScript -> " << command;
+
+	std::vector<std::string> res;
+
+	FILE *pipe = popen(command.c_str(), "r");
+
+	if (pipe == NULL)
+		return res;
+
+	char line[1024];
+	while (fgets(line, 1024, pipe))
+	{
+		strtok(line, "\n");
+		res.push_back(std::string(line));
+	}
+
+	pclose(pipe);
+	return res;
+}
+
 
 std::vector<std::string> ApiSystem::getWifiNetworks(bool scan)
 {
