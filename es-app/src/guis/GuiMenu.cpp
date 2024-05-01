@@ -1836,29 +1836,6 @@ void GuiMenu::openUpdatesSettings()
 		});
 	}
 
-	// integration with theBezelProject
-	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::DECORATIONS) && ApiSystem::getInstance()->isScriptingSupported(ApiSystem::THEBEZELPROJECT))
-	{
-		updateGui->addEntry(_("THE BEZEL PROJECT"), true, [this]
-		{
-			if (!checkNetwork())
-				return;
-
-	//	mWindow->pushGui(new GuiPackageInstallStart(mWindow));
-	//});
-
-	// Batocera integration with theBezelProject
-	//if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::DECORATIONS) && ApiSystem::getInstance()->isScriptingSupported(ApiSystem::THEBEZELPROJECT))
-	//{
-	//	updateGui->addEntry(_("THE BEZEL PROJECT"), true, [this]
-	//	{
-	//		if (!checkNetwork())
-	//			return;
-
-	//		mWindow->pushGui(new GuiBezelInstallStart(mWindow));
-	//	});
-	//}
-
 	updateGui->addGroup(_("SOFTWARE UPDATES"));
 
 	// Enable updates
