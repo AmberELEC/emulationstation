@@ -6515,7 +6515,7 @@ std::shared_ptr<OptionListComponent<std::string>> GuiMenu::createRatioOptionList
 	return ratio_choice;
 }
 
-/*
+
 #ifdef _ENABLEEMUELEC
 
 int getResWidth (std::string res)
