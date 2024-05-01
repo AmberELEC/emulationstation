@@ -2058,21 +2058,6 @@ void GuiMenu::openSystemSettings()
 			}
 		}
 	});
-	*/
-
-	// KODI SETTINGS
-#ifdef _ENABLE_KODI_
-	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::KODI))
-	{
-		s->addEntry(_("KODI SETTINGS"), true, [this]
-		{
-			GuiSettings* kodiGui = new GuiSettings(mWindow, _("KODI SETTINGS").c_str());
-			kodiGui->addSwitch(_("ENABLE KODI"), "kodi.enabled", false);
-			kodiGui->addSwitch(_("LAUNCH KODI AT BOOT"), "kodi.atstartup", false);
-			mWindow->pushGui(kodiGui);
-		});
-	}
-#endif
 
 #ifdef BATOCERA
 	s->addGroup(_("HARDWARE"));
