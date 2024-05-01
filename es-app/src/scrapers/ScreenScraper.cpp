@@ -179,7 +179,6 @@ const std::map<PlatformId, unsigned short> screenscraper_platformid_map{
 	{ VIRCON32, 272 }
 	{ FMTOWNS, 253 },
 	{ FUJITSU_FM7, 97 },
-	{ CASIO_PV1000, 74 },
 	{ TIGER_GAMECOM, 121 },
 	{ ENTEX_ADVENTURE_VISION, 78 },
 	{ EMERSON_ARCADIA_2001, 94 },
