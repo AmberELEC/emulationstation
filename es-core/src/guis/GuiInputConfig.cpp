@@ -46,6 +46,7 @@
 
 void GuiInputConfig::initInputConfigStructure(InputConfig* target)
 {
+#ifdef _ENABLEEMUELEC
 	GUI_INPUT_CONFIG_LIST =
 	{
 	{ "Up",               false, "D-PAD UP",           ":/help/dpad_up.svg" },
