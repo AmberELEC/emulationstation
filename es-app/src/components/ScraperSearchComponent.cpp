@@ -299,7 +299,7 @@ void ScraperSearchComponent::onSearchDone()
 		else
 		{
 			ComponentListRow row;
-			row.addElement(std::make_shared<TextComponent>(mWindow, _("NO GAMES FOUND - SKIP"), font, color), true); // batocera
+			row.addElement(std::make_shared<TextComponent>(mWindow, _("NO GAMES FOUND - SKIP"), font, color), true);
 
 			if (mSkipCallback)
 				row.makeAcceptInputHandler(mSkipCallback);
@@ -382,10 +382,10 @@ void ScraperSearchComponent::onSearchError(const std::string& error)
 {
 	LOG(LogInfo) << "ScraperSearchComponent search error: " << error;
 
-	mWindow->pushGui(new GuiMsgBox(mWindow, _("AN ERROR OCCURED") + ":\n" + Utils::String::toUpper(error),
+	mWindow->pushGui(new GuiMsgBox(mWindow, _("AN ERROR OCCURRED") + ":\n" + Utils::String::toUpper(error),
 		_("RETRY"), std::bind(&ScraperSearchComponent::search, this, mInitialSearch),
-		_("SKIP"), mSkipCallback, // batocera
-		_("CANCEL"), mCancelCallback, ICON_ERROR)); // batocera
+		_("SKIP"), mSkipCallback,
+		_("CANCEL"), mCancelCallback, ICON_ERROR)); 
 }
 
 int ScraperSearchComponent::getSelectedIndex()
@@ -614,17 +614,16 @@ void ScraperSearchComponent::openInputScreen(ScraperSearchParams& params)
 
 	stop();
 
-	// batocera
 	if (Settings::getInstance()->getBool("UseOSK"))
 	{
-		mWindow->pushGui(new GuiTextEditPopupKeyboard(mWindow, "SEARCH FOR",
+		mWindow->pushGui(new GuiTextEditPopupKeyboard(mWindow, _("SEARCH FOR"),
 			// initial value is last search if there was one, otherwise the clean path name
 			params.nameOverride.empty() ? params.game->getCleanName() : params.nameOverride,
 			searchForFunc, false, "SEARCH"));
 	}
 	else
 	{
-		mWindow->pushGui(new GuiTextEditPopup(mWindow, "SEARCH FOR",
+		mWindow->pushGui(new GuiTextEditPopup(mWindow, _("SEARCH FOR"),
 			// initial value is last search if there was one, otherwise the clean path name
 			params.nameOverride.empty() ? params.game->getCleanName() : params.nameOverride,
 			searchForFunc, false, "SEARCH"));

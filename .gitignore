@@ -25,6 +25,8 @@ Debug
 Release
 MinSizeRel
 RelWithDebInfo
+bin
+win32-libs
 
 # CMake
 CMakeCache.txt
@@ -48,7 +50,3 @@ CPackSourceConfig.cmake
 /.vs/
 *.sqlite
 .DS_Store
-
-# vscode
-.vscode/
-
