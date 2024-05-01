@@ -3566,6 +3566,7 @@ void GuiMenu::openGamesSettings()
 #endif
 			}
 	}
+#endif
 
 /* 	// performance mode
 	auto maxperf_enabled = std::make_shared<SwitchComponent>(mWindow);
