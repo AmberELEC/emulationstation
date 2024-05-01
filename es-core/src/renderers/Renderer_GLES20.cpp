@@ -17,6 +17,8 @@
 #include "GlExtensions.h"
 #include "Shader.h"
 
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/trim.hpp>
 #include "resources/ResourceManager.h"
 
 namespace Renderer
