@@ -1383,21 +1383,6 @@ void GuiMenu::openDeveloperSettings()
 
 	s->addGroup(_("TOOLS"));
 
-#ifndef WIN32
-	// GAME AT STARTUP
-	/*if (!SystemConf::getInstance()->get("global.bootgame.path").empty())
-	{
-		std::string gamelabel = SystemConf::getInstance()->get("global.bootgame.path");
-		gamelabel = Utils::FileSystem::getStem(gamelabel) + " [" + Utils::FileSystem::getStem(Utils::FileSystem::getParent(gamelabel)) + "]";
-
-		s->addWithDescription(_("STOP LAUNCHING THIS GAME AT STARTUP"), gamelabel, nullptr, [s]
-		{
-			SystemConf::getInstance()->set("global.bootgame.path", "");
-			SystemConf::getInstance()->set("global.bootgame.cmd", "");
-
-			s->close();
-		});
-	}*/
 #ifndef _ENABLEEMUELEC
 	// WEB ACCESS
 	auto hostName = Utils::String::toLower(ApiSystem::getInstance()->getHostsName());
