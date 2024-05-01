@@ -1877,28 +1877,6 @@ void GuiMenu::openUpdatesSettings()
 			SystemConf::getInstance()->saveSystemConf();
 	});
 
-	// Start update
-	updateGui->addEntry(GuiUpdate::state == GuiUpdateState::State::UPDATE_READY ? _("APPLY UPDATE") : _("START UPDATE"), true, [this]
-	{
-		if (GuiUpdate::state == GuiUpdateState::State::UPDATE_READY)
-			quitES(Utils::Platform::QuitMode::RESTART);
-		else if (GuiUpdate::state == GuiUpdateState::State::UPDATER_RUNNING)
-			mWindow->pushGui(new GuiMsgBox(mWindow, _("UPDATER IS ALREADY RUNNING")));
-		else
-#endif
-			if (updatesType.empty() || updatesType != BETA_NAME)
-				updatesType = "stable";
-
-		updatesTypeList->add("stable", "stable", updatesType == "stable");
-		updatesTypeList->add(BETA_NAME, BETA_NAME, updatesType == BETA_NAME);
-
-		updateGui->addWithLabel(_("UPDATE TYPE"), updatesTypeList);
-		updatesTypeList->setSelectedChangedCallback([](std::string name)
-		{
-			if (SystemConf::getInstance()->set("updates.type", name))
-				SystemConf::getInstance()->saveSystemConf();
-		});
-
 		// Start update
 		updateGui->addEntry(GuiUpdate::state == GuiUpdateState::State::UPDATE_READY ? _("APPLY UPDATE") : _("START UPDATE"), true, [this]
 		{
@@ -1914,7 +1892,6 @@ void GuiMenu::openUpdatesSettings()
 				mWindow->pushGui(new GuiUpdate(mWindow));
 			}
 		});
-	}
 
 	mWindow->pushGui(updateGui);
 }
