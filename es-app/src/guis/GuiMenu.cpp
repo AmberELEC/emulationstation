@@ -1881,7 +1881,7 @@ void GuiMenu::openUpdatesSettings()
 	updateGui->addEntry(GuiUpdate::state == GuiUpdateState::State::UPDATE_READY ? _("APPLY UPDATE") : _("START UPDATE"), true, [this]
 	{
 		if (GuiUpdate::state == GuiUpdateState::State::UPDATE_READY)
-			quitES(QuitMode::RESTART);
+			quitES(Utils::Platform::QuitMode::RESTART);
 		else if (GuiUpdate::state == GuiUpdateState::State::UPDATER_RUNNING)
 			mWindow->pushGui(new GuiMsgBox(mWindow, _("UPDATER IS ALREADY RUNNING")));
 		else
