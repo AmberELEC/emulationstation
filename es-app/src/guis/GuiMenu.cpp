@@ -2557,25 +2557,6 @@ void GuiMenu::openSystemSettings()
 		s->addEntry(_("DANGER ZONE"), true, [this] { openDangerZone(mWindow, "global"); });
 	}
 
-	auto pthis = this;
-	s->onFinalize([s, pthis, window]
-	{
-		if (s->getVariable("exitreboot") && Settings::getInstance()->getBool("ExitOnRebootRequired"))
-		{
-			Utils::Platform::quitES(Utils::Platform::QuitMode::QUIT);
-			return;
-		}
-		
-		if (s->getVariable("reboot") || s->getVariable("exitreboot"))
-			window->displayNotificationMessage(_U("\uF011  ") + _("REBOOT REQUIRED TO APPLY THE NEW CONFIGURATION"));
-
-		if (s->getVariable("reloadGuiMenu"))
-		{
-			delete pthis;
-			window->pushGui(new GuiMenu(window, false));
-		}
-	});
-
 	mWindow->pushGui(s);
 }
 
