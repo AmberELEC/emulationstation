@@ -1492,9 +1492,6 @@ bool ApiSystem::isScriptingSupported(ScriptId script)
 	case ApiSystem::OVERCLOCK:
 		executables.push_back("batocera-overclock");
 		break;
-	case ApiSystem::THEMESDOWNLOADER:
-		executables.push_back("batocera-es-theme");
-		break;
 	case ApiSystem::NETPLAY:
 		executables.push_back("7zr");
 		break;
