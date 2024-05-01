@@ -2415,7 +2415,6 @@ void GuiMenu::openSystemSettings()
 		}
 
 	}
-#endif
 	std::shared_ptr<OptionListComponent<std::string>> overclock_choice;
 
 #if ODROIDGOA || GAMEFORCE || RK3326
