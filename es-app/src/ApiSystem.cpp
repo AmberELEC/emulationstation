@@ -818,7 +818,6 @@ bool ApiSystem::setAudioOutputProfile(std::string selected)
 	return exitcode == 0;
 }
 
- 329da6eaf2c38146cdfd3cf1930b0ebbe3ccecbd
 std::string ApiSystem::getUpdateUrl()
 {
 	auto systemsetting = SystemConf::getInstance()->get("global.updates.url");
