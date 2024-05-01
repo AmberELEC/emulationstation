@@ -559,7 +559,6 @@ bool ImageGridComponent<T>::input(InputConfig* config, Input input)
 	}
 	else
 	{
-#ifdef _ENABLEEMUELEC
 		if (config->isMappedLike("up", input) || config->isMappedLike("down", input) ||
 			config->isMappedLike("left", input) || config->isMappedLike("right", input) ||
 			config->isMappedTo("rightshoulder", input) || config->isMappedTo("leftshoulder", input))
