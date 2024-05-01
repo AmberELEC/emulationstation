@@ -8,11 +8,14 @@
 #include "SystemConf.h"
 
 #ifndef HAVE_INTL
-char* ngettext(char* msgid, char* msgid_plural, unsigned long int n)
+const char* ngettext(const char* msgid, const char* msgid_plural, unsigned long int n)
 {
 	if (n != 1)
 		return msgid_plural;
 
+	return msgid;
+}
+const char* pgettext(const char* context, const char* msgid) {
 	return msgid;
 }
 #endif
@@ -125,11 +128,26 @@ PluralRule rules[] = {
 PluralRule EsLocale::mPluralRule = rules[0];
 const std::vector<PluralRule> pluralRules(rules, rules + sizeof(rules) / sizeof(rules[0]));
 
-const std::string EsLocale::getText(const std::string text)
+const std::string EsLocale::getText(const std::string& text)
 {
 	checkLocalisationLoaded();
 
 	auto item = mItems.find(text);
+	if (item != mItems.cend())
+		return item->second;
+
+	return text;
+}
+
+const std::string EsLocale::getTextWithContext(const std::string& context, const std::string& text)
+{
+	checkLocalisationLoaded();
+
+	auto item = mItems.find(context + "|" + text);
+	if (item != mItems.cend())
+		return item->second;
+
+	item = mItems.find(text);
 	if (item != mItems.cend())
 		return item->second;
 
@@ -183,147 +201,224 @@ void EsLocale::checkLocalisationLoaded()
 	mCurrentLanguageLoaded = true;
 
 	mPluralRule = rules[0];
-
 	mItems.clear();
 
-	// batocera could be adapted using this path : "/usr/share/locale"
-	std::string xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/" + mCurrentLanguage + "/emulationstation2.po");
-	if (!Utils::FileSystem::exists(xmlpath))
-		xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/" + mCurrentLanguage + "/LC_MESSAGES/emulationstation2.po");
-
-	if (!Utils::FileSystem::exists(xmlpath))
-		xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/lang/" + mCurrentLanguage + "/emulationstation2.po");
-
-	if (!Utils::FileSystem::exists(xmlpath))
-		xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/lang/" + mCurrentLanguage + "/LC_MESSAGES/emulationstation2.po");
-
-	if (!Utils::FileSystem::exists(xmlpath))
+	for (auto file : { "es-features.po", "emulationstation2.po" })
 	{
-		auto shortNameDivider = mCurrentLanguage.find("_");
-		if (shortNameDivider != std::string::npos)
+		// batocera could be adapted using this path : "/usr/share/locale"
+		std::string xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/" + mCurrentLanguage + "/" + file);
+		if (!Utils::FileSystem::exists(xmlpath))
+			xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/" + mCurrentLanguage + "/LC_MESSAGES/" + file);
+
+		if (!Utils::FileSystem::exists(xmlpath))
+			xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/lang/" + mCurrentLanguage + "/" + file);
+
+		if (!Utils::FileSystem::exists(xmlpath))
+			xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/lang/" + mCurrentLanguage + "/LC_MESSAGES/" + file);
+
+		if (!Utils::FileSystem::exists(xmlpath))
 		{
-			auto shortName = mCurrentLanguage.substr(0, shortNameDivider);
-
-			xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/" + shortName + "/emulationstation2.po");
-			if (!Utils::FileSystem::exists(xmlpath))
-				xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/" + shortName + "/LC_MESSAGES/emulationstation2.po");
-
-			if (!Utils::FileSystem::exists(xmlpath))
-				xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/lang/" + shortName + "/emulationstation2.po");
-
-			if (!Utils::FileSystem::exists(xmlpath))
-				xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/lang/" + shortName + "/LC_MESSAGES/emulationstation2.po");
-		}
-	}
-
-	if (!Utils::FileSystem::exists(xmlpath))
-		return;
-
-	std::string	msgid;
-	std::string	msgid_plural;
-
-	std::string line;
-
-	std::ifstream file(xmlpath);
-	while (std::getline(file, line))
-	{
-		if (line.find("\"Plural-Forms:") == 0)
-		{
-			auto start = line.find("plural=");
-			if (start != std::string::npos)
+			auto shortNameDivider = mCurrentLanguage.find("_");
+			if (shortNameDivider != std::string::npos)
 			{
-				std::string plural;
+				auto shortName = mCurrentLanguage.substr(0, shortNameDivider);
 
-				auto end = line.find(";", start + 1);
-				if (end == std::string::npos)
+				xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/" + shortName + "/" + file);
+				if (!Utils::FileSystem::exists(xmlpath))
+					xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/" + shortName + "/LC_MESSAGES/" + file);
+
+				if (!Utils::FileSystem::exists(xmlpath))
+					xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/lang/" + shortName + "/" + file);
+
+				if (!Utils::FileSystem::exists(xmlpath))
+					xmlpath = ResourceManager::getInstance()->getResourcePath(":/locale/lang/" + shortName + "/LC_MESSAGES/" + file);
+			}
+		}
+
+		if (!Utils::FileSystem::exists(xmlpath))
+		{
+			xmlpath = ResourceManager::getInstance()->getResourcePath(":/es_features.locale/" + mCurrentLanguage + "/" + file);
+			if (!Utils::FileSystem::exists(xmlpath))
+			{
+				auto shortNameDivider = mCurrentLanguage.find("_");
+				if (shortNameDivider != std::string::npos)
+					xmlpath = ResourceManager::getInstance()->getResourcePath(":/es_features.locale/" + mCurrentLanguage.substr(0, shortNameDivider) + "/" + file);
+			}
+		}
+
+		if (!Utils::FileSystem::exists(xmlpath))
+			continue;
+
+		std::string	msgctxt;
+		std::string	msgid;
+		std::string	msgid_plural;
+
+		std::string line;
+
+		std::ifstream file(xmlpath);
+		std::string old_line;
+		while (1)
+		{
+			if (old_line.empty())
+			{
+				if (!std::getline(file, line)) break;
+			}
+			else
+			{
+				line = old_line;
+				old_line = "";
+			}
+
+			if (line.find("\"Plural-Forms:") == 0)
+			{
+				auto start = line.find("plural=");
+				if (start != std::string::npos)
 				{
-					plural = line.substr(start + 7, line.size() - start - 7 - 1);
+					std::string plural;
 
-					std::getline(file, line);
-					end = line.find(";", start + 1);
-					if (end != std::string::npos)
-						plural += line.substr(1, end - 1);
-				}
-				else
-					plural = line.substr(start + 7, end - start - 7);
-
-				plural = Utils::String::replace(plural, " ", "");
-
-				if (Utils::String::endsWith(plural, ";"))
-					plural = plural.substr(0, plural.size() - 1);
-
-				//	if (Utils::String::startsWith(plural, "(") && Utils::String::endsWith(plural, ")"))
-				//		plural = plural.substr(1, plural.size() - 2);			
-				plural = Utils::String::replace(plural, "(", "");
-				plural = Utils::String::replace(plural, ")", "");
-
-				for (auto iter = pluralRules.cbegin(); iter != pluralRules.cend(); iter++)
-				{
-					if (plural == iter->rule)
+					auto end = line.find(";", start + 1);
+					if (end == std::string::npos)
 					{
-						mPluralRule = *iter;
+						plural = line.substr(start + 7, line.size() - start - 7 - 1);
+
+						std::getline(file, line);
+						end = line.find(";", start + 1);
+						if (end != std::string::npos)
+							plural += line.substr(1, end - 1);
+					}
+					else
+						plural = line.substr(start + 7, end - start - 7);
+
+					plural = Utils::String::replace(plural, " ", "");
+
+					if (Utils::String::endsWith(plural, ";"))
+						plural = plural.substr(0, plural.size() - 1);
+
+					//	if (Utils::String::startsWith(plural, "(") && Utils::String::endsWith(plural, ")"))
+					//		plural = plural.substr(1, plural.size() - 2);			
+					plural = Utils::String::replace(plural, "(", "");
+					plural = Utils::String::replace(plural, ")", "");
+
+					for (auto iter = pluralRules.cbegin(); iter != pluralRules.cend(); iter++)
+					{
+						if (plural == iter->rule)
+						{
+							mPluralRule = *iter;
+							break;
+						}
+					}
+				}
+			}
+			else if (line.find("msgid_plural") == 0)
+			{
+				auto start = line.find("\"");
+				if (start != std::string::npos && !msgid.empty())
+				{
+					auto end = line.find("\"", start + 1);
+					if (end != std::string::npos)
+						msgid_plural = line.substr(start + 1, end - start - 1);
+				}
+			}
+			else if (line.find("msgctxt") == 0)
+			{
+				msgctxt = "";
+
+				auto start = line.find("\"");
+				if (start != std::string::npos)
+				{
+					auto end = line.find("\"", start + 1);
+					if (end != std::string::npos)
+						msgctxt = line.substr(start + 1, end - start - 1);
+				}
+			}
+			else if (line.find("msgid") == 0)
+			{
+				msgid = "";
+				msgid_plural = "";
+
+				int cnt = 0;
+				do
+				{
+					if (line.empty()) break;
+					else if (line.find("msg") == 0 && cnt > 0)
+					{
+						old_line = line;
 						break;
 					}
-				}
-			}
-		}
-		else if (line.find("msgid_plural") == 0)
-		{
-			auto start = line.find("\"");
-			if (start != std::string::npos && !msgid.empty())
-			{
-				auto end = line.find("\"", start + 1);
-				if (end != std::string::npos)
-					msgid_plural = line.substr(start + 1, end - start - 1);
-			}
-		}
-		else if (line.find("msgid") == 0)
-		{
-			msgid = "";
-			msgid_plural = "";
+					cnt++;
 
-			auto start = line.find("\"");
-			if (start != std::string::npos)
-			{
-				auto end = line.find("\"", start + 1);
-				if (end != std::string::npos)
-					msgid = line.substr(start + 1, end - start - 1);
-			}
-		}
-		else if (line.find("msgstr") == 0)
-		{
-			std::string	idx;
-
-			if (!msgid_plural.empty())
-			{
-				auto idxStart = line.find("[");
-				if (idxStart != std::string::npos)
-				{
-					auto idxEnd = line.find("]", idxStart + 1);
-					if (idxEnd != std::string::npos)
-						idx = line.substr(idxStart + 1, idxEnd - idxStart - 1);
-				}
-			}
-
-			auto start = line.find("\"");
-			if (start != std::string::npos)
-			{
-				auto end = line.find("\"", start + 1);
-				if (end != std::string::npos)
-				{
-					std::string	msgstr = line.substr(start + 1, end - start - 1);
-					if (!msgid.empty() && !msgstr.empty())
-						if (idx.empty() || idx == "0")
-							mItems[msgid] = msgstr;
-
-					if (!msgid_plural.empty() && !msgstr.empty())
+					auto start = line.find("\"");
+					if (start != std::string::npos)
 					{
-						if (!idx.empty() && idx != "0")
-							mItems[idx + "@" + msgid_plural] = msgstr;
-						else
-							mItems[msgid_plural] = msgstr;
+						auto end = line.find("\"", start + 1);
+						if (end != std::string::npos)
+							msgid += line.substr(start + 1, end - start - 1);
+						else break;
+					}
+					else break;
+				} while (std::getline(file, line));
+				msgid = Utils::String::replace(msgid, "\\n", "\n");
+			}
+			else if (line.find("msgstr") == 0)
+			{
+				std::string	idx;
+
+				if (!msgid_plural.empty())
+				{
+					auto idxStart = line.find("[");
+					if (idxStart != std::string::npos)
+					{
+						auto idxEnd = line.find("]", idxStart + 1);
+						if (idxEnd != std::string::npos)
+							idx = line.substr(idxStart + 1, idxEnd - idxStart - 1);
 					}
 				}
+
+				std::string	msgstr;
+				int cnt = 0;
+				do
+				{
+					if (line.empty()) break;
+					else if (line.find("msg") == 0 && cnt > 0)
+					{
+						old_line = line;
+						break;
+					}
+					cnt++;
+
+					auto start = line.find("\"");
+					if (start != std::string::npos)
+					{
+						auto end = line.find("\"", start + 1);
+						if (end != std::string::npos)
+							msgstr += line.substr(start + 1, end - start - 1);
+						else break;
+					}
+					else break;
+				} while (std::getline(file, line));
+				msgstr = Utils::String::replace(msgstr, "\\n", "\n");
+
+				if (!msgid.empty() && !msgstr.empty())
+				{
+					if (idx.empty() || idx == "0")
+					{
+						if (mItems.find(msgid) == mItems.cend() || msgctxt.empty())
+							mItems[msgid] = msgstr;
+					}
+				}
+
+				if (!msgctxt.empty() && !msgstr.empty())
+					mItems[msgctxt + "|" + msgid] = msgstr;
+
+				if (!msgid_plural.empty() && !msgstr.empty())
+				{
+					if (!idx.empty() && idx != "0")
+						mItems[idx + "@" + msgid_plural] = msgstr;
+					else
+						mItems[msgid_plural] = msgstr;
+				}
+
+				msgctxt = "";
 			}
 		}
 	}

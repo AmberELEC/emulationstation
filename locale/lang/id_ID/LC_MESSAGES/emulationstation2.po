@@ -867,9 +867,6 @@ msgstr "PENGATURAN MOUSE/PISTOL STEAMDECK"
 msgid "BLUETOOTH"
 msgstr "BLUETOOTH"
 
-msgid "ENABLE BLUETOOTH"
-msgstr ""
-
 msgid "PAIR BLUETOOTH PADS AUTOMATICALLY"
 msgstr "PASANGKAN PAD BLUETOOTH SECARA OTOMATIS"
 
@@ -878,9 +875,6 @@ msgstr "PASANGKAN PERANGKAT BLUETOOTH SECARA MANUAL"
 
 msgid "DISPLAY OPTIONS"
 msgstr "TAMPILAN PILIHAN"
-
-msgid "SHOW CONTROLLER NOTIFICATIONS"
-msgstr ""
 
 msgid "SHOW CONTROLLER ACTIVITY"
 msgstr "TAMPILKAN AKTIVITAS KONTROLER"
@@ -1755,81 +1749,6 @@ msgstr "MASUKKAN KODE UNTUK MEMBUKA"
 msgid "SERVICES"
 msgstr ""
 
-msgid "DMD"
-msgstr ""
-
-msgid "SERVER"
-msgstr ""
-
-msgid "DMDSERVER (for real dmd)"
-msgstr ""
-
-msgid "SIMULATOR (for web dmd)"
-msgstr ""
-
-msgid "dmd server"
-msgstr ""
-
-msgid "FORMAT"
-msgstr ""
-
-msgid "dmd matrix size"
-msgstr ""
-
-msgid "MATRIX"
-msgstr ""
-
-msgid "rgb dmd order"
-msgstr ""
-
-msgid "BRIGHTNESS"
-msgstr "KECERAHAN"
-
-msgid "DMDSERVER stopped"
-msgstr ""
-
-msgid "DMDSERVER restarted"
-msgstr ""
-
-msgid "DMDSERVER started"
-msgstr ""
-
-msgid "MULTISCREENS"
-msgstr ""
-
-msgid "BACKGLASS / INFORMATION SCREEN"
-msgstr ""
-
-msgid "VIDEO OUTPUT"
-msgstr "KELUARAN VIDEO"
-
-msgid "VIDEO MODE"
-msgstr "MODE VIDEO"
-
-msgid "Sets the display's resolution."
-msgstr ""
-
-msgid "ROTATION"
-msgstr ""
-
-msgid "0 DEGREES"
-msgstr "0 DERAJAT"
-
-msgid "90 DEGREES"
-msgstr "90 DERAJAT"
-
-msgid "180 DEGREES"
-msgstr "180 DERAJAT"
-
-msgid "270 DEGREES"
-msgstr "270 DERAJAT"
-
-msgid "SCREEN ROTATION"
-msgstr "ROTASI LAYAR"
-
-msgid "DMD SCREEN"
-msgstr ""
-
 msgid "FRONTEND DEVELOPER OPTIONS"
 msgstr "OPSI PENGEMBANG DEPAN"
 
@@ -1850,6 +1769,9 @@ msgstr "VSYNC"
 
 msgid "OVERSCAN"
 msgstr "OVERSCAN"
+
+msgid "VIDEO MODE"
+msgstr "MODE VIDEO"
 
 msgid "Sets the display's resolution for emulationstation."
 msgstr ""
@@ -2020,12 +1942,6 @@ msgstr "KONTROL EMULATIONSTATION DENGAN JOYSTICK PERTAMA"
 msgid "GUN MOVE TOLERENCE"
 msgstr "TOLERANSI GUN MOVE"
 
-msgid "ENABLE PS3 CONTROLLER SUPPORT"
-msgstr ""
-
-msgid "Might have negative impact on security."
-msgstr ""
-
 msgid "ENABLE HID JOYSTICK DRIVERS"
 msgstr "AKTIFKAN DRIVER JOYSTICK HID"
 
@@ -2157,6 +2073,12 @@ msgstr "LUNCURKAN KODI SAAT BOOT"
 msgid "HARDWARE"
 msgstr "HARDWARE"
 
+msgid "BRIGHTNESS"
+msgstr "KECERAHAN"
+
+msgid "VIDEO OUTPUT"
+msgstr "KELUARAN VIDEO"
+
 msgid "AUDIO OUTPUT"
 msgstr "KELUARAN AUDIO"
 
@@ -2166,6 +2088,21 @@ msgstr "PROFIL AUDIO"
 msgid "Available options can change depending on current audio output."
 msgstr ""
 "Pilihan yang tersedia dapat berubah tergantung pada output audio saat ini."
+
+msgid "SCREEN ROTATION"
+msgstr "ROTASI LAYAR"
+
+msgid "0 DEGREES"
+msgstr "0 DERAJAT"
+
+msgid "90 DEGREES"
+msgstr "90 DERAJAT"
+
+msgid "180 DEGREES"
+msgstr "180 DERAJAT"
+
+msgid "270 DEGREES"
+msgstr "270 DERAJAT"
 
 msgid "BOOT SPLASH"
 msgstr "SPLASH BOOT"

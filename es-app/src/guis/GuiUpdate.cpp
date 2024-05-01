@@ -5,7 +5,7 @@
 #include "Log.h"
 #include "Settings.h"
 #include "ApiSystem.h"
-#include "platform.h"
+#include "utils/Platform.h"
 #include "LocaleES.h"
 #include "components/AsyncNotificationComponent.h"
 
@@ -19,11 +19,11 @@ public:
 		GuiUpdate::state = GuiUpdateState::State::UPDATER_RUNNING;
 
 		mWndNotification = mWindow->createAsyncNotificationComponent();
-#if WIN32
+#ifdef _ENABLEEMUELEC
+		mWndNotification->updateTitle(_U("\uF019 ") + _("UPDATING AmberELEC"));
+#else
 		auto label = Utils::String::format(_("UPDATING %s").c_str(), ApiSystem::getInstance()->getApplicationName().c_str());
 		mWndNotification->updateTitle(_U("\uF019 ") + label);
-#else
-		mWndNotification->updateTitle(_U("\uF019 ") + _("UPDATING AmberELEC")); //AmberELEC
 #endif
 		mHandle = new std::thread(&ThreadedUpdater::threadUpdate, this);
 	}
@@ -66,7 +66,7 @@ public:
 			GuiUpdate::state = GuiUpdateState::State::UPDATE_READY;
 
 			mWndNotification->updateTitle(_U("\uF019 ") + _("UPDATE IS READY"));
-			mWndNotification->updateText(_("REBOOT SYSTEM TO APPLY THE UPDATE"));
+			mWndNotification->updateText(_("REBOOT TO APPLY"));
 
 			std::this_thread::yield();
 			std::this_thread::sleep_for(std::chrono::hours(12));
@@ -75,7 +75,7 @@ public:
 		{
 			GuiUpdate::state = GuiUpdateState::State::NO_UPDATE;
 
-			std::string error = _("AN ERROR OCCURED") + std::string(": ") + updateStatus.first;
+			std::string error = _("AN ERROR OCCURRED") + std::string(": ") + updateStatus.first;
 			mWindow->displayNotificationMessage(error);
 		}
 
@@ -165,18 +165,24 @@ void GuiUpdate::update(int deltaTime)
 
 			std::string message = _("REALLY UPDATE?");
 
-			if (!mUpdateVersion.empty())
-				message = Utils::String::format(_("YOU ARE CURRENTLY USING VERSION %s\nDO YOU WANT TO UPDATE TO VERSION %s?").c_str(), ApiSystem::getInstance()->getVersion().c_str(), mUpdateVersion.c_str()),
-
-			window->pushGui(new GuiMsgBox(window, message, _("YES"), [this]
+			if (!mUpdateVersion.empty()) 
 			{
-				mState = 2;
-				mLoading = true;
+				std::string versionExtra = ApiSystem::getInstance()->getVersion(true);
+				if (versionExtra == "none")
+					message = Utils::String::format(_("YOU ARE CURRENTLY USING VERSION %s\nDO YOU WANT TO UPDATE TO VERSION %s?").c_str(), ApiSystem::getInstance()->getVersion().c_str(), mUpdateVersion.c_str());
+				else
+					message = Utils::String::format(_("UNOFFICIAL SYSTEM MODIFICATIONS DETECTED.\nUPGRADING COULD BREAK YOUR SYSTEM.\nDO YOU WANT TO UPDATE TO VERSION %s?").c_str(), mUpdateVersion.c_str());
 
-				mState = -1;
-				new ThreadedUpdater(mWindow);
+				window->pushGui(new GuiMsgBox(window, message, _("YES"), [this]
+				{
+					mState = 2;
+					mLoading = true;
 
-			}, _("NO"), [this] { mState = -1; }));
+					mState = -1;
+					new ThreadedUpdater(mWindow);
+
+				}, _("NO"), [this] { mState = -1; }));
+			}
 		}		
 		break;
 

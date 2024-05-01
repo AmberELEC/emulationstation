@@ -1,5 +1,7 @@
 #include "components/ComponentTab.h"
 #include "components/TextComponent.h"
+#include "Window.h"
+#include "InputManager.h"
 #include "LocaleES.h"
 
 #define PADDING_PX (Renderer::getScreenWidth() * 0.015f)
@@ -7,6 +9,9 @@
 
 ComponentTab::ComponentTab(Window* window) : IList<ComponentTabItem, std::string>(window, LIST_SCROLL_STYLE_SLOW, LIST_NEVER_LOOP)
 {
+	mHotTab = -1;
+	mPressedTab = -1;
+
 	mSelectorBarOffset = 0;
 	mCameraOffset = 0;
 	mFocused = false;
@@ -48,6 +53,8 @@ void ComponentTab::addTab(const ComponentTabItem& row, const std::string value, 
 
 void ComponentTab::onSizeChanged()
 {
+	IList::onSizeChanged();
+
 	for(auto it = mEntries.cbegin(); it != mEntries.cend(); it++)
 	{
 		updateElementSize(it->data);
@@ -164,10 +171,20 @@ void ComponentTab::render(const Transform4x4f& parentTrans)
 	// draw our entries
 	std::vector<GuiComponent*> drawAfterCursor;
 	
+	float x = 0;
+
 	for(unsigned int i = 0; i < mEntries.size(); i++)
 	{
 		auto& entry = mEntries.at(i);
-		
+
+		float tabWidth = getTabWidth(entry.data);
+
+		if (i == mHotTab)
+		{
+			Renderer::setMatrix(trans);
+			Renderer::drawRect(x, 0.0f, tabWidth, mSize.y(), 0x00000010, 0x00000010);
+		}
+
 		bool drawAll = (i != (unsigned int)mCursor);
 		for(auto it = entry.data.elements.cbegin(); it != entry.data.elements.cend(); it++)
 		{
@@ -179,6 +196,10 @@ void ComponentTab::render(const Transform4x4f& parentTrans)
 			else
 				drawAfterCursor.push_back(it->component.get());			
 		}
+
+		x += tabWidth;
+		if (x - mCameraOffset > mSize.x())
+			break;
 	}
 
 	// custom rendering
@@ -193,12 +214,12 @@ void ComponentTab::render(const Transform4x4f& parentTrans)
 		if (mFocused)
 		{				
 			Renderer::drawRect(mSelectorBarOffset, 0.0f, selectedTabWidth, mSize.y(), bgColor, Renderer::Blend::ZERO, Renderer::Blend::ONE_MINUS_SRC_COLOR);
-			Renderer::drawRect(mSelectorBarOffset, 0.0f, selectedTabWidth, mSize.y(), selectorColor, selectorGradientColor, selectorGradientHorz, Renderer::Blend::ONE, Renderer::Blend::ONE);
+			Renderer::drawRect(mSelectorBarOffset, 0.0f, selectedTabWidth, mSize.y(), selectorColor, selectorColor, selectorGradientHorz, Renderer::Blend::ONE, Renderer::Blend::ONE);
 		}
 		else
 		{
 			Renderer::drawRect(mSelectorBarOffset, mSize.y() - SELECTOR_PX, selectedTabWidth, SELECTOR_PX, bgColor, Renderer::Blend::ZERO, Renderer::Blend::ONE_MINUS_SRC_COLOR);
-			Renderer::drawRect(mSelectorBarOffset, mSize.y() - SELECTOR_PX, selectedTabWidth, SELECTOR_PX, selectorColor, selectorGradientColor, selectorGradientHorz, Renderer::Blend::ONE, Renderer::Blend::ONE);
+			Renderer::drawRect(mSelectorBarOffset, mSize.y() - SELECTOR_PX, selectedTabWidth, SELECTOR_PX, selectorColor, selectorColor, selectorGradientHorz, Renderer::Blend::ONE, Renderer::Blend::ONE);
 		}
 	}
 
@@ -216,7 +237,7 @@ void ComponentTab::render(const Transform4x4f& parentTrans)
 		Renderer::setMatrix(trans);
 
 	// draw separators
-	float x = 0;
+	x = 0;
 	for(unsigned int i = 0; i < mEntries.size(); i++)
 	{
 		Renderer::drawRect(x, 0.0f, 1.0f, mSize.y(), separatorColor);
@@ -316,7 +337,7 @@ std::vector<HelpPrompt> ComponentTab::getHelpPrompts()
 		}
 
 		if(addMovePrompt)
-			prompts.push_back(HelpPrompt(_("up/down"), _("CHOOSE"))); // batocera
+			prompts.push_back(HelpPrompt(_("up/down"), _("CHOOSE")));
 	}
 
 	return prompts;
@@ -327,4 +348,89 @@ bool ComponentTab::moveCursor(int amt)
 	bool ret = listInput(amt);
 	listInput(0);
 	return ret;
+}
+
+
+
+bool ComponentTab::hitTest(int x, int y, Transform4x4f& parentTransform, std::vector<GuiComponent*>* pResult)
+{
+	Transform4x4f trans = parentTransform * getTransform();
+
+	bool ret = false;
+
+	mHotTab = -1;
+
+	auto rect = Renderer::getScreenRect(trans, getSize(), true);
+	if (x != -1 && y != -1 && rect.contains(x, y))
+	{
+		ret = true;
+
+		float rx = 0;
+
+		for (unsigned int i = 0; i < mEntries.size(); i++)
+		{
+			auto& entry = mEntries.at(i);
+			float tabWidth = getTabWidth(entry.data);
+
+			if (rx - mCameraOffset + tabWidth >= 0)
+			{
+				rect.x = (rx - mCameraOffset) * trans.r0().x() + trans.translation().x(); // +Math::round(mCameraOffset);
+				rect.w = tabWidth * trans.r0().x();
+
+				if (rect.contains(x, y))
+				{
+					mHotTab = i;
+					break;
+				}
+			}
+
+			rx += tabWidth;
+			if (rx - mCameraOffset > mSize.x())
+				break;
+		}
+
+		if (pResult != nullptr)
+			pResult->push_back(this);
+	}
+
+	trans.translate(-mCameraOffset, 0);
+
+	for (int i = 0; i < getChildCount(); i++)
+		ret |= getChild(i)->hitTest(x, y, trans, pResult);
+
+	return ret;
+}
+
+bool ComponentTab::onMouseClick(int button, bool pressed, int x, int y)
+{
+	if (button == 1)
+	{
+		if (pressed)
+		{
+			if (mHotTab >= 0)
+			{
+				float camOffset = mCameraOffset;
+				mCursor = mHotTab;
+				onCursorChanged(CURSOR_STOPPED);
+				mCameraOffset = camOffset;
+				mPressedTab = mHotTab;
+			}
+
+			mWindow->setMouseCapture(this);
+		}
+		else if (mWindow->hasMouseCapture(this))
+		{
+			mWindow->releaseMouseCapture();
+
+			auto row = mHotTab;
+			mHotTab = -1;
+
+			if (row == mHotTab && mCursor == row)
+				InputManager::getInstance()->sendMouseClick(mWindow, 1);
+		}
+
+		return true;
+	}
+
+	return false;
 }

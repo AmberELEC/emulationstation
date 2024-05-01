@@ -112,6 +112,8 @@ public:
 	static void reloadAllGames(Window* window, bool deleteCurrentGui = false, bool doCallExternalTriggers = false);
 
 	void setActiveView(std::shared_ptr<GuiComponent> view);
+	
+	virtual bool hitTest(int x, int y, Transform4x4f& parentTransform, std::vector<GuiComponent*>* pResult = nullptr) override;
 
 private:
 	ViewController(Window* window);
@@ -121,7 +123,8 @@ private:
 	bool doLaunchGame(FileData* game, LaunchGameOptions options);
 	bool checkLaunchOptions(FileData* game, LaunchGameOptions options, Vector3f center);
 	int getSystemId(SystemData* system);
-	
+	void changeVolume(int increment);
+
 	std::shared_ptr<GuiComponent> mCurrentView;
 	std::map< SystemData*, std::shared_ptr<IGameListView> > mGameListViews;
 	std::shared_ptr<SystemView> mSystemListView;

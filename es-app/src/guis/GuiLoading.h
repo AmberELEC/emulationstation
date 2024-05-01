@@ -12,19 +12,29 @@
 #include "guis/GuiMsgBox.h"
 #include <string>
 #include <thread>
+#include <mutex>
 #include "Settings.h"
 #include "animations/LambdaAnimation.h"
 
-template<typename T>
-class GuiLoading : public GuiComponent
+class IGuiLoadingHandler
 {
 public:
-	GuiLoading(Window *window, const std::string title, const std::function<T()> &func, const std::function<void(T)> &func2 = nullptr) 
+	virtual void setText(const std::string& text) = 0;
+};
+
+template<typename T>
+class GuiLoading : public GuiComponent, public IGuiLoadingHandler
+{
+public:
+	GuiLoading(Window *window, const std::string title, const std::function<T(IGuiLoadingHandler*)> &func, const std::function<void(T)> &func2 = nullptr)
 		: GuiComponent(window), mBusyAnim(window), mFunc(func), mFunc2(func2)
 	{
 		setSize((float)Renderer::getScreenWidth(), (float)Renderer::getScreenHeight());
 		setTag("GuiLoading");
 	
+		mText = title;
+		mTextChanged = false;
+
 		mRunning = true;
 		mHandle = new std::thread(&GuiLoading::threadLoading, this);
 		mBusyAnim.setText(title);
@@ -39,6 +49,19 @@ public:
 	{
 		mRunning = false;
 		mHandle->join();
+	}
+
+	void setText(const std::string& text) override
+	{		
+		mTextMutex.lock();
+
+		if (mText != text)
+		{
+			mText = text;
+			mTextChanged = true;
+		}
+
+		mTextMutex.unlock();
 	}
 
 	void render(const Transform4x4f &parentTrans) override
@@ -57,10 +80,13 @@ public:
 	{
 		return false;	
 	}
-
+	
 	void update(int deltaTime) override
 	{
 		GuiComponent::update(deltaTime);
+
+		updateText();
+
 		mBusyAnim.update(deltaTime);
 
 		if (!mRunning)
@@ -83,14 +109,33 @@ public:
 private:
 	void threadLoading()
 	{
-		result = mFunc();
+		result = mFunc(this);
 		mRunning = false;
 	}
 
-    BusyComponent mBusyAnim;
-    std::thread *mHandle;
-    bool mRunning;
-    const std::function<T()> mFunc;
+	void updateText()
+	{
+		mTextMutex.lock();
+
+		if (mTextChanged)
+		{
+			mBusyAnim.setText(mText);
+			mBusyAnim.setSize(mSize);
+			mTextChanged = false;
+		}
+
+		mTextMutex.unlock();
+	}
+
+    BusyComponent	mBusyAnim;
+    std::thread*	mHandle;
+    bool			mRunning;
+
+	std::mutex		mTextMutex;
+	std::string		mText;
+	bool			mTextChanged;
+
+    const std::function<T(IGuiLoadingHandler*)> mFunc;
     const std::function<void(T)> mFunc2;
     T result;
 };

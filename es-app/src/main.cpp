@@ -12,7 +12,7 @@
 #include "Log.h"
 #include "MameNames.h"
 #include "Genres.h"
-#include "platform.h"
+#include "utils/Platform.h"
 #include "PowerSaver.h"
 #include "Settings.h"
 #include "SystemData.h"
@@ -36,6 +36,11 @@
 #include "InputConfig.h"
 #include "RetroAchievements.h"
 #include "TextToSpeech.h"
+#include "Paths.h"
+#include "resources/TextureData.h"
+#include "Scripting.h"
+#include "watchers/WatchersManager.h"
+#include "HttpReq.h"
 
 #ifdef WIN32
 #include <Windows.h>
@@ -45,10 +50,11 @@
 
 static std::string gPlayVideo;
 static int gPlayVideoDuration = 0;
+static bool enable_startup_game = true;
 
 bool parseArgs(int argc, char* argv[])
 {
-	Utils::FileSystem::setExePath(argv[0]);
+	Paths::setExePath(argv[0]);
 
 	// We need to process --home before any call to Settings::getInstance(), because settings are loaded from homepath
 	for (int i = 1; i < argc; i++)
@@ -62,7 +68,7 @@ bool parseArgs(int argc, char* argv[])
 			if (arg.find("-") == 0)
 				continue;
 
-			Utils::FileSystem::setHomePath(argv[i + 1]);
+			Paths::setHomePath(argv[i + 1]);
 			break;
 		}
 	}
@@ -160,14 +166,25 @@ bool parseArgs(int argc, char* argv[])
 		}else if(strcmp(argv[i], "--exit-on-reboot-required") == 0)
 		{
 			Settings::getInstance()->setBool("ExitOnRebootRequired", true);
+		}else if(strcmp(argv[i], "--no-startup-game") == 0)
+		{
+		        enable_startup_game = false;
 		}else if(strcmp(argv[i], "--no-splash") == 0)
 		{
 			Settings::getInstance()->setBool("SplashScreen", false);
+		}else if(strcmp(argv[i], "--splash-image") == 0)
+		{
+		        if (i >= argc - 1)
+			{
+				std::cerr << "Invalid splash image supplied.";
+				return false;
+			}
+			Settings::getInstance()->setString("AlternateSplashScreen", argv[i+1]);
+			++i; // skip the argument value
 		}else if(strcmp(argv[i], "--debug") == 0)
 		{
 			Settings::getInstance()->setBool("Debug", true);
 			Settings::getInstance()->setBool("HideConsole", false);
-			// Log::setReportingLevel(LogDebug);
 		}
 		else if (strcmp(argv[i], "--fullscreen-borderless") == 0)
 		{
@@ -190,13 +207,6 @@ bool parseArgs(int argc, char* argv[])
 			int maxVRAM = atoi(argv[i + 1]);
 			Settings::getInstance()->setInt("MaxVRAM", maxVRAM);
 		}
-#ifdef _ENABLEEMUELEC
-		else if(strcmp(argv[i], "--log-path") == 0)
-		{
-			std::string logPATH = argv[i + 1];
-			Settings::getInstance()->setString("LogPath", logPATH);
-		}
-#endif
 		else if (strcmp(argv[i], "--force-kiosk") == 0)
 		{
 			Settings::getInstance()->setBool("ForceKiosk", true);
@@ -238,9 +248,6 @@ bool parseArgs(int argc, char* argv[])
 				"--force-kiosk		Force the UI mode to be Kiosk\n"
 				"--force-disable-filters		Force the UI to ignore applied filters in gamelist\n"
 				"--home [path]		Directory to use as home path\n"
-#ifdef _ENABLEEMUELEC
-				"--log-path [path]		Directory to use for log\n"
-#endif
 				"--help, -h			summon a sentient, angry tuba\n\n"
 				"--monitor [index]			monitor index\n\n"				
 				"More information available in README.md.\n";
@@ -254,7 +261,7 @@ bool parseArgs(int argc, char* argv[])
 bool verifyHomeFolderExists()
 {
 	//make sure the config directory exists	
-	std::string configDir = Utils::FileSystem::getEsConfigPath();
+	std::string configDir = Paths::getUserEmulationStationPath();
 	if(!Utils::FileSystem::exists(configDir))
 	{
 		std::cout << "Creating config directory \"" << configDir << "\"\n";
@@ -427,13 +434,15 @@ void launchStartupGame()
 	{
 		InputManager::getInstance()->init();
 		command = Utils::String::replace(command, "%CONTROLLERSCONFIG%", InputManager::getInstance()->configureEmulators());
-		runSystemCommand(command, gamePath, nullptr);
+		Utils::Platform::ProcessStartInfo(command).run();		
 	}	
 }
 
+#include "utils/MathExpr.h"
+
 int main(int argc, char* argv[])
 {	
-	StopWatch* stopWatch = new StopWatch("main :", LogDebug);
+	Utils::MathExpr::performUnitTests();
 
 	// signal(SIGABRT, signalHandler);
 	signal(SIGFPE, signalHandler);
@@ -498,8 +507,8 @@ int main(int argc, char* argv[])
 	}
 
 	//start the logger
-	Log::setupReportingLevel();
 	Log::init();	
+
 	LOG(LogInfo) << "EmulationStation - v" << PROGRAM_VERSION_STRING << ", built " << PROGRAM_BUILT_STRING;
 
 	//always close the log on exit
@@ -509,19 +518,24 @@ int main(int argc, char* argv[])
 	setLocale(argv[0]);	
 
 #if !WIN32
-	// Run boot game, before Window Create for linux
-	launchStartupGame();
+	if(enable_startup_game) {
+	  // Run boot game, before Window Create for linux
+	  launchStartupGame();
+	}
 #endif
 
+	Scripting::fireEvent("start");
+
 	// metadata init
+	HttpReq::resetCookies();
 	Genres::init();
 	MetaDataList::initMetadata();
 
 	Window window;
 	SystemScreenSaver screensaver(&window);
-	PowerSaver::init();
 	ViewController::init(&window);
 	CollectionSystemManager::init(&window);
+	VideoVlcComponent::init();
 
 	window.pushGui(ViewController::get());
 	if(!window.init(true, false))
@@ -530,10 +544,7 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-#if WIN32
-	// Run boot game, after Window Create for Windows, or wnd won't be activated when returning back
-	launchStartupGame();
-#endif
+	PowerSaver::init();
 
 	bool splashScreen = Settings::getInstance()->getBool("SplashScreen");
 	bool splashScreenProgress = Settings::getInstance()->getBool("SplashScreenProgress");
@@ -562,7 +573,7 @@ int main(int argc, char* argv[])
 		}
 
 		// we can't handle es_systems.cfg file problems inside ES itself, so display the error message then quit
-		window.pushGui(new GuiMsgBox(&window, errorMsg, _("QUIT"), [] { quitES(); }));
+		window.pushGui(new GuiMsgBox(&window, errorMsg, _("QUIT"), [] { Utils::Platform::quitES(); }));
 	}
 
 	SystemConf* systemConf = SystemConf::getInstance();
@@ -583,6 +594,9 @@ int main(int argc, char* argv[])
 	}
 #endif
 
+	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::PDFEXTRACTION))
+		TextureData::PdfHandler = ApiSystem::getInstance();
+
 	ApiSystem::getInstance()->getIpAdress();
 
 	// preload what we can right away instead of waiting for the user to select it
@@ -599,7 +613,7 @@ int main(int argc, char* argv[])
 
 	// tts
 	TextToSpeech::getInstance()->enable(Settings::getInstance()->getBool("TTS"), false);
-
+	
 	if (errorMsg == NULL)
 		ViewController::get()->goToStart(true);
 
@@ -638,8 +652,6 @@ int main(int argc, char* argv[])
 	int lastTime = SDL_GetTicks();
 	int ps_time = SDL_GetTicks();
 
-	delete stopWatch;
-
 	bool running = true;
 
 	while(running)
@@ -666,6 +678,9 @@ int main(int argc, char* argv[])
 			} 
 			while(SDL_PollEvent(&event));
 
+			// check guns
+			InputManager::getInstance()->updateGuns(&window);
+
 			// triggered if exiting from SDL_WaitEvent due to event
 			if (ps_standby)
 				// show as if continuing from last event
@@ -674,14 +689,17 @@ int main(int argc, char* argv[])
 			// reset counter
 			ps_time = SDL_GetTicks();
 		}
-		else if (ps_standby)
+		else if (ps_standby == false)
 		{
-			// If exitting SDL_WaitEventTimeout due to timeout. Trail considering
-			// timeout as an event
-		//	ps_time = SDL_GetTicks();
+		  // check guns
+		  InputManager::getInstance()->updateGuns(&window);
+
+		  // If exitting SDL_WaitEventTimeout due to timeout. Trail considering
+		  // timeout as an event
+		  //	ps_time = SDL_GetTicks();
 		}
 
-		if(window.isSleeping())
+		if (window.isSleeping())
 		{
 			lastTime = SDL_GetTicks();
 			SDL_Delay(1); // this doesn't need to be accurate, we're just giving up our CPU time until something wakes us up
@@ -699,30 +717,33 @@ int main(int argc, char* argv[])
 		TRYCATCH("Window.update" ,window.update(deltaTime))	
 		TRYCATCH("Window.render", window.render())
 
+/*
 #ifdef WIN32		
 		int processDuration = SDL_GetTicks() - processStart;
 		if (processDuration < timeLimit)
 		{
 			int timeToWait = timeLimit - processDuration;
-			if (timeToWait > 0 && timeToWait < 25 && Settings::getInstance()->getBool("VSync"))
+			if (timeToWait > 0 && timeToWait < 25 && Settings::VSync())
 				Sleep(timeToWait);
 		}
 #endif
+*/
 
 		Renderer::swapBuffers();
 
 		Log::flush();
 	}
 
-	if (isFastShutdown())
+	if (Utils::Platform::isFastShutdown())
 		Settings::getInstance()->setBool("IgnoreGamelist", true);
 
+	WatchersManager::stop();
 	ThreadedHasher::stop();
 	ThreadedScraper::stop();
 
 	ApiSystem::getInstance()->deinit();
 
-	while(window.peekGui() != ViewController::get())
+	while (window.peekGui() != ViewController::get())
 		delete window.peekGui();
 
 	if (SystemData::hasDirtySystems())
@@ -733,18 +754,22 @@ int main(int argc, char* argv[])
 	ViewController::saveState();
 	CollectionSystemManager::deinit();
 	SystemData::deleteSystems();
+	Scripting::exitScriptingEngine();
 
 	// call this ONLY when linking with FreeImage as a static library
 #ifdef FREEIMAGE_LIB
 	FreeImage_DeInitialise();
 #endif
+	
+	// Delete ViewController
+	while (window.peekGui() != nullptr)
+		delete window.peekGui();
 
 	window.deinit();
 
-	processQuitMode();
+	Utils::Platform::processQuitMode();
 
 	LOG(LogInfo) << "EmulationStation cleanly shutting down.";
 
 	return 0;
 }
-

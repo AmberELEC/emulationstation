@@ -5,17 +5,42 @@
 #include "ThemeData.h"
 #include "InputManager.h"
 #include "Settings.h"
-#include "platform.h"
+#include "utils/Platform.h"
+#include "IExternalActivity.h"
+
+#include "watchers/BatteryLevelWatcher.h"
+#include "watchers/NetworkStateWatcher.h"
 
 // #define DEVTEST
 
 #define PLAYER_PAD_TIME_MS		 150
-#define UPDATE_NETWORK_DELAY	2000
-#define UPDATE_BATTERY_DELAY	5000
 
-ControllerActivityComponent::ControllerActivityComponent(Window* window) : GuiComponent(window)
+ControllerActivityComponent::ControllerActivityComponent(Window* window) : GuiComponent(window), mBatteryInfoChanged(false), mBatteryTextX(0), mNetworkConnected(false), mPlanemodeEnabled(false)
 {
+	WatchersManager::getInstance()->RegisterNotify(this);
 	init();
+}
+
+ControllerActivityComponent::~ControllerActivityComponent()
+{
+	WatchersManager::getInstance()->UnregisterNotify(this);
+}
+
+void ControllerActivityComponent::OnWatcherChanged(IWatcher* component)
+{
+	BatteryLevelWatcher* batteryWatcher = dynamic_cast<BatteryLevelWatcher*>(component);
+	if (batteryWatcher != nullptr)
+	{
+		mWatchedBatteryInfo = batteryWatcher->getBatteryInfo();
+		mBatteryInfoChanged = true;
+	}
+
+	NetworkStateWatcher* networkWatcher = dynamic_cast<NetworkStateWatcher*>(component);
+	if (networkWatcher != nullptr)
+	{
+		mNetworkConnected = networkWatcher->isConnected();
+		mPlanemodeEnabled = networkWatcher->isPlaneMode();
+	}
 }
 
 void ControllerActivityComponent::init()
@@ -25,17 +50,14 @@ void ControllerActivityComponent::init()
 	mBatteryTextX = -999;
 
 	mView = CONTROLLERS;
-	
-	mBatteryInfo = BatteryInformation();
-	mBatteryCheckTime = UPDATE_BATTERY_DELAY;
-
-	mNetworkCheckTime = UPDATE_NETWORK_DELAY;
 
 	mColorShift = 0xFFFFFF99;
 	mActivityColor = 0xFF000066;
 	mHotkeyColor = 0x0000FF66;
 
 	mPadTexture = nullptr;
+	mGunTexture = nullptr;
+	mWheelTexture = nullptr;
 	mHorizontalAlignment = ALIGN_LEFT;
 	mSpacing = (int)(Renderer::getScreenHeight() / 200.0f);
 
@@ -47,8 +69,24 @@ void ControllerActivityComponent::init()
 
 	for (int i = 0; i < MAX_PLAYERS; i++)
 		mPads[i].reset();
+	
+	mNetworkConnected = false;
+	mPlanemodeEnabled = false;
 
-	updateNetworkInfo();
+	NetworkStateWatcher* networkWatcher = WatchersManager::GetComponent<NetworkStateWatcher>();
+	if (networkWatcher != nullptr)
+	{
+		mNetworkConnected = networkWatcher->isConnected();
+		mPlanemodeEnabled = networkWatcher->isPlaneMode();
+	}
+
+	mWatchedBatteryInfo = Utils::Platform::BatteryInformation();
+	mBatteryInfoChanged = true;
+
+	BatteryLevelWatcher* batteryWatcher = WatchersManager::GetComponent<BatteryLevelWatcher>();
+	if (batteryWatcher != nullptr)
+		mWatchedBatteryInfo = batteryWatcher->getBatteryInfo();
+
 	updateBatteryInfo();
 }
 
@@ -59,6 +97,8 @@ void ControllerActivityComponent::setColorShift(unsigned int color)
 
 void ControllerActivityComponent::onPositionChanged()
 {
+	GuiComponent::onPositionChanged();
+
 	mBatteryText = nullptr;
 	mBatteryFont = nullptr;
 
@@ -68,6 +108,8 @@ void ControllerActivityComponent::onPositionChanged()
 
 void ControllerActivityComponent::onSizeChanged()
 {	
+	GuiComponent::onSizeChanged();
+
 	mBatteryText = nullptr;
 	mBatteryFont = nullptr;
 
@@ -79,6 +121,18 @@ void ControllerActivityComponent::onSizeChanged()
 		size_t heightPx = (size_t)Math::round(mSize.y());
 		mPadTexture->rasterizeAt(heightPx, heightPx);
 	}	
+
+	if (mSize.y() > 0 && mGunTexture)
+	{
+		size_t heightPx = (size_t)Math::round(mSize.y());
+		mGunTexture->rasterizeAt(heightPx, heightPx);
+	}
+
+	if (mSize.y() > 0 && mWheelTexture)
+	{
+		size_t heightPx = (size_t)Math::round(mSize.y());
+		mWheelTexture->rasterizeAt(heightPx, heightPx);
+	}
 }
 
 bool ControllerActivityComponent::input(InputConfig* config, Input input)
@@ -107,26 +161,9 @@ void ControllerActivityComponent::update(int deltaTime)
 {
 	GuiComponent::update(deltaTime);
 
-	if (mView & BATTERY)
-	{
-		mBatteryCheckTime += deltaTime;
-		if (mBatteryCheckTime >= UPDATE_BATTERY_DELAY)
-		{
-			updateBatteryInfo();
-			mBatteryCheckTime = 0;
-		}
-	}
+	if (mBatteryInfoChanged)
+		updateBatteryInfo();
 	
-	if (mView & NETWORK)
-	{
-		mNetworkCheckTime += deltaTime;
-		if (mNetworkCheckTime >= UPDATE_NETWORK_DELAY)
-		{
-			updateNetworkInfo();
-			mNetworkCheckTime = 0;			
-		}
-	}
-
 	if (mView & CONTROLLERS)
 	{
 		for (int i = 0; i < MAX_PLAYERS; i++)
@@ -151,12 +188,14 @@ void ControllerActivityComponent::render(const Transform4x4f& parentTrans)
 		return;
 
 	Transform4x4f trans = parentTrans * getTransform();
-	if (!Renderer::isVisibleOnScreen(trans.translation().x(), trans.translation().y(), mSize.x(), mSize.y()))
+
+	auto rect = Renderer::getScreenRect(trans, mSize);
+	if (!Renderer::isVisibleOnScreen(rect))
 		return;
 
 	Renderer::setMatrix(trans);
 
-	if (Settings::DebugImage)
+	if (Settings::DebugImage())
 		Renderer::drawRect(0.0f, 0.0f, mSize.x(), mSize.y(), 0xFFFF0090, 0xFFFF0090);
 
 	float x = 0;
@@ -166,31 +205,32 @@ void ControllerActivityComponent::render(const Transform4x4f& parentTrans)
 	int itemsWidth = 0;
 	float batteryTextOffset = 0;
 
-	bool showControllerActivity = Settings::getInstance()->getBool("ShowControllerActivity");
-	bool showControllerBattery = showControllerActivity && Settings::getInstance()->getBool("ShowControllerBattery");
+	bool showControllerActivity = Settings::ShowControllerActivity();
+	bool showControllerBattery = showControllerActivity && Settings::ShowControllerBattery();
 
 	if ((mView & CONTROLLERS) && showControllerActivity)
 	{	
-		auto playerJoysticks = InputManager::getInstance()->lastKnownPlayersDeviceIndexes();
+		auto& playerJoysticks = InputManager::getInstance()->lastKnownPlayersDeviceIndexes();
 
 		int padCount = 0;
 
 		for (int player = 0; player < MAX_PLAYERS; player++)
-			mPads[player].index = -1;
-
-		for (int player = 0; player < MAX_PLAYERS; player++)
 		{
+			PlayerPad& pad = mPads[player];
+			pad.index = -1;
+
 			auto it = playerJoysticks.find(player);
 			if (it == playerJoysticks.cend() || it->second.index < 0 || it->second.index >= MAX_PLAYERS)
 				continue;
 
-			mPads[player].index = it->second.index;
-			mPads[player].batteryLevel = it->second.batteryLevel;
+			pad.index = it->second.index;
+			pad.batteryLevel = it->second.batteryLevel;
+			pad.isWheel = it->second.isWheel;
 		}
 
 		for (int idx = 0; idx < MAX_PLAYERS; idx++)
 		{
-			auto pad = mPads[idx];
+			PlayerPad& pad = mPads[idx];
 			if (pad.index < 0)
 				continue;
 
@@ -205,24 +245,34 @@ void ControllerActivityComponent::render(const Transform4x4f& parentTrans)
 
 				auto sz = mBatteryFont->sizeText(batteryTextValue, 1.0);
 
-				if (mPads[idx].batteryTextValue != batteryTextValue)
-					mPads[idx].batteryText = nullptr;
+				if (pad.batteryTextValue != batteryTextValue)
+					pad.batteryText = nullptr;
 
-				mPads[idx].batteryTextValue = batteryTextValue;
-				mPads[idx].batteryTextSize = sz.x();
+				pad.batteryTextValue = batteryTextValue;
+				pad.batteryTextSize = sz.x();
 
 				itemsWidth += sz.x() + mSpacing;
 				batteryTextOffset = mSize.y() / 2.0f - sz.y() / 2.0f;
 			}
 		}
+
+		auto guns = InputManager::getInstance()->getGuns();
+		for (int idx = 0; idx < guns.size(); idx++)
+			if (!guns[idx]->isMouse())
+				itemsWidth += szW + mSpacing;
 	}
 
-	if ((mView & NETWORK) && mNetworkConnected && mNetworkImage != nullptr)
-		itemsWidth += szW + mSpacing; // getTextureSize(mNetworkImage).x()
+	if (Settings::ShowNetworkIndicator())
+	{
+		if ((mView & PLANEMODE) && mPlanemodeEnabled && mPlanemodeImage != nullptr)
+			itemsWidth += szW + mSpacing; // getTextureSize(mPlanemodeImage).x()
+		else if ((mView & NETWORK) && mNetworkConnected && mNetworkImage != nullptr)
+			itemsWidth += szW + mSpacing; // getTextureSize(mNetworkImage).x()
+	}
 
 	auto batteryText = std::to_string(mBatteryInfo.level) + "%";
 	
-	if ((mView & BATTERY) && mBatteryInfo.hasBattery && mBatteryImage != nullptr)
+	if ((mView & BATTERY) && mBatteryInfo.hasBattery && mBatteryImage != nullptr && !Settings::getInstance()->getString("ShowBattery").empty())
 	{
 		itemsWidth += szW + mSpacing;
 		//itemsWidth += getTextureSize(mBatteryImage).x() + mSpacing;
@@ -257,12 +307,22 @@ void ControllerActivityComponent::render(const Transform4x4f& parentTrans)
 			else if (pad.keyState == 2)
 				padcolor = mHotkeyColor;
 
-			if (mPadTexture && mPadTexture->bind())
-				x += renderTexture(x, szW, mPadTexture, padcolor);
-			else
-			{
-				Renderer::drawRect(x, 0.0f, szW, szH, padcolor);
-				x += szW + mSpacing;
+			if(pad.isWheel) {
+			  if (mWheelTexture && mWheelTexture->bind())
+			    x += renderTexture(x, szW, mWheelTexture, padcolor);
+			  else
+			    {
+			      Renderer::drawRoundRect(x, 0.0f, szW, szH, szW/2.0, padcolor);
+			      x += szW + mSpacing;
+			    }
+			} else {
+			  if (mPadTexture && mPadTexture->bind())
+			    x += renderTexture(x, szW, mPadTexture, padcolor);
+			  else
+			    {
+			      Renderer::drawRect(x, 0.0f, szW, szH, padcolor);
+			      x += szW + mSpacing;
+			    }
 			}
 
 			if (showControllerBattery && pad.batteryLevel >= 0 && mBatteryFont != nullptr)
@@ -277,12 +337,35 @@ void ControllerActivityComponent::render(const Transform4x4f& parentTrans)
 			else
 				mPads[idx].batteryText = nullptr;
 		}
+
+		auto guns = InputManager::getInstance()->getGuns();
+		for (int idx = 0; idx < guns.size(); idx++)
+		{
+			Gun* gun = guns[idx];
+			if (gun->isMouse())
+				continue;
+
+			unsigned int gunColor = gun->isLButtonDown() || gun->isRButtonDown() ? mActivityColor : mColorShift;
+
+			if (mGunTexture && mGunTexture->bind())
+				x += renderTexture(x, szW, mGunTexture, gunColor);
+			else
+			{
+				Renderer::drawRect(x, 0.0f, szW, szH, gunColor);
+				x += szW + mSpacing;
+			}
+		}
 	}
 	
-	if ((mView & NETWORK) && mNetworkConnected && mNetworkImage != nullptr)
-		x += renderTexture(x, szW, mNetworkImage, mColorShift);
+	if (Settings::ShowNetworkIndicator())
+	{
+		if ((mView & PLANEMODE) && mPlanemodeEnabled && mPlanemodeImage != nullptr)
+			x += renderTexture(x, szW, mPlanemodeImage, mColorShift);
+		else if ((mView & NETWORK) && mNetworkConnected && mNetworkImage != nullptr)
+			x += renderTexture(x, szW, mNetworkImage, mColorShift);
+	}
 
-	if ((mView & BATTERY) && mBatteryInfo.hasBattery && mBatteryImage != nullptr)
+	if ((mView & BATTERY) && mBatteryInfo.hasBattery && mBatteryImage != nullptr && !Settings::getInstance()->getString("ShowBattery").empty())
 	{
 		x += renderTexture(x, szW, mBatteryImage, mColorShift);
 
@@ -319,6 +402,12 @@ void ControllerActivityComponent::applyTheme(const std::shared_ptr<ThemeData>& t
 		if (elem->has("imagePath") && ResourceManager::getInstance()->fileExists(elem->get<std::string>("imagePath")))
 			mPadTexture = TextureResource::get(elem->get<std::string>("imagePath"), false, true);
 
+		if (elem->has("gunPath") && ResourceManager::getInstance()->fileExists(elem->get<std::string>("gunPath")))
+			mGunTexture = TextureResource::get(elem->get<std::string>("gunPath"), false, true);
+
+		if (elem->has("wheelPath") && ResourceManager::getInstance()->fileExists(elem->get<std::string>("wheelPath")))
+		  mWheelTexture = TextureResource::get(elem->get<std::string>("wheelPath"), false, true);
+
 		// Wifi
 		if (elem->has("networkIcon"))
 		{
@@ -329,6 +418,18 @@ void ControllerActivityComponent::applyTheme(const std::shared_ptr<ThemeData>& t
 			}
 			else
 				mNetworkImage = nullptr;
+		}
+
+		// planeMode
+		if (elem->has("planemodeIcon"))
+		{
+			if (ResourceManager::getInstance()->fileExists(elem->get<std::string>("planemodeIcon")))
+			{
+				mView |= ActivityView::PLANEMODE;
+				mPlanemodeImage = TextureResource::get(elem->get<std::string>("planemodeIcon"), false, true);
+			}
+			else
+				mPlanemodeImage = nullptr;
 		}
 
 		// Battery
@@ -390,21 +491,17 @@ void ControllerActivityComponent::applyTheme(const std::shared_ptr<ThemeData>& t
 	updateBatteryInfo();
 }
 
-void ControllerActivityComponent::updateNetworkInfo()
-{
-	mNetworkConnected = Settings::getInstance()->getBool("ShowNetworkIndicator") && !queryIPAdress().empty();
-}
-
 void ControllerActivityComponent::updateBatteryInfo()
 {
-	if (Settings::getInstance()->getString("ShowBattery").empty() || (mView & BATTERY) == 0)
+	mBatteryInfoChanged = false;
+
+	if ((mView & BATTERY) == 0)
 	{
 		mBatteryInfo.hasBattery = false;
 		return;
 	}
 
-	BatteryInformation info = queryBatteryInformation();
-
+	auto info = mWatchedBatteryInfo;
 	if (info.hasBattery == mBatteryInfo.hasBattery && info.isCharging == mBatteryInfo.isCharging && info.level == mBatteryInfo.level)
 		return;
 
@@ -456,7 +553,7 @@ Vector2f ControllerActivityComponent::getTextureSize(std::shared_ptr<TextureReso
 	if (texture == nullptr)
 		return Vector2f::Zero();
 
-	auto imageSize = texture->getSourceImageSize();
+	auto imageSize = texture->getPhysicalSize();
 	if (imageSize.x() == 0 || imageSize.y() == 0)
 		return Vector2f::Zero();
 

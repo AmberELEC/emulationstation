@@ -21,13 +21,18 @@
 void GuiGameAchievements::show(Window* window, int gameId)
 {
 	window->pushGui(new GuiLoading<GameInfoAndUserProgress>(window, _("PLEASE WAIT"),
-		[window, gameId]
+		[window, gameId](auto gui)
 	{
 		return RetroAchievements::getGameInfoAndUserProgress(gameId);
 	},
 		[window](GameInfoAndUserProgress ra)
 	{
-		window->pushGui(new GuiGameAchievements(window, ra));
+		if (ra.ID == 0 && !ra.Title.empty())
+			window->pushGui(new GuiMsgBox(window, _("AN ERROR OCCURRED") + "\r\n" + ra.Title, _("OK")));
+		else if (ra.ID == 0)
+			window->pushGui(new GuiMsgBox(window, _("AN ERROR OCCURRED"), _("OK")));
+		else
+			window->pushGui(new GuiGameAchievements(window, ra));
 	}));
 }
 
@@ -36,7 +41,7 @@ class GameAchievementEntry : public ComponentGrid
 {
 public:
 	GameAchievementEntry(Window* window, Achievement& ra) :
-		ComponentGrid(window, Vector2i(3, 2))
+		ComponentGrid(window, Vector2i(3, 4))
 	{
 		mGameInfo = ra;
 
@@ -44,12 +49,15 @@ public:
 
 		mImage = std::make_shared<WebImageComponent>(mWindow);
 
-		setEntry(mImage, Vector2i(0, 0), false, false, Vector2i(1, 2));
+		setEntry(mImage, Vector2i(0, 0), false, false, Vector2i(1, 4));
 				
 		std::string desc = mGameInfo.Description;
 		desc += _U(" - ") + _("Points") + ": " + mGameInfo.Points;
-		if (!mGameInfo.DateEarned.empty())
-			desc += _U("  \uf091  ") + _("Unlocked on") + ": " + mGameInfo.DateEarned;
+
+		if (!mGameInfo.DateEarnedHardcore.empty())
+			desc += _U("  \uf091  ") + _("Unlocked on") + ": " + mGameInfo.DateEarnedHardcore + _U(" - ") + _("HARDCORE MODE");
+		else if (!mGameInfo.DateEarned.empty())
+			desc += _U("  \uf091  ") + _("Unlocked on") + ": " + mGameInfo.DateEarned;			
 
 		mText = std::make_shared<TextComponent>(mWindow, mGameInfo.Title, theme->Text.font, theme->Text.color);
 		mText->setVerticalAlignment(ALIGN_TOP);
@@ -57,15 +65,28 @@ public:
 		mSubstring = std::make_shared<TextComponent>(mWindow, desc, theme->TextSmall.font, theme->Text.color);
 		mSubstring->setOpacity(192);
 
-		setEntry(mText, Vector2i(2, 0), false, true);
-		setEntry(mSubstring, Vector2i(2, 1), false, true);
-
-		setColWidthPerc(0, IMAGESIZE / WINDOW_WIDTH);
-		setColWidthPerc(1, IMAGESPACER / WINDOW_WIDTH);
+		setEntry(mText, Vector2i(2, 1), false, true);
+		setEntry(mSubstring, Vector2i(2, 2), false, true);
 
 		int height = Math::max(IMAGESIZE + IMAGESPACER, mText->getSize().y() + mSubstring->getSize().y());
+
+		float hTxt = mText->getSize().y() / height;
+		float hSub = mSubstring->getSize().y() / height;
+		float topPadding = Math::max(0.0f, (height - mText->getSize().y() - mSubstring->getSize().y()) / height / 2.0f);
+
+		setRowHeightPerc(0, topPadding);
+		setRowHeightPerc(1, hTxt);
+		setRowHeightPerc(2, hSub);
+		setRowHeightPerc(3, Math::max(0.0f, 1.0f - topPadding - hTxt - hSub));
+
+		setColWidthPerc(0, (height - IMAGESPACER) / WINDOW_WIDTH);
+		setColWidthPerc(1, IMAGESPACER / WINDOW_WIDTH);
+	
 		mImage->setMaxSize(height - IMAGESPACER, height - IMAGESPACER);
 		mImage->setImage(mGameInfo.getBadgeUrl());
+
+		if (mGameInfo.DateEarnedHardcore.empty() && mGameInfo.DateEarned.empty())
+			mImage->setOpacity(120);
 
 		setSize(0, height);
 	}
@@ -117,7 +138,7 @@ GuiGameAchievements::GuiGameAchievements(Window* window, GameInfoAndUserProgress
 
 	for (auto game : ra.Achievements)
 	{
-		if (!game.DateEarned.empty())
+		if (!game.DateEarned.empty() || !game.DateEarnedHardcore.empty())
 			userPoints += Utils::String::toInteger(game.Points);
 
 		totalPoints += Utils::String::toInteger(game.Points);
@@ -127,9 +148,9 @@ GuiGameAchievements::GuiGameAchievements(Window* window, GameInfoAndUserProgress
 		setSubTitle(_("THIS GAME HAS NO ACHIEVEMENTS YET"));
 	else
 	{
-		auto txt = _("Achievements won") + ": \t" + std::to_string(ra.NumAwardedToUser) + "/" + std::to_string(ra.NumAchievements);
+		auto txt = _("Achievements (softcore)") + ": \t" + std::to_string(ra.NumAwardedToUser) + "/" + std::to_string(ra.NumAchievements);
+		txt += "\r\n" + _("Achievements (hardcore)") + ": \t" + std::to_string(ra.NumAwardedToUserHardcore) + "/" + std::to_string(ra.NumAchievements);
 		txt += "\r\n" + _("Points") + ": \t" + std::to_string(userPoints) + "/" + std::to_string(totalPoints);
-//		txt += "\r\n" + _("Completion") + " : \t" + ra.UserCompletion;
 
 		setSubTitle(txt);
 	}
@@ -144,7 +165,7 @@ GuiGameAchievements::GuiGameAchievements(Window* window, GameInfoAndUserProgress
 
 		char trstring[256];
 		snprintf(trstring, 256, _("%d%% complete").c_str(), percent);
-		mProgress = std::make_shared<RetroAchievementProgress>(mWindow, ra.NumAwardedToUser, ra.Achievements.size(), Utils::String::trim(trstring));
+		mProgress = std::make_shared<RetroAchievementProgress>(mWindow, ra.NumAwardedToUser, ra.NumAwardedToUserHardcore, ra.Achievements.size(), Utils::String::trim(trstring));
 	}
 
 	for (auto game : ra.Achievements)
@@ -164,7 +185,7 @@ void GuiGameAchievements::centerWindow()
 {
 	float width = (float)Math::min((int)Renderer::getScreenHeight(), (int)(Renderer::getScreenWidth() * 0.90f));
 
-	if (Renderer::isSmallScreen())
+	if (Renderer::ScreenSettings::fullScreenMenus())
 		mMenu.setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
 	else
 		mMenu.setSize(WINDOW_WIDTH, Renderer::getScreenHeight() * 0.901f);

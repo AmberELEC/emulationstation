@@ -27,18 +27,18 @@ void GuiKeyMappingEditor::initMappingNames()
 {
 	mMappingNames =
 	{
-		{ "up",      "UP",           ":/help/dpad_up.svg" },
-		{ "down",    "DOWN",         ":/help/dpad_down.svg" },
-		{ "left",    "LEFT",         ":/help/dpad_left.svg" },
-		{ "right",   "RIGHT",        ":/help/dpad_right.svg" },
+		{ "up",      "D-PAD UP",           ":/help/dpad_up.svg" },
+		{ "down",    "D-PAD DOWN",         ":/help/dpad_down.svg" },
+		{ "left",    "D-PAD LEFT",         ":/help/dpad_left.svg" },
+		{ "right",   "D-PAD RIGHT",        ":/help/dpad_right.svg" },
 		{ "start",   "START",        ":/help/button_start.svg" },
 		{ "select",  "SELECT",       ":/help/button_select.svg" },
 
-		{ "a",				 InputConfig::buttonLabel("a"),    InputConfig::buttonImage("a") },
-		{ "b",				 InputConfig::buttonLabel("b"),    InputConfig::buttonImage("b") },
+		{ "a",				 InputConfig::buttonDisplayName("a"),    InputConfig::buttonImage("a") },
+		{ "b",				 InputConfig::buttonDisplayName("b"),    InputConfig::buttonImage("b") },
 
-		{ "x",               "X",   ":/help/buttons_north.svg" },
-		{ "y",               "Y",    ":/help/buttons_west.svg" },
+		{ "x",               "NORTH",   ":/help/buttons_north.svg" },
+		{ "y",               "WEST",    ":/help/buttons_west.svg" },
 
 		{ "joystick1up",     "LEFT ANALOG UP",     ":/help/analog_up.svg" },
 		{ "joystick1down",   "LEFT ANALOG DOWN",     ":/help/analog_down.svg" },
@@ -49,21 +49,21 @@ void GuiKeyMappingEditor::initMappingNames()
 		{ "joystick2down",   "RIGHT ANALOG DOWN",     ":/help/analog_down.svg" },
 		{ "joystick2left",   "RIGHT ANALOG LEFT",   ":/help/analog_left.svg" },
 		{ "joystick2right",  "RIGHT ANALOG RIGHT",   ":/help/analog_right.svg" },
-		{ "pageup",          "L1",      ":/help/button_l.svg" },
-		{ "pagedown",        "R1",     ":/help/button_r.svg" },
-		{ "l2",              "L2",       ":/help/button_lt.svg" },
-		{ "r2",              "R2",      ":/help/button_rt.svg" },
-		{ "l3",              "L3",       ":/help/analog_thumb.svg" },
-		{ "r3",              "R3",      ":/help/analog_thumb.svg" },
+		{ "pageup",          "LEFT SHOULDER",      ":/help/button_l.svg" },
+		{ "pagedown",        "RIGHT SHOULDER",     ":/help/button_r.svg" },
+		{ "l2",              "LEFT TRIGGER",       ":/help/button_lt.svg" },
+		{ "r2",              "RIGHT TRIGGER",      ":/help/button_rt.svg" },
+		{ "l3",              "LEFT STICK PRESS",       ":/help/analog_thumb.svg" },
+		{ "r3",              "RIGHT STICK PRESS",      ":/help/analog_thumb.svg" },
 
 		//{ "hotkey",          "HOTKEY",      ":/help/button_hotkey.svg" },
 
 		{ "hotkey + start",          "HOTKEY + START",      ":/help/button_hotkey.svg", ":/help/button_start.svg" },
 
-		{ "hotkey + a",       "HOTKEY + " + InputConfig::buttonLabel("a"),    ":/help/button_hotkey.svg", InputConfig::buttonImage("a") },
-		{ "hotkey + b",       "HOTKEY + " + InputConfig::buttonLabel("b"),   ":/help/button_hotkey.svg", InputConfig::buttonImage("b") },
-		{ "hotkey + x",       "HOTKEY + X",    ":/help/button_hotkey.svg", ":/help/buttons_north.svg" },
-		{ "hotkey + y",       "HOTKEY + Y",   ":/help/button_hotkey.svg", ":/help/buttons_west.svg" }
+		{ "hotkey + a",       "HOTKEY + " + InputConfig::buttonDisplayName("a"),    ":/help/button_hotkey.svg", InputConfig::buttonImage("a") },
+		{ "hotkey + b",       "HOTKEY + " + InputConfig::buttonDisplayName("b"),   ":/help/button_hotkey.svg", InputConfig::buttonImage("b") },
+		{ "hotkey + x",       "HOTKEY + NORTH",    ":/help/button_hotkey.svg", ":/help/buttons_north.svg" },
+		{ "hotkey + y",       "HOTKEY + WEST",   ":/help/button_hotkey.svg", ":/help/buttons_west.svg" }
 	};
 }
 
@@ -91,11 +91,12 @@ GuiKeyMappingEditor::GuiKeyMappingEditor(Window* window, IKeyboardMapContainer* 
 	mBackground.setEdgeColor(theme->Background.color);
 	mBackground.setCenterColor(theme->Background.centerColor);
 	mBackground.setCornerSize(theme->Background.cornerSize);
+	mBackground.setPostProcessShader(theme->Background.menuShader);
 
 	// Title
 	mHeaderGrid = std::make_shared<ComponentGrid>(mWindow, Vector2i(1, 5));
 
-	mTitle = std::make_shared<TextComponent>(mWindow, _("PAD TO KEYBOARD CONFIGURATION"), theme->Title.font, theme->Title.color, ALIGN_CENTER); // batocera
+	mTitle = std::make_shared<TextComponent>(mWindow, _("PAD TO KEYBOARD CONFIGURATION"), theme->Title.font, theme->Title.color, ALIGN_CENTER);
 	mSubtitle = std::make_shared<TextComponent>(mWindow, _("SELECT ACTIONS TO CHANGE"), theme->TextSmall.font, theme->TextSmall.color, ALIGN_CENTER);
 
 	if (!mEditable)
@@ -167,6 +168,8 @@ GuiKeyMappingEditor::GuiKeyMappingEditor(Window* window, IKeyboardMapContainer* 
 
 void GuiKeyMappingEditor::onSizeChanged()
 {
+	GuiComponent::onSizeChanged();
+
 	mBackground.fitTo(mSize, Vector3f::Zero(), Vector2f(-32, -32));
 
 	mGrid.setSize(mSize);
@@ -175,23 +178,23 @@ void GuiKeyMappingEditor::onSizeChanged()
 	const float subtitleHeight = mSubtitle->getFont()->getLetterHeight();
 	const float titleSubtitleSpacing = mSize.y() * 0.03f;
 
-	mGrid.setRowHeightPerc(0, (titleHeight + titleSubtitleSpacing + subtitleHeight + TITLE_VERT_PADDING) / mSize.y());
+	mGrid.setRowHeight(0, titleHeight + titleSubtitleSpacing + subtitleHeight + TITLE_VERT_PADDING);
 
 	if (mTabs->size() == 0)
-		mGrid.setRowHeightPerc(1, 0.00001f);
+		mGrid.setRowHeight(1, 0.00001f);
 	else 
-		mGrid.setRowHeightPerc(1, (titleHeight + titleSubtitleSpacing) / mSize.y());
+		mGrid.setRowHeight(1, titleHeight + titleSubtitleSpacing);
 
-	mGrid.setRowHeightPerc(3, mButtonGrid->getSize().y() / mSize.y());
+	mGrid.setRowHeight(3, mButtonGrid->getSize().y());
 
-	mHeaderGrid->setRowHeightPerc(1, titleHeight / mHeaderGrid->getSize().y());
-	mHeaderGrid->setRowHeightPerc(2, titleSubtitleSpacing / mHeaderGrid->getSize().y());
-	mHeaderGrid->setRowHeightPerc(3, subtitleHeight / mHeaderGrid->getSize().y());
+	mHeaderGrid->setRowHeight(1, titleHeight);
+	mHeaderGrid->setRowHeight(2, titleSubtitleSpacing);
+	mHeaderGrid->setRowHeight(3, subtitleHeight);
 }
 
 void GuiKeyMappingEditor::centerWindow()
 {
-	if (Renderer::isSmallScreen())
+	if (Renderer::ScreenSettings::fullScreenMenus())
 		setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
 	else
 		setSize(WINDOW_WIDTH, Renderer::getScreenHeight() * 0.875f);
@@ -373,7 +376,7 @@ void GuiKeyMappingEditor::loadList(bool restoreIndex)
 				{ _("LEFT ANALOG STICK") , "joystick1" },
 				{ _("RIGHT ANALOG STICK") , "joystick2" } }, mouseMapping);
 
-			mouseRow.addElement(imageSource, false, true);
+			mouseRow.addElement(imageSource, false);
 
 			mList->addRow(mouseRow, idx > 0 && last);
 
@@ -390,7 +393,7 @@ void GuiKeyMappingEditor::loadList(bool restoreIndex)
 		{
 			auto info = std::make_shared<TextComponent>(mWindow, mouseMapping == "joystick1" ? _("LEFT ANALOG STICK") : _("RIGHT ANALOG STICK"), theme->Text.font, theme->Text.color);
 			info->setPadding(Vector4f(0, 0, Renderer::getScreenWidth() * 0.01f, 0));
-			mouseRow.addElement(info, false, true);
+			mouseRow.addElement(info, false);
 			mList->addRow(mouseRow, idx > 0 && last);
 		}
 
@@ -557,7 +560,7 @@ GuiKeyMappingEditorEntry::GuiKeyMappingEditorEntry(Window* window, MappingInfo& 
 //	if (!target.description.empty())
 //		mTargetText->setText(mTarget.toTargetString() + _U("      \uF05A ") + target.description);
 
-	mDescription = std::make_shared<TextComponent>(mWindow, mTarget.description.empty() ? "" : _U("\uF05A  ") + mTarget.description, theme->Text.font, theme->Text.color);
+	mDescription = std::make_shared<TextComponent>(mWindow, mTarget.description.empty() ? "" : std::string(_U("\uF05A  ")) + pgettext("keys_files", mTarget.description.c_str()), theme->Text.font, theme->Text.color);
 	mDescription->setLineSpacing(1.5);
 
 	setEntry(mImage, Vector2i(0, 0), false, true);

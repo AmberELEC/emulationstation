@@ -7,8 +7,9 @@
 #include "Window.h"
 #include <SDL_timer.h>
 #include "LocaleES.h"
+#include "Paths.h"
 
-#define FADE_TIME_MS	800
+#define FADE_TIME_MS	400
 
 std::string getTitlePath() 
 {
@@ -19,7 +20,7 @@ std::string getTitlePath()
 std::string getTitleFolder() 
 {
 #if WIN32
-	return Utils::FileSystem::getGenericPath(Utils::FileSystem::getEsConfigPath() + "/tmp/");
+	return Utils::FileSystem::getGenericPath(Paths::getUserEmulationStationPath() + "/tmp/");
 #endif
 
 	return "/tmp/";
@@ -59,9 +60,10 @@ VideoComponent::VideoComponent(Window* window) :
 	mVideoHeight(0),
 	mVideoWidth(0),
 	mStartDelayed(false),
-	mIsPlaying(false),	
+	mIsPlaying(false),
 	mScreensaverActive(false),
-	mDisable(false),
+	mIsTopWindow(true),
+	mEnabled(true),
 	mScreensaverMode(false),
 	mTargetIsMax(false),
 	mTargetIsMin(false),
@@ -83,6 +85,7 @@ VideoComponent::VideoComponent(Window* window) :
 	mConfig.showSnapshotNoVideo		= false;
 	mConfig.snapshotSource = IMAGE;
 	mConfig.startDelay				= 0;
+	mConfig.scaleSnapshot = true;
 
 	if (mWindow->getGuiStackSize() > 1)
 		topWindow(false);
@@ -98,13 +101,19 @@ VideoComponent::~VideoComponent()
 
 void VideoComponent::onOriginChanged()
 {
-	// Update the embeded static image
+	GuiComponent::onOriginChanged();
 	mStaticImage.setOrigin(mOrigin);
+}
+
+void VideoComponent::onPositionChanged()
+{
+	GuiComponent::onPositionChanged();
+	mStaticImage.setPosition(mPosition);
 }
 
 void VideoComponent::onSizeChanged()
 {
-	// Update the embeded static image
+	GuiComponent::onSizeChanged();
 	mStaticImage.onSizeChanged();
 }
 
@@ -134,7 +143,7 @@ bool VideoComponent::setVideo(std::string path, bool checkFileExists)
 	return false;
 }
 
-void VideoComponent::setImage(std::string path, bool tile, MaxSizeInfo maxSize)
+void VideoComponent::setImage(std::string path, bool tile, const MaxSizeInfo& maxSize)
 {
 	// Check that the image has changed
 	if (!path.empty() && path == mStaticImagePath)
@@ -150,15 +159,11 @@ void VideoComponent::setDefaultVideo()
 	setVideo(mConfig.defaultVideoPath);
 }
 
-void VideoComponent::setOpacity(unsigned char opacity)
+//  Scale the opacity
+void VideoComponent::onOpacityChanged()
 {
-	if (mOpacity == opacity)
-		return;
-
-	mOpacity = opacity;	
-
 	//if (!hasStoryBoard() && !mStaticImage.hasStoryBoard("snapshot"))
-	//	mStaticImage.setOpacity(opacity);
+//	mStaticImage.setOpacity(opacity);
 }
 
 void VideoComponent::setScale(float scale)
@@ -189,7 +194,7 @@ void VideoComponent::render(const Transform4x4f& parentTrans)
 
 	Renderer::setMatrix(trans);
 
-	if (Settings::DebugImage)
+	if (Settings::DebugImage())
 	{
 		Vector2f targetSizePos = (mTargetSize - mSize) * mOrigin * -1;
 		Renderer::drawRect(targetSizePos.x(), targetSizePos.y(), mTargetSize.x(), mTargetSize.y(), 0xFF000033);
@@ -217,7 +222,7 @@ void VideoComponent::renderSnapshot(const Transform4x4f& parentTrans)
 		if (hasStoryBoard())
 			t = (t * 255.0f);
 		else
-			t = (t * (float)mOpacity);
+			t = (t * (float)getOpacity());
 
 		if (t == 0.0)
 			return;
@@ -226,15 +231,18 @@ void VideoComponent::renderSnapshot(const Transform4x4f& parentTrans)
 		{
 			t = ((getOpacity() / 255.0) * (t / 255.0)) * 255.0;
 			mStaticImage.setOpacity((unsigned char)t);
+
+			if (!currentStoryBoardHasProperty("scale") && getScale() == 1.0f)
+			{
+				if (mIsPlaying && mConfig.scaleSnapshot)
+					mStaticImage.setScale(t / 255.0);
+				else
+					mStaticImage.setScale(getScale());
+			}
 		}
 
 		mStaticImage.render(parentTrans);
 	}
-}
-
-void VideoComponent::onPositionChanged()
-{
-	mStaticImage.setPosition(mPosition);
 }
 
 void VideoComponent::applyTheme(const std::shared_ptr<ThemeData>& theme, const std::string& view, const std::string& element, unsigned int properties)
@@ -242,57 +250,35 @@ void VideoComponent::applyTheme(const std::shared_ptr<ThemeData>& theme, const s
 	using namespace ThemeFlags;
 
 	const ThemeData::ThemeElement* elem = theme->getElement(view, element, "video");
-	if(!elem)
+	if (!elem)
 		return;
 
-	Vector2f screenScale = Vector2f((float)Renderer::getScreenWidth(), (float)Renderer::getScreenHeight());
-	Vector2f scale = getParent() ? getParent()->getSize() : screenScale;
-
-	if ((properties & POSITION) && elem->has("pos"))
+	if (properties & ThemeFlags::SIZE)
 	{
-		Vector2f denormalized = elem->get<Vector2f>("pos") * scale;
-		setPosition(Vector3f(denormalized.x(), denormalized.y(), 0));
-	}
+		Vector4f clientRectangle = getParent() ? getParent()->getClientRect() : Vector4f(0, 0, (float)Renderer::getScreenWidth(), (float)Renderer::getScreenHeight());
+		Vector2f scale = Vector2f(clientRectangle.z(), clientRectangle.w());
 
-	if (properties & POSITION && elem->has("x"))
-	{
-		float denormalized = elem->get<float>("x") * scale.x();
-		setPosition(Vector3f(denormalized, mPosition.y(), 0));
-	}
-
-	if (properties & POSITION && elem->has("y"))
-	{
-		float denormalized = elem->get<float>("y") * scale.y();
-		setPosition(Vector3f(mPosition.x(), denormalized, 0));
-	}
-
-	if(properties & ThemeFlags::SIZE)
-	{
 		if (elem->has("size"))
 		{
-			mSize = elem->get<Vector2f>("size") * scale;
-			setResize(mSize);
+			auto sz = mSourceBounds.zw() = elem->get<Vector2f>("size");
+			setResize(sz * scale);
 		}
 		else if (elem->has("maxSize"))
 		{
-			mSize = elem->get<Vector2f>("maxSize") * scale;
-			setMaxSize(mSize);
+			auto sz = mSourceBounds.zw() = elem->get<Vector2f>("maxSize");
+			setMaxSize(sz * scale);
 		}
 		else if (elem->has("minSize"))
 		{
-			mSize = elem->get<Vector2f>("minSize") * scale;
-			setMinSize(mSize);
+			auto sz = mSourceBounds.zw() = elem->get<Vector2f>("minSize");
+			setMinSize(sz * scale);
 		}
 	}
 
-	// position + size also implies origin
-	if (((properties & ORIGIN) || ((properties & POSITION) && (properties & ThemeFlags::SIZE))) && elem->has("origin"))
-		setOrigin(elem->get<Vector2f>("origin"));
+	if (elem->has("enabled"))
+		mEnabled = elem->get<bool>("enabled");
 
-	if(elem->has("default"))
-		mConfig.defaultVideoPath = elem->get<std::string>("default");
-
-	if((properties & ThemeFlags::DELAY) && elem->has("delay"))
+	if ((properties & ThemeFlags::DELAY) && elem->has("delay"))
 		mConfig.startDelay = (unsigned)(elem->get<float>("delay") * 1000.0f);
 
 	if (elem->has("showSnapshotNoVideo"))
@@ -324,71 +310,44 @@ void VideoComponent::applyTheme(const std::shared_ptr<ThemeData>& theme, const s
 			mConfig.snapshotSource = THUMBNAIL;
 	}
 
-	if(properties & ThemeFlags::ROTATION) 
-	{
-		if(elem->has("rotation"))
-			setRotationDegrees(elem->get<float>("rotation"));
-		if(elem->has("rotationOrigin"))
-			setRotationOrigin(elem->get<Vector2f>("rotationOrigin"));
-	}
-
-	if(properties & ThemeFlags::Z_INDEX && elem->has("zIndex"))
-		setZIndex(elem->get<float>("zIndex"));
-	else
-		setZIndex(getDefaultZIndex());
-
-	if(properties & ThemeFlags::VISIBLE && elem->has("visible"))
-		setVisible(elem->get<bool>("visible"));
-	else
-		setVisible(true);
-
 	if (properties & ThemeFlags::VISIBLE && elem->has("audio"))
 		setPlayAudio(elem->get<bool>("audio"));
-	else
-		setPlayAudio(true);
 
-	if (elem->has("path"))
+	GuiComponent::applyTheme(theme, view, element, properties & ~ThemeFlags::SIZE);
+
+	if (properties & PATH)
 	{
-		if (Utils::FileSystem::exists(elem->get<std::string>("path")))
-			mVideoPath = elem->get<std::string>("path");
-		else
+		if (elem->has("default"))
+			mConfig.defaultVideoPath = elem->get<std::string>("default");
+
+		if (elem->has("path"))
+		{
+			auto path = elem->get<std::string>("path");
+
+			if (path[0] == '{' || Utils::FileSystem::exists(path))
+				mVideoPath = path;
+			else
+				mVideoPath = mConfig.defaultVideoPath;
+
+			mThemedPath = mVideoPath;
+		}
+		else if (!mConfig.defaultVideoPath.empty())
+		{
 			mVideoPath = mConfig.defaultVideoPath;
+			mThemedPath = mVideoPath;
+		}
 	}
-
-	if (properties & POSITION && elem->has("offset"))
-	{
-		Vector2f denormalized = elem->get<Vector2f>("offset") * screenScale;
-		mScreenOffset = denormalized;
-	}
-
-	if (properties & POSITION && elem->has("offsetX"))
-	{
-		float denormalized = elem->get<float>("offsetX") * screenScale.x();
-		mScreenOffset = Vector2f(denormalized, mScreenOffset.y());
-	}
-
-	if (properties & POSITION && elem->has("offsetY"))
-	{
-		float denormalized = elem->get<float>("offsetY") * scale.y();
-		mScreenOffset = Vector2f(mScreenOffset.x(), denormalized);
-	}
-
-	if (properties & POSITION && elem->has("clipRect"))
-	{
-		Vector4f val = elem->get<Vector4f>("clipRect") * Vector4f(screenScale.x(), screenScale.y(), screenScale.x(), screenScale.y());
-		setClipRect(val);
-	}
-	else
-		setClipRect(Vector4f());
 
 	if (elem->has("defaultSnapshot"))
 		mStaticImage.setDefaultImage(elem->get<std::string>("defaultSnapshot"));
+
+	mStaticImage.applyStoryboard(elem, "snapshot");
 }
 
 std::vector<HelpPrompt> VideoComponent::getHelpPrompts()
 {
 	std::vector<HelpPrompt> ret;
-	ret.push_back(HelpPrompt(BUTTON_BACK, _("SELECT"))); // batocera
+	ret.push_back(HelpPrompt(BUTTON_BACK, _("SELECT")));
 	return ret;
 }
 
@@ -508,7 +467,7 @@ void VideoComponent::manageState()
 
 	// We will only show if the component is on display and the screensaver
 	// is not active
-	bool show = isShowing() && !mScreensaverActive && !mDisable && mVisible;
+	bool show = isShowing() && !mScreensaverActive && mIsTopWindow && mVisible && mEnabled;
 	if (!show)
 		mStartDelayed = false;
 
@@ -517,10 +476,14 @@ void VideoComponent::manageState()
 	{
 		// If we are not on display then stop the video from playing
 		if (!show)
-		{
+		{			
 			mIsWaitingForVideoToStart = false;
 			mStartDelayed = false;
-			stopVideo();
+
+			if ((!mIsTopWindow || !mEnabled) && isShowing() && !mScreensaverActive && mIsPlaying && mVisible)
+				pauseVideo();
+			else
+				stopVideo();
 		}
 		else
 		{
@@ -540,7 +503,10 @@ void VideoComponent::manageState()
 		// If we are on display then see if we should start the video
 		if (show && !mVideoPath.empty())
 		{
-			startVideoWithDelay();
+			if (isPaused())
+				resumeVideo();
+			else
+				startVideoWithDelay();
 		}
 	}
 }
@@ -578,7 +544,7 @@ void VideoComponent::onScreenSaverDeactivate()
 
 void VideoComponent::topWindow(bool isTop)
 {
-	mDisable = !isTop;
+	mIsTopWindow = isTop;
 	manageState();
 }
 
@@ -591,6 +557,8 @@ void VideoComponent::setPlaylist(std::shared_ptr<IPlaylist> playList)
 	auto video = mPlaylist->getNextItem();
 	if (!video.empty())
 		setVideo(video);
+	else if (!mConfig.defaultVideoPath.empty())
+		setVideo(mConfig.defaultVideoPath);
 }
 
 void VideoComponent::setRoundCorners(float value) 
@@ -599,15 +567,59 @@ void VideoComponent::setRoundCorners(float value)
 	mStaticImage.setRoundCorners(value);
 }
 
+ThemeData::ThemeElement::Property VideoComponent::getProperty(const std::string name)
+{
+	if (name == "path")
+		return mVideoPath;
+
+	if (name == "enabled")
+		return mEnabled;
+
+	return GuiComponent::getProperty(name);
+}
+
 void VideoComponent::setProperty(const std::string name, const ThemeData::ThemeElement::Property& value)
 {
-	GuiComponent::setProperty(name, value);
-
 	if (hasStoryBoard() && !mStaticImage.hasStoryBoard("snapshot"))
 	{
 		if (name == "offset" || name == "offsetX" || name == "offsetY" || name == "scale")
 			mStaticImage.setProperty(name, value);
 	}
+
+	if (value.type == ThemeData::ThemeElement::Property::PropertyType::String && name == "path")
+	{
+		if (Utils::FileSystem::exists(value.s))
+			setVideo(value.s, false);
+		else
+			setVideo(mConfig.defaultVideoPath);		
+
+		mThemedPath = mVideoPath;
+	}
+	else if (value.type == ThemeData::ThemeElement::Property::PropertyType::Bool && name == "enabled")
+	{
+		mEnabled = value.b;
+
+		if (!mEnabled)
+		{
+			mVideoPath = "";
+			mPlayingVideoPath = "";
+			mStartDelayed = false;
+			mIsWaitingForVideoToStart = false;
+
+			stopVideo();
+		}		
+		else
+		{
+			mVideoPath = "";
+			mPlayingVideoPath = "";
+			mStartDelayed = false;
+			mIsWaitingForVideoToStart = false;
+
+			setVideo(mThemedPath, false);
+		}
+	}
+	else 
+		GuiComponent::setProperty(name, value);
 }
 
 void VideoComponent::setClipRect(const Vector4f& vec)
@@ -619,4 +631,27 @@ void VideoComponent::setClipRect(const Vector4f& vec)
 bool VideoComponent::showSnapshots()
 {
 	return mConfig.showSnapshotNoVideo || (mConfig.showSnapshotDelay && mConfig.startDelay);
+}
+
+void VideoComponent::recalcLayout()
+{
+	if (mExtraType != ExtraType::EXTRACHILDREN || !getParent())
+		return;
+
+	Vector4f clientRectangle = getParent()->getClientRect();
+	Vector2f newPos = mSourceBounds.xy() * clientRectangle.zw() + clientRectangle.xy();
+	Vector2f newSize = mSourceBounds.zw() * clientRectangle.zw();
+
+	if (mPosition.v2() != newPos)
+		setPosition(newPos.x(), newPos.y());
+
+	if (mSize != newSize)
+	{
+		if (mTargetIsMax)
+			setMaxSize(newSize);
+		else if (mTargetIsMin)
+			setMinSize(newSize);
+		else
+			setResize(newSize);
+	}
 }

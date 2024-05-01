@@ -5,7 +5,7 @@
 #include "components/TextListComponent.h"
 #include "views/gamelist/ISimpleGameListView.h"
 
-class BasicGameListView : public ISimpleGameListView
+class BasicGameListView : public ISimpleGameListView, public ILongMouseClickEvent
 {
 public:
 	BasicGameListView(Window* window, FolderData* root);
@@ -20,6 +20,7 @@ public:
 	virtual int getCursorIndex() override;
 	virtual void setCursorIndex(int index) override;
 	virtual void resetLastCursor() override;
+	virtual bool onMouseWheel(int delta) override;
 
 	virtual const char* getName() const override
 	{
@@ -31,6 +32,8 @@ public:
 
 	virtual void launch(FileData* game) override;
 	virtual std::vector<FileData*> getFileDataEntries() override;
+
+	virtual void onLongMouseClick(GuiComponent* component) override;
 
 protected:
 	virtual std::string getQuickSystemSelectRightButton() override;

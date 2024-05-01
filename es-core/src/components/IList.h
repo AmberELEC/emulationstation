@@ -7,6 +7,7 @@
 #include "resources/Font.h"
 #include "PowerSaver.h"
 #include "ThemeData.h"
+#include "Settings.h"
 #include <vector>
 
 enum CursorState
@@ -48,6 +49,12 @@ const ScrollTier SLOW_SCROLL_TIERS[] = {
 	{0, 200}
 };
 const ScrollTierList LIST_SCROLL_STYLE_SLOW = { 2, SLOW_SCROLL_TIERS };
+
+class ILongMouseClickEvent
+{
+public:
+	virtual void onLongMouseClick(GuiComponent* component) = 0;
+};
 
 template <typename EntryData, typename UserData>
 class IList : public GuiComponent
@@ -99,11 +106,17 @@ public:
 
 	bool isScrolling() const
 	{
+		if (Settings::ScrollLoadMedias())
+			return false;
+
 		return (mScrollVelocity != 0 && mScrollTier > 0);
 	}
 
 	int getScrollingVelocity() 
 	{
+		if (Settings::ScrollLoadMedias())
+			return 0;
+
 		return mScrollVelocity;
 	}
 
@@ -120,8 +133,7 @@ public:
 		if (isScrolling())
 			stopScrolling();
 	}
-
-	// batocera
+	
 	void setCursorIndex(int index, bool force = false)
 	{
 		if (mCursor == index && !force)
@@ -135,15 +147,13 @@ public:
 			onCursorChanged(CURSOR_STOPPED);
 		}
 	}
-
-	// batocera
+	
 	int getCursorIndex()
 	{
 		return mCursor;
 	}
 
-
-	void clear()
+	virtual void clear()
 	{
 		mEntries.clear();
 		mCursor = 0;
@@ -231,16 +241,25 @@ public:
 		return objects;
 	}
 
+	void moveSelectionBy(int count)
+	{
+		listInput(count);
+	}
+
 protected:
 	void remove(typename std::vector<Entry>::const_iterator& it)
 	{
-		if(mCursor > 0 && it - mEntries.cbegin() <= mCursor)
-		{
-			mCursor--;
-			onCursorChanged(CURSOR_STOPPED);
-		}
+		int index = it - mEntries.cbegin();
 
 		mEntries.erase(it);
+
+		if (mEntries.size() > 0 && (index <= mCursor || mCursor >= mEntries.size()))
+		{
+			if (index < mCursor || mCursor >= mEntries.size())
+				mCursor--;
+
+			onCursorChanged(CURSOR_STOPPED);
+		}
 	}
 
 
@@ -392,7 +411,11 @@ protected:
 			onScroll(absAmt);
 
 		mCursor = cursor;
-		onCursorChanged((mScrollTier > 0) ? CURSOR_SCROLLING : CURSOR_STOPPED);
+
+		if (Settings::ScrollLoadMedias())
+			onCursorChanged(CURSOR_STOPPED);
+		else
+			onCursorChanged((mScrollTier > 0) ? CURSOR_SCROLLING : CURSOR_STOPPED);
 	}
 
 

@@ -9,6 +9,7 @@
 #include <memory>
 #include <queue>
 #include <utility>
+#include <set>
 #include <assert.h>
 #include "FileData.h"
 
@@ -21,11 +22,13 @@ struct ScraperSearchParams
 	ScraperSearchParams()
 	{ 
 		overWriteMedias = true; 
+		isManualScrape = false;
 	}
 
 	SystemData* system;
 	FileData* game;
 
+	bool isManualScrape;
 	bool overWriteMedias;
 	std::string nameOverride;
 
@@ -47,11 +50,14 @@ struct ScraperSearchItem
 
 struct ScraperSearchResult
 {
-	ScraperSearchResult() : mdl(GAME_METADATA) {};
+	ScraperSearchResult() : mdl(GAME_METADATA) { };
+	ScraperSearchResult(std::string scraperName) : mdl(GAME_METADATA) { scraper = scraperName; };
 
-	MetaDataList mdl;
+	MetaDataList	mdl;
+	std::string		p2k;
+	std::string		scraper;
+
 	std::map<MetaDataId, ScraperSearchItem> urls;
-	std::string p2k;
 
 	bool hasMedia()
 	{
@@ -85,6 +91,7 @@ public:
 	~ScraperHttpRequest();
 
 	virtual void update() override;
+	virtual bool retryOn249() { return true; }
 
 protected:
 	virtual bool process(HttpReq* request, std::vector<ScraperSearchResult>& results) = 0;
@@ -95,6 +102,8 @@ private:
 	int	mRetryCount;
 
 	int mOverQuotaPendingTime;
+	int mOverQuotaRetryDelay;
+	int mOverQuotaRetryCount;
 };
 
 // a request to get a list of results
@@ -130,8 +139,11 @@ public:
 
 private:
 	HttpReq* mRequest;
+
 	int	mRetryCount;
 	int mOverQuotaPendingTime;
+	int mOverQuotaRetryDelay;
+	int mOverQuotaRetryCount;
 
 	std::string mSavePath;
 	int mMaxWidth;
@@ -200,9 +212,37 @@ private:
 class Scraper
 {
 public:
+	enum ScraperMediaSource
+	{
+		Screenshot = 1,
+		Video = 2,
+		Marquee = 3,
+		Box2d = 4,
+		Box3d = 5,
+		FanArt = 6,
+		TitleShot = 7,
+		Cartridge = 8,
+		Map = 9,
+		Manual = 10,
+		Wheel = 11,
+		Mix = 12,
+		BoxBack = 13,
+		Magazine = 14,
+		PadToKey = 15,
+		Ratings = 16,
+		Bezel_16_9 = 17,
+		ShortTitle = 18,
+		Region = 19
+	};
+
 	static std::vector<std::pair<std::string, Scraper*>> scrapers;
 	
 	static Scraper* getScraper(const std::string name = "");
+	static std::string getScraperName(Scraper* scraper);
+	
+	static int getScraperIndex(const std::string& name);
+	static std::string getScraperNameFromIndex(int index);
+
 	static std::vector<std::string> getScraperList();
 	static bool isValidConfiguredScraper();
 
@@ -211,14 +251,18 @@ public:
 	static std::string getSaveAsPath(FileData* game, const MetaDataId metadataId, const std::string& url);
 
 	virtual	bool isSupportedPlatform(SystemData* system) = 0;
+	virtual const std::set<ScraperMediaSource>& getSupportedMedias() = 0;
 
 	virtual	bool hasMissingMedia(FileData* file);
+	virtual	bool hasAnyMedia(FileData* file);
 
 	std::unique_ptr<ScraperSearchHandle> search(const ScraperSearchParams& params);
 
 	virtual	int getThreadCount(std::string &result) {
 		return 1;
 	}
+
+	bool isMediaSupported(const ScraperMediaSource& md);
 
 protected:
 	virtual void generateRequests(const ScraperSearchParams& params,

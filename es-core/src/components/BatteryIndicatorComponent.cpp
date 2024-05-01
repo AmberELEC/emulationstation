@@ -15,7 +15,7 @@ void BatteryIndicatorComponent::init()
 
 	mHorizontalAlignment = ALIGN_RIGHT;
 
-	if (Renderer::isSmallScreen())
+	if (Renderer::ScreenSettings::isSmallScreen())
 	{
 		setPosition(Renderer::getScreenWidth() * 0.915, Renderer::getScreenHeight() * 0.013);
 		setSize(Renderer::getScreenWidth() * 0.07, Renderer::getScreenHeight() * 0.07);
@@ -45,9 +45,6 @@ void BatteryIndicatorComponent::init()
 
 	if (ResourceManager::getInstance()->fileExists(":/battery/empty.svg"))
 		mEmpty = ResourceManager::getInstance()->getResourcePath(":/battery/empty.svg");	
-
-	if (ResourceManager::getInstance()->fileExists(":/battery/empty.svg"))
-		mEmpty = ResourceManager::getInstance()->getResourcePath(":/battery/empty.svg");
 
 	if (ResourceManager::getInstance()->fileExists(":/network.svg"))
 	{

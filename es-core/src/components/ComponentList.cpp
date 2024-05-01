@@ -6,20 +6,26 @@
 #include "components/SwitchComponent.h"
 #include "components/SliderComponent.h"
 #include "components/OptionListComponent.h"
+#include "InputManager.h"
 
 #define TOTAL_HORIZONTAL_PADDING_PX 20
 
 ComponentList::ComponentList(Window* window) : IList<ComponentListRow, std::string>(window, LIST_SCROLL_STYLE_SLOW, LIST_NEVER_LOOP), mScrollbar(window)
 {
+	mHotRow = -1;
+	mPressedRow = -1;
+	mPressedPoint = Vector2i(-1, -1);
+	mIsDragging = false;
+
 	mSelectorBarOffset = 0;
 	mCameraOffset = 0;
 	mFocused = false;
-	mOldCursor = -1;
+	mOldCursor = -1; 
 
 	mScrollbar.loadFromMenuTheme();	
 }
 
-void ComponentList::addRow(const ComponentListRow& row, bool setCursorHere, bool updateSize, const std::string userData)
+void ComponentList::addRow(const ComponentListRow& row, bool setCursorHere, bool updateSize, const std::string& userData)
 {
 	IList<ComponentListRow, std::string>::Entry e;
 	e.name = "";
@@ -48,6 +54,18 @@ void ComponentList::addRow(const ComponentListRow& row, bool setCursorHere, bool
 		mCursor = (int)mEntries.size() - 1;
 		onCursorChanged(CURSOR_STOPPED);
 	}
+	else if (mFocused && mCursor == 0 && mEntries.size() == 1)
+		onCursorChanged(CURSOR_STOPPED);
+}
+
+void ComponentList::removeLastRowIfGroup()
+{
+	int index = mEntries.size() - 1;
+	if (index < 0)
+		return;
+
+	if (mEntries.at(index).data.group)
+		mEntries.erase(mEntries.begin() + index);
 }
 
 void ComponentList::addGroup(const std::string& label, bool forceVisible)
@@ -72,13 +90,16 @@ void ComponentList::addGroup(const std::string& label, bool forceVisible)
 	group->setLineSpacing(theme->Group.lineSpacing);
 	group->setPadding(Vector4f(TOTAL_HORIZONTAL_PADDING_PX / 2, 0, TOTAL_HORIZONTAL_PADDING_PX / 2, 0));
 
-	row.addElement(group, true, false);
+	row.addElement(group, true);
 	row.selectable = false;
+	row.group = true;
 	addRow(row);
 }
 
 void ComponentList::onSizeChanged()
 {
+	IList::onSizeChanged();
+
 	float yOffset = 0;
 	for(auto it = mEntries.cbegin(); it != mEntries.cend(); it++)
 	{
@@ -93,11 +114,28 @@ void ComponentList::onSizeChanged()
 void ComponentList::onFocusLost()
 {
 	mFocused = false;
+
+	if (size())
+	{
+		for (auto it = mEntries.cbegin(); it != mEntries.cend(); it++)
+			for (auto elt : it->data.elements)
+				elt.component->onFocusLost();
+	}
 }
 
 void ComponentList::onFocusGained()
 {
 	mFocused = true;
+
+	if (size())
+	{
+		for (auto it = mEntries.cbegin(); it != mEntries.cend(); it++)
+			for (auto elt : it->data.elements)
+				elt.component->onFocusLost();
+
+		for (auto elt : mEntries.at(mCursor).data.elements)
+			elt.component->onFocusGained();
+	}
 }
 
 bool ComponentList::input(InputConfig* config, Input input)
@@ -176,74 +214,78 @@ void ComponentList::onCursorChanged(const CursorState& state)
 	// update the selector bar position
 	// in the future this might be animated
 	mSelectorBarOffset = 0;
-	for(int i = 0; i < mCursor; i++)
-	{
+	for (int i = 0; i < mCursor; i++)
 		mSelectorBarOffset += getRowHeight(mEntries.at(i).data);
-	}
 
 	updateCameraOffset();
 
 	// this is terribly inefficient but we don't know what we came from so...
-	if(size())
+	if (mFocused && mCursor >= 0 && mCursor < size())
 	{
-		for(auto it = mEntries.cbegin(); it != mEntries.cend(); it++)
-			it->data.elements.back().component->onFocusLost();
+		for (auto it = mEntries.cbegin(); it != mEntries.cend(); it++)
+			for (auto elt : it->data.elements)
+				elt.component->onFocusLost();
 
-		mEntries.at(mCursor).data.elements.back().component->onFocusGained();
+		for (auto elt : mEntries.at(mCursor).data.elements)
+			elt.component->onFocusGained();
 	}
 
-	if(mCursorChangedCallback)
+	if (mCursorChangedCallback)
 		mCursorChangedCallback(state);
 
 	updateHelpPrompts();
 
 	// tts
-	if(state == CURSOR_STOPPED)
-	  if(mOldCursor != mCursor) {
-	    saySelectedLine();
-	  }
+	if (state == CURSOR_STOPPED && mOldCursor != mCursor)
+		saySelectedLine();
 }
 
-void ComponentList::saySelectedLine() {
-  int n = 0;
+void ComponentList::saySelectedLine()
+{
+	int n = 0;
 
-  if (!(mCursor >= 0 && mCursor < mEntries.size())) return;
+	if (!(mCursor >= 0 && mCursor < mEntries.size())) 
+		return;
 
-  mOldCursor = mCursor;
-  for (auto& element : mEntries.at(mCursor).data.elements)
-    {
-      if(element.component->isKindOf<TextComponent>()) {
-	TextToSpeech::getInstance()->say(element.component->getValue(), n > 0);
-	n++;
-      }
-      if(element.component->isKindOf<SliderComponent>()) {
-	SliderComponent* slider = dynamic_cast<SliderComponent*>(element.component.get());
-	if (slider == nullptr)
-	  continue;
+	mOldCursor = mCursor;
+	for (auto& element : mEntries.at(mCursor).data.elements)
+	{
+		if (element.component->isKindOf<TextComponent>())
+		{
+			TextToSpeech::getInstance()->say(element.component->getValue(), n > 0);
+			n++;
+		}
+		if (element.component->isKindOf<SliderComponent>())
+		{
+			SliderComponent* slider = dynamic_cast<SliderComponent*>(element.component.get());
+			if (slider == nullptr)
+				continue;
 
-	float v = slider->getValue();
-	char strval[32];
-	snprintf(strval, 32, "%.0f", v);
-	TextToSpeech::getInstance()->say(std::string(strval) + _(slider->getSuffix().c_str()), n > 0);
-	n++;
-      }
-      if(element.component->isKindOf<SwitchComponent>()) {
-	TextToSpeech::getInstance()->say(((SwitchComponent*)element.component.get())->getState()?_("ENABLED"):_("DISABLED"), n > 0);
-	n++;
-      }
-      if(element.component->isKindOf<OptionListComponent<std::string>>()) {
-	OptionListComponent<std::string>* optionList = dynamic_cast<OptionListComponent<std::string>*>(element.component.get());
-	if (optionList == nullptr)
-	  continue;
+			float v = slider->getValue();
+			char strval[32];
+			snprintf(strval, 32, "%.0f", v);
+			TextToSpeech::getInstance()->say(std::string(strval) + _(slider->getSuffix().c_str()), n > 0);
+			n++;
+		}
+		if (element.component->isKindOf<SwitchComponent>())
+		{
+			TextToSpeech::getInstance()->say(((SwitchComponent*)element.component.get())->getState() ? _("ENABLED") : _("DISABLED"), n > 0);
+			n++;
+		}
+		if (element.component->isKindOf<OptionListComponent<std::string>>())
+		{
+			OptionListComponent<std::string>* optionList = dynamic_cast<OptionListComponent<std::string>*>(element.component.get());
+			if (optionList == nullptr)
+				continue;
 
-	if (optionList->IsMultiSelect()) {
-	  TextToSpeech::getInstance()->say(Utils::String::join(optionList->getSelectedObjects(), ", "));
-	} else {
-	  TextToSpeech::getInstance()->say(optionList->getSelectedName(), n > 0);
+			if (optionList->IsMultiSelect())
+				TextToSpeech::getInstance()->say(Utils::String::join(optionList->getSelectedObjects(), ", "));
+			else
+				TextToSpeech::getInstance()->say(optionList->getSelectedName(), n > 0);
+
+			n++;
+		}
 	}
-	n++;
-      }
-    }
 }
 
 void ComponentList::updateCameraOffset()
@@ -274,10 +316,10 @@ void ComponentList::updateCameraOffset()
 
 void ComponentList::render(const Transform4x4f& parentTrans)
 {
-	if(!size())
+	if (!size())
 		return;
 
-	float opacity = mOpacity / 255.0;
+	float opacity = getOpacity() / 255.0;
 	auto menuTheme = ThemeData::getMenuTheme();
 	unsigned int selectorColor = menuTheme->Text.selectorColor;
 	unsigned int selectorGradientColor = menuTheme->Text.selectorGradientColor;
@@ -292,99 +334,114 @@ void ComponentList::render(const Transform4x4f& parentTrans)
 	// clip everything to be inside our bounds
 	Vector3f dim(mSize.x(), mSize.y(), 0);
 	dim = trans * dim - trans.translation();
-	Renderer::pushClipRect(Vector2i((int)trans.translation().x(), (int)trans.translation().y()),
-		Vector2i((int)Math::round(dim.x()), (int)Math::round(dim.y() + 1)));
+
+	Renderer::pushClipRect(trans.translation().x(), trans.translation().y(), Math::round(dim.x()), Math::round(dim.y() + 1));
 
 	// scroll the camera
 	trans.translate(Vector3f(0, -Math::round(mCameraOffset), 0));
 
-	// draw our entries
+	float y = 0;
+
+	std::map<unsigned int, float> rowHeights;
 	std::vector<GuiComponent*> drawAfterCursor;
-	bool drawAll;
-	for(unsigned int i = 0; i < mEntries.size(); i++)
+
+	for (unsigned int i = 0; i < mEntries.size(); i++)
 	{
 		auto& entry = mEntries.at(i);
-		
-		drawAll = !mFocused || i != (unsigned int)mCursor;
-		for(auto it = entry.data.elements.cbegin(); it != entry.data.elements.cend(); it++)
-		{
-			if(drawAll || it->invert_when_selected)
-			{
-				if (entry.data.selectable)
-					it->component->setColor(textColor);				
-				else 
-					it->component->setColor(menuTheme->Group.color);
 
-				it->component->render(trans);
+		float rowHeight = getRowHeight(entry.data);
+		rowHeights[i] = rowHeight;
+
+		if (y - mCameraOffset + rowHeight >= 0)
+		{
+			if (mFocused && entry.data.selectable && i == mCursor)
+			{
+				Renderer::setMatrix(trans);
+
+				if (selectorColor != bgColor && (selectorColor & 0xFF) != 0)
+				{
+					Renderer::setMatrix(trans);
+					Renderer::drawRect(0.0f, mSelectorBarOffset, mSize.x(), rowHeight,
+						selectorColor & 0xFFFFFF00 | (unsigned char)((selectorColor & 0xFF) * opacity),
+						selectorGradientColor & 0xFFFFFF00 | (unsigned char)((selectorGradientColor & 0xFF) * opacity),
+						selectorGradientHorz);
+				}
 			}
-			else
-				drawAfterCursor.push_back(it->component.get());			
-		}
-	}
 
-	// custom rendering
-	Renderer::setMatrix(trans);
-
-	// draw selector bar
-	if(mFocused)
-	{
-		// inversion: src * (1 - dst) + dst * 0 = where src = 1
-		// need a function that goes roughly 0x777777 -> 0xFFFFFF
-		// and 0xFFFFFF -> 0x777777
-		// (1 - dst) + 0x77
-
-		const float selectedRowHeight = getRowHeight(mEntries.at(mCursor).data);
-
-		auto& entry = mEntries.at(mCursor);
-		
-		if (entry.data.selectable)
-		{
-			if ((selectorColor != bgColor) && ((selectorColor & 0xFF) != 0x00)) 
+			if (i == mHotRow)
 			{
-				Renderer::drawRect(0.0f, mSelectorBarOffset, mSize.x(), selectedRowHeight, 
-					bgColor & 0xFFFFFF00 | (unsigned char)((bgColor & 0xFF) * opacity), 
-					Renderer::Blend::ZERO, Renderer::Blend::ONE_MINUS_SRC_COLOR);
+				Renderer::setMatrix(trans);
 
-				Renderer::drawRect(0.0f, mSelectorBarOffset, mSize.x(), selectedRowHeight, 
-					selectorColor & 0xFFFFFF00 | (unsigned char)((selectorColor & 0xFF) * opacity),
-					selectorGradientColor & 0xFFFFFF00 | (unsigned char)((selectorGradientColor & 0xFF) * opacity),					
-					selectorGradientHorz, Renderer::Blend::ONE, Renderer::Blend::ONE);
+				float hotOpacity = 0.1f;
+				Renderer::drawRect(0.0f, y, mSize.x(), rowHeight,
+					selectorColor & 0xFFFFFF00 | (unsigned char)((selectorColor & 0xFF) * opacity * hotOpacity),
+					selectorGradientColor & 0xFFFFFF00 | (unsigned char)((selectorGradientColor & 0xFF) * opacity * hotOpacity),
+					selectorGradientHorz);
+
+			//	Renderer::drawRect(0.0f, y, mSize.x(), rowHeight, 0x00000010, 0x00000010);
 			}
 
 			for (auto& element : entry.data.elements)
-			{
-				element.component->setColor(selectedColor);
-				drawAfterCursor.push_back(element.component.get());
+			{				
+				if (Settings::DebugMouse() && i == mHotRow)
+					element.component->setColor(0xFFFF00FF);
+				else 
+				if (entry.data.group)
+					element.component->setColor(menuTheme->Group.color);
+				else
+				{
+					if (entry.data.selectable && mFocused && i == mCursor)
+						element.component->setColor(selectedColor);
+					else
+						element.component->setColor(textColor);
+				}
+					
+				if (element.component->isKindOf<TextComponent>())
+					drawAfterCursor.push_back(element.component.get());
+				else
+					element.component->render(trans);
 			}
-		}		
-
-		for(auto it = drawAfterCursor.cbegin(); it != drawAfterCursor.cend(); it++)
-			(*it)->render(trans);
-
-		// reset matrix if one of these components changed it
-		if(drawAfterCursor.size())
-			Renderer::setMatrix(trans);
+		}
+		
+		y += rowHeight;
+		if (y - mCameraOffset > mSize.y())
+			break;
 	}
+
+	for (auto it : drawAfterCursor)
+		it->render(trans);
 
 	// draw separators
+	if (separatorColor != 0 ||  menuTheme->Group.separatorColor != 0)
+	{		
+		Renderer::setMatrix(trans);
 
-	bool prevIsGroup = false;
+		bool prevIsGroup = false;
 
-	float y = 0;
-	for(unsigned int i = 0; i < mEntries.size(); i++)
-	{
-		
-		if (prevIsGroup && menuTheme->Group.separatorColor != separatorColor)
-			Renderer::drawRect(0.0f, y - 2.0f, mSize.x(), 1.0f, menuTheme->Group.separatorColor & 0xFFFFFF00 | (unsigned char)((menuTheme->Group.separatorColor & 0xFF) * opacity));
-		else
-			Renderer::drawRect(0.0f, y, mSize.x(), 1.0f, separatorColor & 0xFFFFFF00 | (unsigned char)((separatorColor & 0xFF) * opacity));
+		y = 0;
+		for (unsigned int i = 0; i < mEntries.size(); i++)
+		{
+			auto it = rowHeights.find(i);
+			if (it != rowHeights.cend())
+			{
+				if (y - mCameraOffset + it->second >= 0)
+				{
+					if (prevIsGroup && menuTheme->Group.separatorColor != separatorColor)
+						Renderer::drawRect(0.0f, y - 2.0f, mSize.x(), 1.0f, menuTheme->Group.separatorColor & 0xFFFFFF00 | (unsigned char)((menuTheme->Group.separatorColor & 0xFF) * opacity));
+					else if (separatorColor != 0)
+						Renderer::drawRect(0.0f, y, mSize.x(), 1.0f, separatorColor & 0xFFFFFF00 | (unsigned char)((separatorColor & 0xFF) * opacity));
+				}
 
-		y += getRowHeight(mEntries.at(i).data);
+				y += it->second; // getRowHeight(mEntries.at(i).data);
+				if (y - mCameraOffset > mSize.y())
+					break;
+			}
 
-		prevIsGroup = !mEntries.at(i).data.selectable;
+			prevIsGroup = mEntries[i].data.group;
+		}
+
+		Renderer::drawRect(0.0f, y, mSize.x(), 1.0f, separatorColor & 0xFFFFFF00 | (unsigned char)((separatorColor & 0xFF) * opacity));
 	}
-
-	Renderer::drawRect(0.0f, y, mSize.x(), 1.0f, separatorColor & 0xFFFFFF00 | (unsigned char)((separatorColor & 0xFF) * opacity));
 
 	Renderer::popClipRect();
 
@@ -499,7 +556,7 @@ std::vector<HelpPrompt> ComponentList::getHelpPrompts()
 		}
 
 		if(addMovePrompt)
-			prompts.push_back(HelpPrompt(_("up/down"), _("CHOOSE"))); // batocera
+			prompts.push_back(HelpPrompt(_("up/down"), _("CHOOSE")));
 	}
 
 	return prompts;
@@ -519,3 +576,144 @@ std::string ComponentList::getSelectedUserData()
 
 	return "";
 }
+
+bool ComponentList::hitTest(int x, int y, Transform4x4f& parentTransform, std::vector<GuiComponent*>* pResult)
+{
+	Transform4x4f trans = parentTransform * getTransform();
+
+	bool ret = false;
+
+	mHotRow = -1;
+		
+	auto rect = Renderer::getScreenRect(trans, getSize(), true);
+	if (x != -1 && y != -1 && rect.contains(x, y))
+	{
+		ret = true;
+
+		Transform4x4f ti = trans;
+		ti.translate(0, -mCameraOffset);
+
+		float ry = 0;
+
+		for (unsigned int i = 0; i < mEntries.size(); i++)
+		{
+			auto& entry = mEntries.at(i);
+			float rowHeight = getRowHeight(entry.data);
+
+			if (entry.data.selectable && ry - mCameraOffset + rowHeight >= 0)
+			{
+				rect = Renderer::getScreenRect(ti, Vector2f(getSize().x(), rowHeight), true);
+				if (rect.contains(x, y))
+				{
+					mHotRow = i;
+					break;
+				}
+			}
+
+			ti.translate(0, rowHeight);
+			ry += rowHeight;
+			if (ry - mCameraOffset > mSize.y())
+				break;
+		}
+
+		if (pResult != nullptr)
+			pResult->push_back(this);
+	}
+
+	trans.translate(0, -mCameraOffset);
+
+	for (int i = 0; i < getChildCount(); i++)
+		ret |= getChild(i)->hitTest(x, y, trans, pResult);
+
+	return ret;
+}
+
+bool ComponentList::onMouseClick(int button, bool pressed, int x, int y)
+{
+	if (button == 1)
+	{
+		if (pressed)
+		{
+			if (mHotRow >= 0)
+			{
+				float camOffset = mCameraOffset;
+				mCursor = mHotRow;
+				onCursorChanged(CURSOR_STOPPED);
+				mCameraOffset = camOffset;
+				mPressedRow = mHotRow;
+			}
+
+			mIsDragging = false;
+			mPressedPoint = Vector2i(x, y);
+			mWindow->setMouseCapture(this);
+		}
+		else if (mWindow->hasMouseCapture(this))
+		{
+			mWindow->releaseMouseCapture();
+
+			auto row = mPressedRow;
+			mPressedRow = -1;
+			mPressedPoint = Vector2i(-1, -1);
+
+			auto dragging = mIsDragging;
+			mIsDragging = false;
+
+			if (!dragging && row == mHotRow && mCursor == row)
+				InputManager::getInstance()->sendMouseClick(mWindow, 1);				
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
+void ComponentList::onMouseMove(int x, int y)
+{
+	if (mPressedPoint.x() != -1 && mPressedPoint.y() != -1 && mWindow->hasMouseCapture(this))
+	{
+		mIsDragging = true;
+		mHotRow = -1;
+
+		float yOffset = 0;
+		for (auto entry : mEntries)
+			yOffset += getRowHeight(entry.data);
+
+		yOffset -= getSize().y();
+		if (yOffset <= 0)
+			return;
+
+		mCameraOffset += mPressedPoint.y() - y;
+
+		if (mCameraOffset < 0 )
+			mCameraOffset = 0;
+
+		if (mCameraOffset > yOffset)
+			mCameraOffset = yOffset;
+
+		mPressedPoint = Vector2i(x, y);
+	}
+}
+
+bool ComponentList::onMouseWheel(int delta)
+{
+	int newCursor = mCursor - delta;
+	
+	if (newCursor < 0)
+		newCursor = 0;
+
+	if (newCursor >= mEntries.size())
+		newCursor = mEntries.size() - 1;
+
+	while (newCursor >= 0 && newCursor < mEntries.size() && !mEntries[newCursor].data.selectable)
+		newCursor += delta > 0 ? -1 : 1;
+
+	if (newCursor >= 0 && newCursor < mEntries.size() && newCursor != mCursor)
+	{
+		mCursor = newCursor;
+		onCursorChanged(CURSOR_STOPPED);
+	}
+
+	return true;
+}
+

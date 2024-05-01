@@ -45,13 +45,14 @@ GuiMetaDataEd::GuiMetaDataEd(Window* window, MetaDataList* md, const std::vector
 	mBackground.setEdgeColor(theme->Background.color);
 	mBackground.setCenterColor(theme->Background.centerColor);
 	mBackground.setCornerSize(theme->Background.cornerSize);
+	mBackground.setPostProcessShader(theme->Background.menuShader);
 
 	addChild(&mBackground);
 	addChild(&mGrid);
 
 	mHeaderGrid = std::make_shared<ComponentGrid>(mWindow, Vector2i(1, 5));
 
-	mTitle = std::make_shared<TextComponent>(mWindow, _("EDIT METADATA"), theme->Title.font, theme->Title.color, ALIGN_CENTER); // batocera
+	mTitle = std::make_shared<TextComponent>(mWindow, _("EDIT METADATA"), theme->Title.font, theme->Title.color, ALIGN_CENTER); 
 	
 	auto subTitle = Utils::FileSystem::createRelativePath(scraperParams.game->getPath(), scraperParams.game->getSourceFileData()->getSystem()->getRootFolder()->getPath(), true);
 	if (Utils::String::startsWith(subTitle, "./"))
@@ -204,7 +205,7 @@ GuiMetaDataEd::GuiMetaDataEd(Window* window, MetaDataList* md, const std::vector
 		case MD_BOOL:
 			{
 				ed = std::make_shared<SwitchComponent>(window);
-				row.addElement(ed, false, true);
+				row.addElement(ed, false);
 				break;
 			}
 		case MD_RATING:
@@ -212,7 +213,7 @@ GuiMetaDataEd::GuiMetaDataEd(Window* window, MetaDataList* md, const std::vector
 				ed = std::make_shared<RatingComponent>(window);
 				const float height = lbl->getSize().y() * 0.71f;
 				ed->setSize(0, height);
-				row.addElement(ed, false, true);
+				row.addElement(ed, false);
 
 				auto spacer = std::make_shared<GuiComponent>(mWindow);
 				spacer->setSize(Renderer::getScreenWidth() * 0.0025f, 0);
@@ -278,9 +279,9 @@ GuiMetaDataEd::GuiMetaDataEd(Window* window, MetaDataList* md, const std::vector
 					filePath = Utils::FileSystem::resolveRelativePath(filePath, relativePath, true);
 				
 				std::string dir = Utils::FileSystem::getParent(filePath);
-				if (dir.empty())
-					dir = relativePath;
-
+				//if (dir.empty())
+				//	dir = relativePath;
+					
 				std::string title = iter->displayName + " - " + mMetaData->getName();
 				mWindow->pushGui(new GuiFileBrowser(mWindow, dir, filePath, type, updateVal, title));
 			});
@@ -308,9 +309,8 @@ GuiMetaDataEd::GuiMetaDataEd(Window* window, MetaDataList* md, const std::vector
 				const std::string title = iter->displayPrompt;
 				auto updateVal = [ed](const std::string& newVal) { ed->setValue(newVal); }; // ok callback (apply new value to ed)
 				row.makeAcceptInputHandler([this, title, ed, updateVal, multiLine] 
-				{
-				    // batocera
-					if (!multiLine && Settings::getInstance()->getBool("UseOSK"))
+				{				    
+					if (Settings::getInstance()->getBool("UseOSK"))
 						mWindow->pushGui(new GuiTextEditPopupKeyboard(mWindow, title, ed->getValue(), updateVal, multiLine));
 				    else
 						mWindow->pushGui(new GuiTextEditPopup(mWindow, title, ed->getValue(), updateVal, multiLine));				    
@@ -362,7 +362,7 @@ GuiMetaDataEd::GuiMetaDataEd(Window* window, MetaDataList* md, const std::vector
 
 	// resize + center	
 
-	if (Renderer::isSmallScreen())
+	if (Renderer::ScreenSettings::fullScreenMenus())
 		setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
 	else
 	{
@@ -378,6 +378,8 @@ GuiMetaDataEd::GuiMetaDataEd(Window* window, MetaDataList* md, const std::vector
 
 void GuiMetaDataEd::onSizeChanged()
 {
+	GuiComponent::onSizeChanged();
+
 	mBackground.fitTo(mSize, Vector3f::Zero(), Vector2f(-32, -32));
 
 	mGrid.setSize(mSize);
@@ -594,9 +596,9 @@ void GuiMetaDataEd::close(bool closeAllWindows)
 	{
 		// changes were made, ask if the user wants to save them
 		mWindow->pushGui(new GuiMsgBox(mWindow,
-			_("SAVE CHANGES?"), // batocera
-			_("YES"), [this, closeFunc] { if (save()) closeFunc(); }, // batocera
-			_("NO"), closeFunc // batocera
+			_("SAVE CHANGES?"), 
+			_("YES"), [this, closeFunc] { if (save()) closeFunc(); }, 
+			_("NO"), closeFunc 
 		));
 	}else{
 		closeFunc();
@@ -622,6 +624,25 @@ std::vector<HelpPrompt> GuiMetaDataEd::getHelpPrompts()
 {
 	std::vector<HelpPrompt> prompts = mGrid.getHelpPrompts();
 	prompts.push_back(HelpPrompt(BUTTON_BACK, _("BACK")));
-	prompts.push_back(HelpPrompt("start", _("CLOSE"))); // batocera
+	prompts.push_back(HelpPrompt("start", _("CLOSE"))); 
 	return prompts;
+}
+
+bool GuiMetaDataEd::hitTest(int x, int y, Transform4x4f& parentTransform, std::vector<GuiComponent*>* pResult)
+{
+	if (pResult) pResult->push_back(this); // Always return this as it's a fake fullscreen, so we always have click events
+	GuiComponent::hitTest(x, y, parentTransform, pResult);
+	return true;
+}
+
+
+bool GuiMetaDataEd::onMouseClick(int button, bool pressed, int x, int y)
+{
+	if (pressed && button == 1 && !mBackground.isMouseOver())
+	{
+		delete this;
+		return true;
+	}
+
+	return (button == 1);
 }

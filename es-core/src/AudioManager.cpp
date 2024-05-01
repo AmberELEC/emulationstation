@@ -10,9 +10,10 @@
 #include "SystemConf.h"
 #include "id3v2lib/include/id3v2lib.h"
 #include "ThemeData.h"
+#include "Paths.h"
 
 #ifdef _ENABLEEMUELEC
-#include "platform.h"
+#include "utils/Platform.h"
 #endif
 
 #ifdef WIN32
@@ -20,6 +21,10 @@
 #else
 #include <unistd.h>
 #endif
+
+// batocera
+// Size of last played music history as a percentage of file total
+#define LAST_PLAYED_SIZE 0.4
 
 AudioManager* AudioManager::sInstance = NULL;
 std::vector<std::shared_ptr<Sound>> AudioManager::sSoundVector;
@@ -57,8 +62,8 @@ void AudioManager::init()
 		return;
 	
 	mSongNameChanged = false;
-	mMusicVolume = 0;
 	mPlayingSystemThemeSong = "none";
+	std::deque<std::string> mLastPlayed;
 
 	if (SDL_InitSubSystem(SDL_INIT_AUDIO) != 0)
 	{
@@ -68,7 +73,10 @@ void AudioManager::init()
 
 	// Open the audio device and pause
 	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096) < 0)
+	{
+		mMusicVolume = 0;
 		LOG(LogError) << "MUSIC Error - Unable to open SDLMixer audio: " << SDL_GetError() << std::endl;
+	}
 	else
 	{
 		LOG(LogInfo) << "SDL AUDIO Initialized";
@@ -77,8 +85,12 @@ void AudioManager::init()
 		// Reload known sounds
 		for (unsigned int i = 0; i < sSoundVector.size(); i++)
 			sSoundVector[i]->init();
+
+		mMusicVolume = getMaxMusicVolume();
+		Mix_VolumeMusic(mMusicVolume);
 	}
 }
+
 
 void AudioManager::deinit()
 {
@@ -102,7 +114,7 @@ void AudioManager::deinit()
 
 #ifdef _ENABLEEMUELEC	
 	LOG(LogInfo) << "Attempting to close SDL AUDIO";
-	runSystemCommand("/usr/bin/emuelec-utils audio alsa", "", nullptr); 
+    Utils::Platform::ProcessStartInfo("/usr/bin/emuelec-utils audio alsa").run();	
 #endif
 
 	//completely tear down SDL audio. else SDL hogs audio resources and emulators might fail to start...
@@ -146,7 +158,6 @@ void AudioManager::stop()
 			sSoundVector[i]->stop();
 }
 
-// batocera
 void AudioManager::getMusicIn(const std::string &path, std::vector<std::string>& all_matching_files)
 {
 	if (!Utils::FileSystem::isDirectory(path))
@@ -165,22 +176,47 @@ void AudioManager::getMusicIn(const std::string &path, std::vector<std::string>&
 			if (anySystem || mSystemName == Utils::FileSystem::getFileName(*it))
 				getMusicIn(*it, all_matching_files);
 		}
-		else
-		{
-			std::string extension = Utils::String::toLower(Utils::FileSystem::getExtension(*it));
-			if (extension == ".mp3" || extension == ".ogg" || extension == ".flac"
-				|| extension == ".wav" || extension == ".mod" || extension == ".xm"
-				|| extension == ".stm" || extension == ".s3m" || extension == ".far"
-				|| extension == ".it" || extension == ".669" || extension == ".mtm")
-				all_matching_files.push_back(*it);
-		}
+		else if (Utils::FileSystem::isAudio(*it))
+			all_matching_files.push_back(*it);
 	}
 }
 
 // batocera
+// Add the current song to the last played history, truncating as needed
+void AudioManager::addLastPlayed(const std::string& newSong, int totalMusic)
+{
+	int historySize = std::floor(totalMusic * LAST_PLAYED_SIZE);
+	if (historySize < 1)
+	{
+		// Number of songs is too small to bother with
+		return;
+	}
+	
+	while (mLastPlayed.size() > historySize) {
+		mLastPlayed.pop_back();
+	}
+	mLastPlayed.push_front(newSong);
+	
+	LOG(LogDebug) << "Adding " << newSong << " to last played, " << mLastPlayed.size() << " in history";
+}
+
+// batocera
+// Check if current song exists in last played history
+bool AudioManager::songWasPlayedRecently(const std::string& song)
+{
+	for (std::string i : mLastPlayed)
+	{
+		if (song == i)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 void AudioManager::playRandomMusic(bool continueIfPlaying) 
 {
-	if (!Settings::getInstance()->getBool("audio.bgmusic"))
+	if (!Settings::BackgroundMusic())
 		return;
 		
 	std::vector<std::string> musics;
@@ -191,20 +227,25 @@ void AudioManager::playRandomMusic(bool continueIfPlaying)
 
 	// check in User music directory
 	if (musics.empty())
-		getMusicIn("/storage/roms/BGM", musics);
+		getMusicIn(Paths::getUserMusicPath(), musics);
 
 	// check in system sound directory
 	if (musics.empty())
-		getMusicIn("/storage/.config/distribution/BGM", musics);
+		getMusicIn(Paths::getMusicPath(), musics);
 
 	// check in .emulationstation/music directory
 	if (musics.empty())
-		getMusicIn(Utils::FileSystem::getHomePath() + "/.emulationstation/music", musics);
+		getMusicIn(Paths::getUserEmulationStationPath() + "/music", musics);
 
 	if (musics.empty())
 		return;
 
 	int randomIndex = Randomizer::random(musics.size());
+	while (songWasPlayedRecently(musics.at(randomIndex)))
+	{
+		LOG(LogDebug) << "Music \"" << musics.at(randomIndex) << "\" was played recently, trying again";
+		randomIndex = Randomizer::random(musics.size());
+	}
 
 	// continue playing ?
 	if (mCurrentMusic != nullptr && continueIfPlaying)
@@ -212,6 +253,7 @@ void AudioManager::playRandomMusic(bool continueIfPlaying)
 
 	playMusic(musics.at(randomIndex));
 	playSong(musics.at(randomIndex));
+	addLastPlayed(musics.at(randomIndex), musics.size());
 	mPlayingSystemThemeSong = "";
 }
 
@@ -223,7 +265,7 @@ void AudioManager::playMusic(std::string path)
 	// free the previous music
 	stopMusic(false);
 
-	if (!Settings::getInstance()->getBool("audio.bgmusic"))
+	if (!Settings::BackgroundMusic())
 		return;
 
 	// load a new music
@@ -244,7 +286,6 @@ void AudioManager::playMusic(std::string path)
 	Mix_HookMusicFinished(AudioManager::musicEnd_callback);
 }
 
-// batocera
 void AudioManager::musicEnd_callback()
 {
 	if (!AudioManager::getInstance()->mPlayingSystemThemeSong.empty())
@@ -256,7 +297,6 @@ void AudioManager::musicEnd_callback()
 	AudioManager::getInstance()->playRandomMusic(false);
 }
 
-// batocera
 void AudioManager::stopMusic(bool fadeOut)
 {
 	if (mCurrentMusic == NULL)
@@ -266,7 +306,7 @@ void AudioManager::stopMusic(bool fadeOut)
 
 	if (fadeOut)
 	{
-		// Fade-out is nicer on Batocera!
+		// Fade-out is nicer !
 		while (!Mix_FadeOutMusic(500) && Mix_PlayingMusic())
 			SDL_Delay(100);
 	}
@@ -293,7 +333,6 @@ void AudioManager::setSongName(const std::string& song)
 	mSongNameChanged = true;
 }
 
-// batocera
 void AudioManager::playSong(const std::string& song)
 {
 	if (song == mCurrentSong)
@@ -383,7 +422,43 @@ void AudioManager::playSong(const std::string& song)
 
 	LOG(LogDebug) << "AudioManager::setSongName";
 
-	// First, start with an ID3 v1 tag	
+	// First let's try with an ID3 v2 tag
+#define MAX_STR_SIZE 255 // Empiric max size of a MP3 title
+
+	ID3v2_tag* tag = load_tag(song.c_str());
+	if (tag != NULL)
+	{
+		ID3v2_frame* title_frame = tag_get_title(tag);
+		if (title_frame != NULL)
+		{
+			ID3v2_frame_text_content* title_content = parse_text_frame_content(title_frame);
+			if (title_content != NULL && title_content->size > 0)
+			{
+				std::string song_name(title_content->data, title_content->size);
+				ID3v2_frame* artist_frame = tag_get_artist(tag);
+				if (artist_frame != NULL)
+				{
+					ID3v2_frame_text_content* artist_content = parse_text_frame_content(artist_frame);
+					if (artist_content != NULL && artist_content->size > 0)
+					{
+						std::string artist(artist_content->data, artist_content->size);
+						song_name += " - " + artist;
+						free(artist_content->data);
+						free(artist_content);
+					}
+				}
+				song_name.erase(std::remove_if(song_name.begin(), song_name.end(), [](unsigned char c) { return !Utils::String::isPrintableChar(c); }), song_name.end());
+				setSongName(song_name);
+				free(title_content->data);
+				free(title_content);
+				free_tag(tag);
+				return;
+			}
+		}
+		free_tag(tag);
+	}
+
+	// Then, if no v2, let's try with an ID3 v1 tag	
 	struct {
 		char tag[3];	// i.e. "TAG"
 		char title[30];
@@ -401,8 +476,16 @@ void AudioManager::playSong(const std::string& song)
 			LOG(LogError) << "Error AudioManager seeking " << song;
 		else if (fread(&info, sizeof(info), 1, file) != 1)
 			LOG(LogError) << "Error AudioManager reading " << song;
-		else if (strncmp(info.tag, "TAG", 3) == 0) {
-			setSongName(info.title);
+		else if (strncmp(info.tag, "TAG", 3) == 0) 
+		{
+			std::string songTitle(info.title, 30);
+			songTitle = " - " + songTitle.substr(0, 30);
+			if (info.artist != NULL) 
+			{
+				std::string songArtist(info.artist, 30);
+				songTitle += " - " + songArtist.substr(0, 30);
+			}
+			setSongName(songTitle);
 			fclose(file);
 			return;
 		}
@@ -411,30 +494,6 @@ void AudioManager::playSong(const std::string& song)
 	}
 	else
 		LOG(LogError) << "Error AudioManager opening mp3 file " << song;
-
-	// Then let's try with an ID3 v2 tag
-#define MAX_STR_SIZE 255 // Empiric max size of a MP3 title
-
-	ID3v2_tag* tag = load_tag(song.c_str());
-	if (tag != NULL)
-	{
-		ID3v2_frame* title_frame = tag_get_title(tag);
-		if (title_frame != NULL)
-		{
-			ID3v2_frame_text_content* title_content = parse_text_frame_content(title_frame);
-			if (title_content != NULL)
-			{
-				if (title_content->size < MAX_STR_SIZE)
-					title_content->data[title_content->size] = '\0';
-
-				if ((strlen(title_content->data) > 3) && (strlen(title_content->data) < MAX_STR_SIZE))
-				{
-					setSongName(title_content->data);
-					return;
-				}
-			}
-		}
-	}
 
 	setSongName(Utils::FileSystem::getStem(song.c_str()));
 }
@@ -450,7 +509,7 @@ void AudioManager::changePlaylist(const std::shared_ptr<ThemeData>& theme, bool 
 	mSystemName = theme->getSystemThemeFolder();
 	mCurrentThemeMusicDirectory = "";
 
-	if (!Settings::getInstance()->getBool("audio.bgmusic"))
+	if (!Settings::BackgroundMusic())
 		return;
 
 	const ThemeData::ThemeElement* elem = theme->getElement("system", "directory", "sound");
@@ -485,11 +544,14 @@ void AudioManager::changePlaylist(const std::shared_ptr<ThemeData>& theme, bool 
 
 void AudioManager::setVideoPlaying(bool state)
 {
-	if (sInstance == nullptr || !sInstance->mInitialized || !Settings::getInstance()->getBool("audio.bgmusic"))
+	if (sInstance == nullptr || !sInstance->mInitialized || !Settings::BackgroundMusic())
 		return;
 	
-	if (state && !Settings::getInstance()->getBool("VideoLowersMusic"))
+	if (state && (!Settings::getInstance()->getBool("VideoLowersMusic") || !Settings::getInstance()->getBool("VideoAudio")))
+	{
+		sInstance->mVideoPlaying = false;
 		return;
+	}
 
 	sInstance->mVideoPlaying = state;
 }
@@ -510,7 +572,7 @@ int AudioManager::getMaxMusicVolume()
 
 void AudioManager::update(int deltaTime)
 {
-	if (sInstance == nullptr || !sInstance->mInitialized || !Settings::getInstance()->getBool("audio.bgmusic"))
+	if (sInstance == nullptr || !sInstance->mInitialized || !Settings::BackgroundMusic())
 		return;
 
 	float deltaVol = deltaTime / 8.0f;

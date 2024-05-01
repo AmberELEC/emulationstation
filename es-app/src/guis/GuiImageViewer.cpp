@@ -13,6 +13,7 @@
 #endif
 
 #include "utils/ZipFile.h"
+#include "components/HelpComponent.h"
 
 class ZoomableImageComponent : public ImageComponent
 {
@@ -69,9 +70,9 @@ public:
 	std::vector<HelpPrompt> getHelpPrompts()
 	{
 		std::vector<HelpPrompt> prompts;
-		prompts.push_back(HelpPrompt(BUTTON_BACK, _("CLOSE")));
-		prompts.push_back(HelpPrompt("l", _("ZOOM OUT")));
-		prompts.push_back(HelpPrompt("r", _("ZOOM IN")));		
+		prompts.push_back(HelpPrompt(BUTTON_BACK, _("BACK"), [&] { delete this; }));
+		prompts.push_back(HelpPrompt("l", _("ZOOM OUT"), [&] { onMouseWheel(-1); }));
+		prompts.push_back(HelpPrompt("r", _("ZOOM IN"), [&] { onMouseWheel(1); }));
 		prompts.push_back(HelpPrompt("up/down/left/right", _("MOVE")));
 
 		return prompts;
@@ -191,7 +192,76 @@ public:
 		mLocked = state;
 	}
 
+	bool hitTest(int x, int y, Transform4x4f& parentTransform, std::vector<GuiComponent*>* pResult)
+	{
+		if (pResult != nullptr)
+		{
+			for (auto cp : *pResult)
+				if (cp->isKindOf<HelpComponent>())
+					return false;
+
+			pResult->push_back(this);
+		}
+
+		return true;
+	}
+
+	bool onMouseWheel(int delta)
+	{
+		auto scale = getScale();
+		float zoomSpeed = 0.1f;
+
+		scale = scale + delta * zoomSpeed;
+		if (scale < 0.01)
+			scale = 0.01;
+
+		setScale(scale);
+		return true;
+	}
+
+	void onMouseMove(int x, int y)
+	{
+		if (mPressedPoint.x() != -1 && mPressedPoint.y() != -1 && mWindow->hasMouseCapture(this))
+		{
+			auto org = getOrigin();
+
+			auto scale = getScale();
+			auto size = getSize();
+
+			if (size.x() != 0 && size.y() != 0)
+			{
+				float dx = (mPressedPoint.x() - x) / (float)(size.x() * scale);
+				float dy = (mPressedPoint.y() - y) / (float)(size.y() * scale);
+
+				org.x() = org.x() + dx;
+				org.y() = org.y() + dy;
+				setOrigin(org);
+			}
+
+			mPressedPoint = Vector2i(x, y);
+		}
+	}
+
+	bool onMouseClick(int button, bool pressed, int x, int y)
+	{
+		if (button == 1)
+		{
+			if (pressed)
+			{
+				mPressedPoint = Vector2i(x, y);
+				mWindow->setMouseCapture(this);
+			}
+			else if (mWindow->hasMouseCapture(this))
+				mWindow->releaseMouseCapture();
+
+			return true;
+		}
+
+		return false;
+	}
+
 private:
+	Vector2i mPressedPoint;
 	Vector2f mMoving;
 	float	 mZooming;
 	bool	 mFirstShow;
@@ -274,7 +344,7 @@ void GuiImageViewer::loadPdf(const std::string& imagePath)
 	mPdf = imagePath;
 	
 	for (int i = 0; i < pages; i++)
-		mGrid.add("", ":/blank.png", "", "", false, false, false, false, std::to_string(i + 1));
+		mGrid.add("", ":/blank.png", std::to_string(i + 1));
 	
 	if (pages > INITIALPAGES)
 	{
@@ -307,7 +377,7 @@ void GuiImageViewer::loadPdf(const std::string& imagePath)
 	}
 	
 	window->pushGui(new GuiLoading<std::vector<std::string>>(window, _("Loading..."),
-		[window, imagePath]
+		[window, imagePath](auto gui)
 		{		
 			return ApiSystem::getInstance()->extractPdfImages(imagePath, 1, INITIALPAGES);
 		},
@@ -359,7 +429,7 @@ void GuiImageViewer::loadImages(std::vector<std::string>& images)
 	mWindow->postToUiThread([images, window, this]
 	{
 		for (int i = 0; i < images.size(); i++)
-			mGrid.add("", images[i], "", "", false, false, false, false, std::to_string(i + 1));
+			mGrid.add("", images[i], std::to_string(i + 1));
 
 		window->pushGui(this);
 	});
@@ -416,7 +486,7 @@ void GuiImageViewer::loadCbz(const std::string& imagePath)
 	mPdf = imagePath;
 
 	for (int i = 0; i < pages; i++)
-		mGrid.add("", ":/blank.png", "", "", false, false, false, false, std::to_string(i + 1));
+		mGrid.add("", ":/blank.png", std::to_string(i + 1));
 
 	if (pages > INITIALPAGES)
 	{
@@ -446,34 +516,35 @@ void GuiImageViewer::loadCbz(const std::string& imagePath)
 	}
 
 	window->pushGui(new GuiLoading<std::vector<std::string>>(window, _("Loading..."),
-		[window, imagePath, files]
-	{
-		std::vector<std::string> ret;
-
-		for (int i = 0; i < INITIALPAGES && i < files.size(); i++)
+		[window, imagePath, files](auto gui)
 		{
-			auto fileToExtract = files[i];
+			std::vector<std::string> ret;
 
-			auto localFile = _extractZipFile(imagePath, fileToExtract);
-			if (!localFile.empty())
-				ret.push_back(localFile);
-		}
+			for (size_t i = 0; i < INITIALPAGES && i < files.size(); i++)
+			{
+				auto fileToExtract = files[i];
 
-		return ret;
-	},
+				auto localFile = _extractZipFile(imagePath, fileToExtract);
+				if (!localFile.empty())
+					ret.push_back(localFile);
+			}
+
+			return ret;
+		},
 		[this, window, imagePath, pages](std::vector<std::string> fileList)
-	{
-		if (fileList.size() == 0)
-			return;
-
-		for (int i = 0; i < fileList.size(); i++)
 		{
-			ImageIO::removeImageCache(fileList[i]);
-			mGrid.setImage(fileList[i], std::to_string(i + 1));
-		}
+			if (fileList.size() == 0)
+				return;
 
-		window->pushGui(this);
-	}));
+			for (size_t i = 0; i < fileList.size(); i++)
+			{
+				ImageIO::removeImageCache(fileList[i]);
+				mGrid.setImage(fileList[i], std::to_string(i + 1));
+			}
+
+			window->pushGui(this);
+		}
+	));
 }
 
 
@@ -512,18 +583,19 @@ bool GuiImageViewer::input(InputConfig* config, Input input)
 
 					Window* window = mWindow;
 					window->pushGui(new GuiLoading<std::string>(window, _("Loading..."),
-						[this, window, path, page]
-					{
-						auto files = ApiSystem::getInstance()->extractPdfImages(mPdf, page, 1, true);
-						if (files.size() == 1)
-							return files[0];
+						[this, window, path, page](auto gui)
+						{
+							auto files = ApiSystem::getInstance()->extractPdfImages(mPdf, page, 1, 300);
+							if (files.size() == 1)
+								return files[0];
 
-						return path;
-					},
+							return path;
+						},
 						[window](std::string file)
-					{
-						window->pushGui(new ZoomableImageComponent(window, file));
-					}));
+						{
+							window->pushGui(new ZoomableImageComponent(window, file));
+						})
+					);
 				}
 			}
 			else
@@ -545,7 +617,7 @@ bool GuiImageViewer::input(InputConfig* config, Input input)
 std::vector<HelpPrompt> GuiImageViewer::getHelpPrompts()
 {
 	std::vector<HelpPrompt> prompts;
-	prompts.push_back(HelpPrompt(BUTTON_BACK, _("CLOSE")));
+	prompts.push_back(HelpPrompt(BUTTON_BACK, _("CLOSE"), [&] { delete this; }));
 	
 	if (!mPdf.empty())
 		prompts.push_back(HelpPrompt(BUTTON_OK, _("ZOOM")));
@@ -557,17 +629,24 @@ void GuiImageViewer::add(const std::string imagePath)
 {
 	if (!Utils::FileSystem::exists(imagePath))
 		return;
-
+	/*
 	std::string img;
 	std::string vid;
 
-	auto ext = Utils::FileSystem::getExtension(imagePath);
-	if (ext == ".mp4" || ext == ".avi" || ext == ".mkv" || ext == ".webm")
+	if (Utils::FileSystem::isAudio(imagePath))
+	{
+		vid = imagePath;
+		img = imagePath;
+
+		if (ResourceManager::getInstance()->fileExists(":/mp3.jpg"))
+			img = ":/mp3.jpg";
+	}
+	else if (Utils::FileSystem::isVideo(imagePath))
 		vid = imagePath;
 	else
 		img = imagePath;
-	
-	mGrid.add("", img, vid, "", false, false, false, false, imagePath);
+	*/
+	mGrid.add("", imagePath, imagePath); // vid, "", false, false, false, false, 
 }
 
 void GuiImageViewer::setCursor(const std::string imagePath)
@@ -654,7 +733,7 @@ GuiVideoViewer::GuiVideoViewer(Window* window, const std::string& path) : GuiCom
 	else
 #endif
 	{
-		mVideo = new VideoVlcComponent(mWindow, "");
+		mVideo = new VideoVlcComponent(mWindow);
 
 		((VideoVlcComponent*)mVideo)->setLinearSmooth();
 		((VideoVlcComponent*)mVideo)->setEffect(VideoVlcFlags::NONE);

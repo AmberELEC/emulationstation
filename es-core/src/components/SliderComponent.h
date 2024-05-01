@@ -23,6 +23,7 @@ public:
 	void update(int deltaTime) override;
 	void render(const Transform4x4f& parentTrans) override;
 	
+	void onOpacityChanged() override;
 	void onSizeChanged() override;
 	
 	virtual std::vector<HelpPrompt> getHelpPrompts() override;
@@ -30,8 +31,13 @@ public:
 
 	inline void setOnValueChanged(const std::function<void(const float&)>& callback) { mValueChanged = callback; }
 
+	virtual bool hitTest(int x, int y, Transform4x4f& parentTransform, std::vector<GuiComponent*>* pResult = nullptr) override;
+	virtual bool onMouseClick(int button, bool pressed, int x, int y) override;
+	virtual void onMouseMove(int x, int y) override;
+
 private:
 	void onValueChanged();
+	unsigned int getCurColor() const;
 
 	float mMin, mMax;
 	float mValue;
@@ -47,6 +53,9 @@ private:
 	std::shared_ptr<TextCache> mValueCache;
 
 	std::function<void(const float&)> mValueChanged;
+
+	bool	mIsKnobHot;
+	int     mScreenX;
 };
 
 #endif // ES_CORE_COMPONENTS_SLIDER_COMPONENT_H

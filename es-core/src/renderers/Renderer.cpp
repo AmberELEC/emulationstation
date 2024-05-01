@@ -1,14 +1,29 @@
 #include "renderers/Renderer.h"
 
+#include "Renderer_GL21.h"
+#include "Renderer_GLES10.h"
+#include "Renderer_GLES20.h"
+
 #include "math/Transform4x4f.h"
 #include "math/Vector2i.h"
 #include "resources/ResourceManager.h"
 #include "ImageIO.h"
 #include "Log.h"
 #include "Settings.h"
+#include "utils/StringUtil.h"
 
 #include <SDL.h>
 #include <stack>
+
+#if WIN32
+#include <Windows.h>
+#include <SDL_syswm.h>
+
+#include <dwmapi.h>
+#pragma comment(lib, "Dwmapi.lib")
+
+#include "utils/Platform.h"
+#endif
 
 namespace Renderer
 {
@@ -24,8 +39,73 @@ namespace Renderer
 	static int              screenOffsetY      = 0;
 	static int              screenRotate       = 0;
 	static bool             initialCursorState = 1;
+	static Vector2i         screenMargin;
+	static Rect				viewPort;
 
 	static Vector2i			sdlWindowPosition = Vector2i(SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED);
+
+	static int              currentFrame = 0;
+
+	int  getCurrentFrame() { return currentFrame; }
+
+	static Rect screenToviewport(const Rect& rect)
+	{
+		Rect rc = rect;
+
+		float dx = (screenWidth - 2 * screenMargin.x()) / (float)screenWidth;
+		float dy = (screenHeight - 2 * screenMargin.y()) / (float)screenHeight;
+
+		rc.x = screenMargin.x() + rc.x * dx;
+		rc.y = screenMargin.y() + rc.y * dy;
+		rc.w = (float) rc.w * dx;
+		rc.h = (float) rc.h * dy;
+
+		return rc;
+	}
+
+	Rect		getScreenRect(const Transform4x4f& transform, const Vector3f& size, bool viewPort)
+	{
+		return getScreenRect(transform, Vector2f(size.x(), size.y()), viewPort);
+	}
+
+
+	Rect		getScreenRect(const Transform4x4f& transform, const Vector2f& size, bool viewPort)
+	{
+		auto rc = Rect(
+			(int)Math::round(transform.translation().x()),
+			(int)Math::round(transform.translation().y()),
+			(int)Math::round(size.x() * transform.r0().x()),
+			(int)Math::round(size.y() * transform.r1().y()));
+
+		if (viewPort && screenMargin.x() != 0 && screenMargin.y() != 0)
+			return screenToviewport(rc);
+
+		return rc;
+	}
+
+	Vector2i  physicalScreenToRotatedScreen(int x, int y)
+	{
+		int mx = x;
+		int my = y;
+
+		switch (Renderer::getScreenRotate())
+		{
+		case 1:
+			mx = Renderer::getScreenHeight() - mx;
+			std::swap(mx, my);
+			break;
+		case 2:
+			mx = Renderer::getScreenWidth() - mx;
+			my = Renderer::getScreenHeight() - my;
+			break;
+		case 3:
+			my = Renderer::getScreenWidth() - my;
+			std::swap(mx, my);
+			break;
+		}
+
+		return Vector2i(mx, my);
+	}
 
 	static void setIcon()
 	{
@@ -88,21 +168,14 @@ namespace Renderer
 		screenOffsetX = Settings::getInstance()->getInt("ScreenOffsetX") ? Settings::getInstance()->getInt("ScreenOffsetX") : 0;
 		screenOffsetY = Settings::getInstance()->getInt("ScreenOffsetY") ? Settings::getInstance()->getInt("ScreenOffsetY") : 0;
 		screenRotate  = Settings::getInstance()->getInt("ScreenRotate")  ? Settings::getInstance()->getInt("ScreenRotate")  : 0;
-		
-		/*
-		if ((screenRotate == 1 || screenRotate == 3) && !Settings::getInstance()->getBool("Windowed"))
+
+		if (screenRotate == 1 || screenRotate == 3)
 		{
 			int tmp = screenWidth;
 			screenWidth = screenHeight;
 			screenHeight = tmp;
 		}
-		else */if (screenRotate == 1 || screenRotate == 3)
-		{
-			int tmp = screenWidth;
-			screenWidth = screenHeight;
-			screenHeight = tmp;
-		}
-		
+
 		int monitorId = Settings::getInstance()->getInt("MonitorID");
 		if (monitorId >= 0 && sdlWindowPosition == Vector2i(SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED))
 		{
@@ -114,6 +187,19 @@ namespace Renderer
 				
 				sdlWindowPosition = Vector2i(rc.x, rc.y);
 
+				if (!Settings::getInstance()->getBool("Windowed") && !Settings::getInstance()->getBool("WindowWidth"))
+				{
+					windowWidth = screenWidth = rc.w;
+					windowHeight = screenHeight = rc.h;
+
+					if (screenRotate == 1 || screenRotate == 3)
+					{
+						int tmp = screenWidth;
+						screenWidth = screenHeight;
+						screenHeight = tmp;
+					}
+				}
+
 				if (Settings::getInstance()->getBool("Windowed") && (Settings::getInstance()->getInt("WindowWidth") || Settings::getInstance()->getInt("ScreenWidth")))
 				{
 					if (windowWidth != rc.w || windowHeight != rc.h)
@@ -124,13 +210,6 @@ namespace Renderer
 						);
 					}
 				}
-			/*	else
-				{
-					windowWidth = rc.w;
-					windowHeight = rc.h;
-					screenWidth = rc.w;
-					screenHeight = rc.h;
-				}*/
 			}
 		}
 		
@@ -151,11 +230,58 @@ namespace Renderer
 			return false;
 		}
 
-		LOG(LogInfo) << "Created window successfully.";
-
 		createContext();
 		setIcon();
 		setSwapInterval();
+		swapBuffers();
+
+#if WIN32
+		if (windowFlags & SDL_WINDOW_BORDERLESS)
+		{
+			int x;
+			int y;
+			SDL_GetWindowPosition(sdlWindow, &x, &y);
+
+			SDL_SetWindowBordered(sdlWindow, SDL_bool::SDL_TRUE);
+			
+			SDL_SysWMinfo wmInfo;
+			SDL_VERSION(&wmInfo.version);
+			SDL_GetWindowWMInfo(sdlWindow, &wmInfo);
+			HWND hWnd = wmInfo.info.win.window;
+			if (hWnd != NULL)
+			{
+				LONG lStyle = GetWindowLong(hWnd, GWL_STYLE);
+				lStyle &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
+				SetWindowLong(hWnd, GWL_STYLE, lStyle);
+
+				LONG lExStyle = GetWindowLong(hWnd, GWL_EXSTYLE);
+				lExStyle &= ~(WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
+				SetWindowLong(hWnd, GWL_EXSTYLE, lExStyle);
+
+				// Check if the major and minor versions indicate Windows 11 or newer
+				if (Utils::Platform::isWindows11()) 
+				{
+					BOOL isComposited;
+					HRESULT result = ::DwmIsCompositionEnabled(&isComposited);
+					if (SUCCEEDED(result) && isComposited)
+					{
+						int preference = 1; // DWM_WINDOW_CORNER_PREFERENCE::DWMWCP_DONOTROUND;
+						HRESULT ret = ::DwmSetWindowAttribute(hWnd, 33, &preference, sizeof(preference)); // DWMWA_WINDOW_CORNER_PREFERENCE
+					}
+				}
+
+				SetWindowPos(hWnd, NULL,
+					x, y,
+					windowWidth, windowHeight,
+					SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOOWNERZORDER);
+			}
+			else
+			{
+				SDL_SetWindowBordered(sdlWindow, SDL_bool::SDL_FALSE);
+				SDL_SetWindowPosition(sdlWindow, x, y);
+			}
+		}
+#endif
 
 		return true;
 
@@ -201,22 +327,20 @@ namespace Renderer
 		SDL_SetWindowInputFocus(sdlWindow);		
 	}
 
-	bool init()
-	{
-		if(!createWindow())
-			return false;
 
+	void updateProjection()
+	{
 		Transform4x4f projection = Transform4x4f::Identity();
-		Rect          viewport   = Rect(0, 0, 0, 0);
+		Rect          viewport;
 
 		switch(screenRotate)
 		{
 			case 0:
 			{
-				viewport.x = screenOffsetX;
-				viewport.y = screenOffsetY;
-				viewport.w = screenWidth;
-				viewport.h = screenHeight;
+				viewport.x = screenOffsetX + screenMargin.x();
+				viewport.y = screenOffsetY + screenMargin.y();
+				viewport.w = screenWidth - 2 * screenMargin.x();
+				viewport.h = screenHeight - 2 * screenMargin.y();
 
 				projection.orthoProjection(0, screenWidth, screenHeight, 0, -1.0, 1.0);
 			}
@@ -264,11 +388,37 @@ namespace Renderer
 
 		setViewport(viewport);
 		setProjection(projection);
+	}
+
+	Vector2i	setScreenMargin(int marginX, int marginY)
+	{
+		auto oldMargin = screenMargin;
+
+		if (screenMargin.x() == marginX && screenMargin.y() == marginY)
+			return oldMargin;
+		
+		screenMargin = Vector2i(marginX, marginY);
+
+		Rect          viewport;
+		viewport.x = screenOffsetX + screenMargin.x();
+		viewport.y = screenOffsetY + screenMargin.y();
+		viewport.w = screenWidth - 2 * screenMargin.x();
+		viewport.h = screenHeight - 2 * screenMargin.y();
+
+		setViewport(viewport);
+		return oldMargin;
+	}
+
+
+	bool init()
+	{
+		if (!createWindow())
+			return false;
+
+		updateProjection();
 		swapBuffers();
-
 		return true;
-
-	} // init
+	}
 
 	void deinit()
 	{
@@ -278,7 +428,17 @@ namespace Renderer
 
 	void pushClipRect(const Vector2i& _pos, const Vector2i& _size)
 	{
-		Rect box(_pos.x(), _pos.y(), _size.x(), _size.y());
+		pushClipRect(_pos.x(), _pos.y(), _size.x(), _size.y());
+	}
+
+	void pushClipRect(Rect rect)
+	{
+		pushClipRect(rect.x, rect.y, rect.w, rect.h);
+	}
+
+	void pushClipRect(int x, int y, int w, int h)	
+	{
+		Rect box(x, y, w, h);
 
 		if(box.w == 0) box.w = screenWidth  - box.x;
 		if(box.h == 0) box.h = screenHeight - box.y;
@@ -315,7 +475,10 @@ namespace Renderer
 		if(box.h < 0) box.h = 0;
 
 		clipStack.push(box);
-		nativeClipStack.push(Rect(_pos.x(), _pos.y(), _size.x(), _size.y()));
+		nativeClipStack.push(Rect(x, y, w, h));
+
+		if (screenMargin.x() != 0 && screenMargin.y() != 0)
+			box = screenToviewport(box);
 
 		setScissor(box);
 
@@ -332,8 +495,20 @@ namespace Renderer
 		clipStack.pop();
 		nativeClipStack.pop();
 
-		if(clipStack.empty()) setScissor(Rect(0, 0, 0, 0));
-		else                  setScissor(clipStack.top());
+		if (clipStack.empty())
+		{
+			static 	Rect EmptyRect = Rect(0, 0, 0, 0);
+			setScissor(EmptyRect);
+		}
+		else
+		{
+			Rect box = clipStack.top();
+
+			if (screenMargin.x() != 0 && screenMargin.y() != 0)
+				box = screenToviewport(box);
+
+			setScissor(box);
+		}
 
 	} // popClipRect
 
@@ -354,8 +529,8 @@ namespace Renderer
 		vertices[3] = { { _x + _w,_y + _h }, { 0.0f, 0.0f }, colorEnd };
 
 		// round vertices
-		for(int i = 0; i < 4; ++i)
-			vertices[i].pos.round();
+		//for(int i = 0; i < 4; ++i)
+		//	vertices[i].pos.round();
 
 		bindTexture(0);
 		drawTriangleStrips(vertices, 4, _srcBlendFactor, _dstBlendFactor);
@@ -370,6 +545,7 @@ namespace Renderer
 	int         getScreenOffsetX() { return screenOffsetX; }
 	int         getScreenOffsetY() { return screenOffsetY; }
 	int         getScreenRotate()  { return screenRotate; }
+	bool		isVerticalScreen() { return screenHeight > screenWidth; }
 
 	float		getScreenProportion() 
 	{ 
@@ -379,14 +555,60 @@ namespace Renderer
 		return (float) screenWidth / (float) screenHeight;
 	}
 
+	std::map<std::string, float> ratios =
+	{
+		{ "4/3",		   4.0f / 3.0f },
+		{ "16/9",          16.0f / 9.0f },
+		{ "16/10",         16.0f / 10.0f },
+		{ "16/15",         16.0f / 15.0f },
+		{ "21/9",          21.0f / 9.0f },
+		{ "1/1",           1 / 1 },
+		{ "2/1",           2.0f / 1.0f },
+		{ "3/2",           3.0f / 2.0f },
+		{ "3/4",           3.0f / 4.0f },
+		{ "4/1",           4.0f / 1.0f },
+		{ "9/16",          9.0f / 16.0f },
+		{ "5/4",           5.0f / 4.0f },
+		{ "6/5",           6.0f / 5.0f },
+		{ "7/9",           7.0f / 9.0f },
+		{ "8/3",           8.0f / 3.0f },
+		{ "8/7",           8.0f / 7.0f },
+		{ "19/12",         19.0f / 12.0f },
+		{ "19/14",         19.0f / 14.0f },
+		{ "30/17",         30.0f / 17.0f },
+		{ "32/9",          32.0f / 9.0f }
+	};
+
+	std::string  getAspectRatio()
+	{
+		float nearDist = 9999999;
+		std::string nearName = "";
+
+		float prop = Renderer::getScreenProportion();
+
+		for (auto ratio : ratios)
+		{
+			float dist = abs(prop - ratio.second);
+			if (dist < nearDist)
+			{
+				nearDist = dist;
+				nearName = ratio.first;
+			}
+		}
+
+		return nearName;
+	}
+
+
 	bool        isSmallScreen()    
 	{ 		
-		return screenWidth <= 480 || screenHeight <= 480; 
+		return ScreenSettings::isSmallScreen();
+		//return screenWidth <= 480 || screenHeight <= 480; 
 	};
 
 	bool isClippingEnabled() { return !clipStack.empty(); }
 
-	bool valueInRange(int value, int min, int max)
+	inline bool valueInRange(int value, int min, int max)
 	{
 		return (value >= min) && (value <= max);
 	}
@@ -404,8 +626,7 @@ namespace Renderer
 
 	bool isVisibleOnScreen(float x, float y, float w, float h)
 	{
-		Rect screen = Rect(0, 0, Renderer::getScreenWidth(), Renderer::getScreenHeight());
-		Rect box = Rect(x, y, w, h);
+		static Rect screen = Rect(0, 0, Renderer::getScreenWidth(), Renderer::getScreenHeight());
 
 		if (w > 0 && x + w <= 0)
 			return false;
@@ -415,7 +636,9 @@ namespace Renderer
 		
 		if (x == screen.w || y == screen.h)
 			return false;
-			
+
+		Rect box = Rect(x, y, w, h);
+
 		if (!rectOverlap(box, screen))
 			return false;
 			
@@ -428,8 +651,7 @@ namespace Renderer
 			return true;
 		}
 
-		screen = nativeClipStack.top();
-		return rectOverlap(screen, box);
+		return rectOverlap(nativeClipStack.top(), box);
 	}
 
 	unsigned int mixColors(unsigned int first, unsigned int second, float percent)
@@ -508,6 +730,306 @@ namespace Renderer
 	{
 		std::vector<Vertex> vertex = createRoundRect(x, y, width, height, radius);
 		setStencil(vertex.data(), vertex.size());
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+
+	std::vector<std::string> getRendererNames()
+	{
+		std::vector<std::string> ret;
+	
+#ifdef RENDERER_GLES_20
+		{
+			GLES20Renderer rd;				
+			ret.push_back(rd.getDriverName());
+		}
+#endif
+
+#ifdef RENDERER_OPENGL_21
+		{
+			OpenGL21Renderer rd;
+			ret.push_back(rd.getDriverName());
+		}
+#endif
+
+#ifdef RENDERER_OPENGLES_10
+		{
+			GLES10Renderer rd;
+			ret.push_back(rd.getDriverName());
+		}
+#endif
+		return ret;
+	}
+
+	IRenderer* getRendererFromName(const std::string& name)
+	{
+		if (name.empty())
+			return nullptr;
+
+#ifdef RENDERER_GLES_20
+		{
+			GLES20Renderer rd;
+			if (rd.getDriverName() == name)
+				return new GLES20Renderer();
+		}
+#endif
+
+#ifdef RENDERER_OPENGL_21
+		{
+			OpenGL21Renderer rd;
+			if (rd.getDriverName() == name)
+				return new OpenGL21Renderer();
+		}
+#endif
+
+#ifdef RENDERER_OPENGLES_10
+		{
+			GLES10Renderer rd;
+			if (rd.getDriverName() == name)
+				return new GLES10Renderer();
+		}
+#endif
+
+		return nullptr;
+	}
+
+	static IRenderer* createRenderer()
+	{
+		IRenderer* instance = getRendererFromName(Settings::getInstance()->getString("Renderer"));
+		if (instance == nullptr)
+		{
+#ifdef RENDERER_GLES_20
+			instance = new GLES20Renderer();
+#elif RENDERER_OPENGL_21
+			instance = new OpenGL21Renderer();
+#elif RENDERER_OPENGLES_10
+			instance = new GLES10Renderer();
+#endif
+		}
+
+		return instance;
+	}
+
+	static IRenderer* _instance = nullptr;
+
+	static inline IRenderer* Instance()
+	{
+		if (_instance == nullptr)
+			_instance = createRenderer();
+
+		return _instance;
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	std::string getDriverName()
+	{
+		return Instance()->getDriverName();
+	}
+
+	std::vector<std::pair<std::string, std::string>> getDriverInformation()
+	{
+		return Instance()->getDriverInformation();
+	}
+
+	unsigned int getWindowFlags()
+	{
+		return Instance()->getWindowFlags();
+	}
+
+	void setupWindow()
+	{
+		return Instance()->setupWindow();
+	}
+
+	void createContext() 
+	{
+		Instance()->createContext();
+	}
+
+	void resetCache()
+	{
+		Instance()->resetCache();
+	}
+	
+	void destroyContext()
+	{
+		Instance()->destroyContext();
+	}
+
+	unsigned int createTexture(const Texture::Type _type, const bool _linear, const bool _repeat, const unsigned int _width, const unsigned int _height, void* _data)
+	{
+		return Instance()->createTexture(_type, _linear, _repeat, _width, _height, _data);
+	}
+
+	void  destroyTexture(const unsigned int _texture)
+	{
+		Instance()->destroyTexture(_texture);
+	}
+
+	void updateTexture(const unsigned int _texture, const Texture::Type _type, const unsigned int _x, const unsigned _y, const unsigned int _width, const unsigned int _height, void* _data)
+	{
+		Instance()->updateTexture(_texture, _type, _x, _y, _width, _height, _data);
+	}
+
+	void bindTexture(const unsigned int _texture)
+	{
+		Instance()->bindTexture(_texture);
+	}
+
+	void drawLines(const Vertex* _vertices, const unsigned int _numVertices, const Blend::Factor _srcBlendFactor, const Blend::Factor _dstBlendFactor)
+	{
+		Instance()->drawLines(_vertices, _numVertices, _srcBlendFactor, _dstBlendFactor);
+	}
+
+	void drawTriangleStrips(const Vertex* _vertices, const unsigned int _numVertices, const Blend::Factor _srcBlendFactor, const Blend::Factor _dstBlendFactor, bool verticesChanged)
+	{
+		Instance()->drawTriangleStrips(_vertices, _numVertices, _srcBlendFactor, _dstBlendFactor, verticesChanged);
+	}
+
+	void drawSolidRectangle(const float _x, const float _y, const float _w, const float _h, const unsigned int _fillColor, const unsigned int _borderColor, float borderWidth, float cornerRadius)
+	{
+		Instance()->drawSolidRectangle(_x, _y, _w, _h, _fillColor, _borderColor, borderWidth, cornerRadius);
+	}
+
+	void drawTriangleFan(const Vertex* _vertices, const unsigned int _numVertices, const Blend::Factor _srcBlendFactor, const Blend::Factor _dstBlendFactor)
+	{
+		Instance()->drawTriangleFan(_vertices, _numVertices, _srcBlendFactor, _dstBlendFactor);
+	}
+
+	bool shaderSupportsCornerSize(const std::string& shader)
+	{
+		return Instance()->shaderSupportsCornerSize(shader);
+	}
+
+	bool supportShaders()
+	{
+		return Instance()->supportShaders();
+	}
+
+	void setProjection(const Transform4x4f& _projection)
+	{
+		Instance()->setProjection(_projection);
+	}
+
+	void setMatrix(const Transform4x4f& _matrix)
+	{
+		Instance()->setMatrix(_matrix);
+	}
+
+	void blurBehind(const float _x, const float _y, const float _w, const float _h, const float blurSize)
+	{
+		std::map<std::string, std::string> map;
+		map["blur"] = std::to_string(blurSize);
+		Instance()->postProcessShader(":/shaders/blur.glsl", _x, _y, _w, _h, map);		
+	}
+
+	void postProcessShader(const std::string& path, const float _x, const float _y, const float _w, const float _h, const std::map<std::string, std::string>& parameters, unsigned int* data)
+	{
+		Instance()->postProcessShader(path, _x, _y, _w, _h, parameters, data);
+	}
+
+	Rect& getViewport()
+	{
+		return viewPort;
+	}
+
+	void setViewport(const Rect& _viewport)
+	{
+		viewPort = _viewport;
+		Instance()->setViewport(_viewport);
+	}
+
+	void setScissor(const Rect& _scissor)
+	{
+		Instance()->setScissor(_scissor);
+	}
+
+	void setStencil(const Vertex* _vertices, const unsigned int _numVertices)
+	{
+		Instance()->setStencil(_vertices, _numVertices);
+	}
+
+	void disableStencil()
+	{
+		Instance()->disableStencil();
+	}
+
+	void setSwapInterval()
+	{
+		Instance()->setSwapInterval();
+	}
+
+	void swapBuffers() 
+	{
+		currentFrame++;
+		Instance()->swapBuffers();
+	}
+
+	size_t getTotalMemUsage()
+	{
+		return Instance()->getTotalMemUsage();
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	bool  ScreenSettings::isSmallScreen()
+	{
+		auto menus = Settings::getInstance()->getString("ForceSmallScreen");
+		if (!menus.empty())
+			return menus == "true";
+
+		return screenWidth <= 480 || screenHeight <= 480;
+	}
+
+	bool  ScreenSettings::fullScreenMenus()
+	{
+		auto menus = Settings::getInstance()->getString("FullScreenMenu");
+		if (!menus.empty())
+			return menus == "true";
+
+		//return true;
+		return isSmallScreen();
+	}
+
+	float ScreenSettings::menuFontScale()
+	{
+		auto scale = Settings::getInstance()->getString("MenuFontScale");
+		if (!scale.empty())
+		{
+			auto val = Utils::String::toFloat(scale);
+			if (val > 0 && val < 4)
+				return val;
+		}
+
+		float sz = Math::min(Renderer::getScreenWidth(), Renderer::getScreenHeight());
+		if (sz < 320)
+			return 1.5f;  // GPI 320x240
+
+		if (sz >= 320 && sz < 720) // ODROID 480x320;
+			return 1.31f;
+
+		return 1.0f;
+	}
+
+	float ScreenSettings::fontScale()
+	{
+		auto scale = Settings::getInstance()->getString("FontScale");
+		if (!scale.empty())
+		{
+			auto val = Utils::String::toFloat(scale);
+			if (val > 0 && val < 4)
+				return val;
+		}
+
+		float sz = Math::min(Renderer::getScreenWidth(), Renderer::getScreenHeight());
+		if (sz < 320) 
+			return 1.5f;  // GPI 320x240
+
+		if (sz >= 320 && sz < 720) // ODROID 480x320;
+			return 1.31f;
+
+		return 1.0f;
 	}
 
 

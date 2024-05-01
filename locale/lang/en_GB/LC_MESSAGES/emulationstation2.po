@@ -865,9 +865,6 @@ msgstr "STEAMDECK MOUSE/GUN SETTINGS"
 msgid "BLUETOOTH"
 msgstr "BLUETOOTH"
 
-msgid "ENABLE BLUETOOTH"
-msgstr ""
-
 msgid "PAIR BLUETOOTH PADS AUTOMATICALLY"
 msgstr ""
 
@@ -875,9 +872,6 @@ msgid "PAIR A BLUETOOTH DEVICE MANUALLY"
 msgstr ""
 
 msgid "DISPLAY OPTIONS"
-msgstr ""
-
-msgid "SHOW CONTROLLER NOTIFICATIONS"
 msgstr ""
 
 msgid "SHOW CONTROLLER ACTIVITY"
@@ -1750,81 +1744,6 @@ msgstr ""
 msgid "SERVICES"
 msgstr ""
 
-msgid "DMD"
-msgstr ""
-
-msgid "SERVER"
-msgstr ""
-
-msgid "DMDSERVER (for real dmd)"
-msgstr ""
-
-msgid "SIMULATOR (for web dmd)"
-msgstr ""
-
-msgid "dmd server"
-msgstr ""
-
-msgid "FORMAT"
-msgstr ""
-
-msgid "dmd matrix size"
-msgstr ""
-
-msgid "MATRIX"
-msgstr ""
-
-msgid "rgb dmd order"
-msgstr ""
-
-msgid "BRIGHTNESS"
-msgstr ""
-
-msgid "DMDSERVER stopped"
-msgstr ""
-
-msgid "DMDSERVER restarted"
-msgstr ""
-
-msgid "DMDSERVER started"
-msgstr ""
-
-msgid "MULTISCREENS"
-msgstr ""
-
-msgid "BACKGLASS / INFORMATION SCREEN"
-msgstr ""
-
-msgid "VIDEO OUTPUT"
-msgstr ""
-
-msgid "VIDEO MODE"
-msgstr ""
-
-msgid "Sets the display's resolution."
-msgstr ""
-
-msgid "ROTATION"
-msgstr ""
-
-msgid "0 DEGREES"
-msgstr ""
-
-msgid "90 DEGREES"
-msgstr ""
-
-msgid "180 DEGREES"
-msgstr ""
-
-msgid "270 DEGREES"
-msgstr ""
-
-msgid "SCREEN ROTATION"
-msgstr ""
-
-msgid "DMD SCREEN"
-msgstr ""
-
 msgid "FRONTEND DEVELOPER OPTIONS"
 msgstr ""
 
@@ -1844,6 +1763,9 @@ msgid "VSYNC"
 msgstr ""
 
 msgid "OVERSCAN"
+msgstr ""
+
+msgid "VIDEO MODE"
 msgstr ""
 
 msgid "Sets the display's resolution for emulationstation."
@@ -2008,12 +1930,6 @@ msgstr ""
 msgid "GUN MOVE TOLERENCE"
 msgstr ""
 
-msgid "ENABLE PS3 CONTROLLER SUPPORT"
-msgstr ""
-
-msgid "Might have negative impact on security."
-msgstr ""
-
 msgid "ENABLE HID JOYSTICK DRIVERS"
 msgstr ""
 
@@ -2140,6 +2056,12 @@ msgstr ""
 msgid "HARDWARE"
 msgstr ""
 
+msgid "BRIGHTNESS"
+msgstr ""
+
+msgid "VIDEO OUTPUT"
+msgstr ""
+
 msgid "AUDIO OUTPUT"
 msgstr ""
 
@@ -2147,6 +2069,21 @@ msgid "AUDIO PROFILE"
 msgstr ""
 
 msgid "Available options can change depending on current audio output."
+msgstr ""
+
+msgid "SCREEN ROTATION"
+msgstr ""
+
+msgid "0 DEGREES"
+msgstr ""
+
+msgid "90 DEGREES"
+msgstr ""
+
+msgid "180 DEGREES"
+msgstr ""
+
+msgid "270 DEGREES"
 msgstr ""
 
 msgid "BOOT SPLASH"

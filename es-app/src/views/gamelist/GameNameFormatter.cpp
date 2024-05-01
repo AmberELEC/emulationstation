@@ -10,12 +10,19 @@
 #include "SaveStateRepository.h"
 #include "CollectionSystemManager.h"
 
+#ifdef _ENABLEEMUELEC
+	#include "SystemConf.h"
+#endif
+
 #define FOLDERICON	 _U("\uF07C ")
 #define FAVORITEICON _U("\uF006 ")
 
 #define CHEEVOSICON _U("\uF091")
 #define SAVESTATE	_U("\uF0C7")
 #define MANUAL		_U("\uF02D")
+
+#define GUN			_U("\uF05B")
+#define WHEEL			_U("\uF1B9")
 
 #define RATINGSTAR _U("\uF005")
 #define SEPARATOR_BEFORE "["
@@ -43,7 +50,8 @@ std::map<std::string, std::string> langFlag =
 	{ "sw", _U("\uF311") },
 	{ "uk", _U("\uF312") },
 	{ "us", _U("\uF313") },
-	{ "wr", _U("\uF314") }
+	{ "wr", _U("\uF314") },
+	{ "pl", _U("\uF315") }
 };
 
 std::string getLangFlag(const std::string lang)
@@ -65,11 +73,18 @@ GameNameFormatter::GameNameFormatter(SystemData* system)
 	mShowManualIcon = system->getBoolSetting("ShowManualIcon");
 	mShowSaveStates = system->getBoolSetting("ShowSaveStates");
 
+	mShowGunIcon = system->getName() != "lightgun" && system->getBoolSetting("ShowGunIconOnGames");
+	mShowWheelIcon = system->getName() != "wheel" && system->getBoolSetting("ShowWheelIconOnGames");
+
 	mShowFlags = system->getShowFlags();
 
 	mShowYear =
 		mSortId == FileSorts::RELEASEDATE_ASCENDING ||
+#ifdef _ENABLEEMUELEC			
+		mSortId == FileSorts::RELEASEDATE_DESCENDING ||
+#else
 		mSortId == FileSorts::RELEASEDATE_ASCENDING ||
+#endif
 		mSortId == FileSorts::SYSTEM_RELEASEDATE_ASCENDING ||
 		mSortId == FileSorts::SYSTEM_RELEASEDATE_DESCENDING ||
 		mSortId == FileSorts::RELEASEDATE_SYSTEM_ASCENDING ||
@@ -86,6 +101,10 @@ GameNameFormatter::GameNameFormatter(SystemData* system)
 	mShowSystemAfterYear =
 		mSortId == FileSorts::RELEASEDATE_SYSTEM_ASCENDING ||
 		mSortId == FileSorts::RELEASEDATE_SYSTEM_DESCENDING;
+
+	mShowGameTime =
+		mSortId == FileSorts::GAMETIME_ASCENDING ||
+		mSortId == FileSorts::GAMETIME_DESCENDING;
 
 	mShowSystemName = (!system->isGameSystem() || system->isCollection()) && Settings::getInstance()->getBool("CollectionShowSystemInfo");
 
@@ -104,13 +123,20 @@ std::string valueOrDefault(const std::string value, const std::string defaultVal
 std::string GameNameFormatter::getDisplayName(FileData* fd, bool showFolderIcon)
 {
 	std::string name = fd->getName();
+#ifdef _ENABLEEMUELEC
+	std::string hideSortNames = SystemConf::getInstance()->get(fd->getSystem()->getName() + ".hideSortNames");
+	if (hideSortNames.empty()) {
+		if ((mSortId == FileSorts::SORTNAME_ASCENDING || mSortId == FileSorts::SORTNAME_DESCENDING) && !fd->getSortName().empty())
+			name = fd->getSortName();
+	}
+#endif
 
 	bool showSystemNameByFile = (fd->getType() == GAME || fd->getParent() == nullptr || fd->getParent()->getName() != "collections");
 	if (showSystemNameByFile)
 	{
-		if (fd->getSystem()->isGroupChildSystem())
+		/*if (fd->getSystem()->isGroupChildSystem())
 			showSystemNameByFile = fd->getSystem()->getRootFolder()->getChildren().size() > 1;
-		else if (!fd->getSystem()->isGameSystem())
+		else */if (!fd->getSystem()->isGameSystem())
 			showSystemNameByFile = false;
 	}
 
@@ -149,6 +175,26 @@ std::string GameNameFormatter::getDisplayName(FileData* fd, bool showFolderIcon)
 			name = SEPARATOR_BEFORE + std::string("????") + SEPARATOR_AFTER + name;
 	}
 
+	if (mShowGameTime)
+	{
+		int seconds = atol(fd->getMetadata(MetaDataId::GameTime).c_str());
+		if (seconds > 0)
+		{
+			int h = 0, m = 0, s = 0;
+			h = (seconds / 3600) % 24;
+			m = (seconds / 60) % 60;
+			s = seconds % 60;
+
+			std::string timeText;
+			if (h > 0)
+				timeText = Utils::String::format("%02d:%02d:%02d", h, m, s);
+			else 
+				timeText = Utils::String::format("%02d:%02d", m, s);
+
+			name = name + " [" + timeText + "]";
+		}
+	}
+
 	if (showSystemNameByFile && mShowSystemName && !mShowSystemAfterYear)
 	{
 		if (mShowSystemFirst)
@@ -162,6 +208,12 @@ std::string GameNameFormatter::getDisplayName(FileData* fd, bool showFolderIcon)
 		lang = getLangFlag(LangInfo::getFlag(fd->getMetadata(MetaDataId::Language), fd->getMetadata(MetaDataId::Region))) + " ";
 
 	std::vector<std::string> after;
+
+	if (mShowGunIcon && fd->getSourceFileData()->isLightGunGame())
+		after.push_back(GUN);
+
+	if (mShowWheelIcon && fd->getSourceFileData()->isWheelGame())
+		after.push_back(WHEEL);
 
 	if (mShowCheevosIcon && fd->hasCheevos())
 		after.push_back(CHEEVOSICON);

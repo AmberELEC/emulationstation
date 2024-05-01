@@ -23,9 +23,12 @@
 #include "guis/GuiGamelistOptions.h"
 #include "BasicGameListView.h"
 #include "utils/Randomizer.h"
+#include "BindingManager.h"
+#include "guis/GuiImageViewer.h"
+#include "guis/GuiGameAchievements.h"
 
 ISimpleGameListView::ISimpleGameListView(Window* window, FolderData* root, bool temporary) : IGameListView(window, root),
-	mHeaderText(window), mHeaderImage(window), mBackground(window), mFolderPath(window), mOnExitPopup(nullptr),
+	mHeaderText(window), mHeaderImage(window), mBackground(window), mFolderPath(window), mOnExitPopup(nullptr), mLastParentFolderData(nullptr),
 	mYButton("y"), mXButton("x"), mOKButton("OK"), mSelectButton("select")
 {
 	mExtraMode = ThemeData::ExtraImportType::ALL_EXTRAS;
@@ -54,8 +57,14 @@ ISimpleGameListView::ISimpleGameListView(Window* window, FolderData* root, bool 
 
 }
 
+
 ISimpleGameListView::~ISimpleGameListView()
 {
+	if (mLastParentFolderData != nullptr)
+	{
+		delete mLastParentFolderData;
+		mLastParentFolderData = nullptr;
+	}
 	for (auto extra : mThemeExtras)
 		delete extra;
 }
@@ -204,6 +213,44 @@ void ISimpleGameListView::update(const int deltaTime)
 	}
 }
 
+void ISimpleGameListView::goBack()
+{
+	if (mCursorStack.size())
+	{
+		auto top = mCursorStack.top();
+		mCursorStack.pop();
+
+		FolderData* folder = top->getParent();
+		if (folder == nullptr && getCursor()->getSystem()->getParentGroupSystem() != nullptr)
+			folder = getCursor()->getSystem()->getParentGroupSystem()->getRootFolder();
+
+		if (folder != nullptr)
+		{
+			populateList(folder->getChildrenListToDisplay());
+			setCursor(top);
+			Sound::getFromTheme(getTheme(), getName(), "back")->play();
+		}
+	}
+	else if (mPopupSelfReference)
+	{
+		ViewController::get()->setActiveView(mPopupParentView);
+		mPopupParentView->updateHelpPrompts();
+		closePopupContext();	
+	}
+	else
+	{
+		onFocusLost();
+		SystemData* systemToView = getCursor()->getSystem();
+
+		if (systemToView->isGroupChildSystem())
+			systemToView = systemToView->getParentGroupSystem();
+		else if (systemToView->isCollection())
+			systemToView = CollectionSystemManager::get()->getSystemToView(systemToView);
+
+		ViewController::get()->goToSystemView(systemToView);
+	}	
+}
+
 bool ISimpleGameListView::input(InputConfig* config, Input input)
 {
 	if (mOKButton.isShortPressed(config, input))
@@ -230,12 +277,7 @@ bool ISimpleGameListView::input(InputConfig* config, Input input)
 
 	if (!UIModeController::getInstance()->isUIModeKid() && mSelectButton.isShortPressed(config, input))
 	{
-		auto idx = mRoot->getSystem()->getIndex(false);
-		if (idx != nullptr && idx->hasRelevency())
-			return true;
-
-		Sound::getFromTheme(mTheme, getName(), "menuOpen")->play();
-		mWindow->pushGui(new GuiGamelistOptions(mWindow, this, this->mRoot->getSystem()));
+		showGamelistOptions();
 		return true;
 	}
 
@@ -253,41 +295,7 @@ bool ISimpleGameListView::input(InputConfig* config, Input input)
 		
 	if (config->isMappedTo(BUTTON_BACK, input))
 	{
-		if (mCursorStack.size())
-		{
-			auto top = mCursorStack.top();
-			mCursorStack.pop();
-
-			FolderData* folder = top->getParent();
-			if (folder == nullptr && getCursor()->getSystem()->getParentGroupSystem() != nullptr)
-				folder = getCursor()->getSystem()->getParentGroupSystem()->getRootFolder();
-
-			if (folder == nullptr)
-				return true;
-
-			populateList(folder->getChildrenListToDisplay());
-			setCursor(top);
-			Sound::getFromTheme(getTheme(), getName(), "back")->play();
-		}
-		else if (mPopupSelfReference)
-		{
-			ViewController::get()->setActiveView(mPopupParentView);
-			closePopupContext();
-			return true;
-		}
-		else
-		{
-			onFocusLost();
-			SystemData* systemToView = getCursor()->getSystem();
-
-			if (systemToView->isGroupChildSystem())
-				systemToView = systemToView->getParentGroupSystem();
-			else if (systemToView->isCollection())
-				systemToView = CollectionSystemManager::get()->getSystemToView(systemToView);
-
-			ViewController::get()->goToSystemView(systemToView);
-		}
-
+		goBack();
 		return true;
 	}
 	else if ((Settings::getInstance()->getBool("QuickSystemSelect") && config->isMappedLike(getQuickSystemSelectRightButton(), input)) || config->isMappedLike("righttrigger", input))
@@ -313,6 +321,21 @@ bool ISimpleGameListView::input(InputConfig* config, Input input)
 
 	return IGameListView::input(config, input);
 }
+
+void ISimpleGameListView::showGamelistOptions()
+{
+	FileData* cursor = getCursor();
+	if (cursor == nullptr)
+		return;
+
+	auto idx = mRoot->getSystem()->getIndex(false);
+	if (idx != nullptr && idx->hasRelevency())
+		return;
+
+	Sound::getFromTheme(mTheme, getName(), "menuOpen")->play();
+	mWindow->pushGui(new GuiGamelistOptions(mWindow, this, this->mRoot->getSystem()));	
+}
+
 
 void ISimpleGameListView::showSelectedGameOptions()
 {
@@ -343,7 +366,7 @@ void ISimpleGameListView::showSelectedGameSaveSnapshots()
 	{
 		Sound::getFromTheme(mTheme, getName(), "menuOpen")->play();
 
-		mWindow->pushGui(new GuiSaveState(mWindow, cursor, [this, cursor](SaveState state)
+		mWindow->pushGui(new GuiSaveState(mWindow, cursor, [this, cursor](SaveState* state)
 		{
 			Sound::getFromTheme(getTheme(), getName(), "launch")->play();
 
@@ -352,6 +375,9 @@ void ISimpleGameListView::showSelectedGameSaveSnapshots()
 			ViewController::get()->launch(cursor, options);
 		}
 		));
+#ifdef _ENABLEEMUELEC
+		guiSaveStateLoad(mWindow, cursor);
+#endif
 	}
 }
 
@@ -364,7 +390,7 @@ void ISimpleGameListView::launchSelectedGame()
 	FileData* cursor = getCursor();
 	FolderData* folder = NULL;
 
-	if (mCursorStack.size() && cursor->getType() == PLACEHOLDER && cursor->getPath() == "..")
+	if (mCursorStack.size() && (cursor->getType() == PLACEHOLDER || cursor->getType() == FOLDER) && cursor->getPath() == "..")
 	{
 		auto top = mCursorStack.top();
 		mCursorStack.pop();
@@ -382,9 +408,9 @@ void ISimpleGameListView::launchSelectedGame()
 		if (cursor->getType() == GAME)
 		{
 			if (SaveStateRepository::isEnabled(cursor) &&
-				(cursor->getCurrentGameSetting("autosave") == "2" || (cursor->getCurrentGameSetting("autosave") == "3" && cursor->getSourceFileData()->getSystem()->getSaveStateRepository()->hasSaveStates(cursor))))
+				(cursor->getCurrentGameSetting("savestates") == "1" || (cursor->getCurrentGameSetting("savestates") == "2" && cursor->getSourceFileData()->getSystem()->getSaveStateRepository()->hasSaveStates(cursor))))
 			{
-				mWindow->pushGui(new GuiSaveState(mWindow, cursor, [this, cursor](SaveState state)
+				mWindow->pushGui(new GuiSaveState(mWindow, cursor, [this, cursor](SaveState* state)
 				{
 					Sound::getFromTheme(getTheme(), getName(), "launch")->play();
 
@@ -393,6 +419,9 @@ void ISimpleGameListView::launchSelectedGame()
 					ViewController::get()->launch(cursor, options);
 				}
 				));
+#ifdef _ENABLEEMUELEC
+				guiSaveStateLoad(mWindow, cursor);
+#endif
 			}
 			else
 			{
@@ -466,6 +495,21 @@ std::vector<std::string> ISimpleGameListView::getEntriesLetters()
 	return letters;
 }
 
+void ISimpleGameListView::updateHeaderLogoAndText()
+{
+	SystemData* system = mCursorStack.size() && (!mRoot->getSystem()->isGameSystem() || mRoot->getSystem()->isGroupSystem()) ? mCursorStack.top()->getSystem() : mRoot->getSystem();
+
+	auto groupTheme = system->getTheme();
+	if (groupTheme && mHeaderImage.hasImage())
+	{
+		const ThemeData::ThemeElement* logoElem = groupTheme->getElement(getName(), "logo", "image");
+		if (logoElem && logoElem->has("path") && Utils::FileSystem::exists(logoElem->get<std::string>("path")))
+			mHeaderImage.setImage(logoElem->get<std::string>("path"), false, mHeaderImage.getMaxSizeInfo());
+	}
+
+	mHeaderText.setText(system->getFullName());
+}
+
 void ISimpleGameListView::updateFolderPath()
 {
 	if (mCursorStack.size())
@@ -528,33 +572,228 @@ std::vector<HelpPrompt> ISimpleGameListView::getHelpPrompts()
 	if (Renderer::getScreenProportion() > 1.4)
 	{
 		if (mPopupSelfReference == nullptr && Settings::getInstance()->getBool("QuickSystemSelect") && getQuickSystemSelectLeftButton() == "left")
-			prompts.push_back(HelpPrompt("left/right", _("SYSTEM"))); // batocera
+			prompts.push_back(HelpPrompt("left/right", _("SYSTEM")));
 
-		prompts.push_back(HelpPrompt("up/down", _("CHOOSE"))); // batocera
+		prompts.push_back(HelpPrompt("up/down", _("CHOOSE")));
 	}
 
 	bool invertNorthButton = Settings::getInstance()->getBool("GameOptionsAtNorth");
 
-	std::string shortPressX = invertNorthButton ? _("GAME OPTIONS") : _("SAVE STATES");
-	std::string longPressOK = invertNorthButton ? _("SAVE STATES") : _("GAME OPTIONS"); 
+	prompts.push_back(HelpPrompt(BUTTON_BACK, _("BACK"), [&] { goBack(); }));
 
-	prompts.push_back(HelpPrompt(BUTTON_BACK, _("BACK")));
-	prompts.push_back(HelpPrompt(BUTTON_OK, _("LAUNCH") + std::string("/") + longPressOK));
+	if (invertNorthButton)
+		prompts.push_back(HelpPrompt(BUTTON_OK, _("SAVE STATES (HOLD)"), [&] { showSelectedGameSaveSnapshots(); }));
+	else 
+		prompts.push_back(HelpPrompt(BUTTON_OK, _("GAME OPTIONS (HOLD)"), [&] { showSelectedGameOptions(); }));
 
 	if (!UIModeController::getInstance()->isUIModeKid())
-		prompts.push_back(HelpPrompt("select", _("OPTIONS"))); // batocera
+		prompts.push_back(HelpPrompt("select", _("OPTIONS"), [&] { showGamelistOptions(); }));
 
 	if (cursorHasSaveStatesEnabled())
 	{
-		if (UIModeController::getInstance()->isUIModeKid())
-			prompts.push_back(HelpPrompt("x", shortPressX));
+		if (invertNorthButton)
+		{
+			if (UIModeController::getInstance()->isUIModeKid())
+				prompts.push_back(HelpPrompt("x", _("GAME OPTIONS"), [&] { showSelectedGameOptions(); }));
+			else
+				prompts.push_back(HelpPrompt("x", _("GAME OPTIONS") + std::string("/") + _("FAVORITE"), [&] { showSelectedGameOptions(); }));
+		}
 		else
-			prompts.push_back(HelpPrompt("x", shortPressX + std::string("/") + _("FAVORITE")));
+		{
+			if (UIModeController::getInstance()->isUIModeKid())
+				prompts.push_back(HelpPrompt("x", _("SAVE STATES"), [&] { showSelectedGameSaveSnapshots(); }));
+			else
+				prompts.push_back(HelpPrompt("x", _("SAVE STATES") + std::string("/") + _("FAVORITE"), [&] { showSelectedGameSaveSnapshots(); }));
+		}
 	}
 	else if (!UIModeController::getInstance()->isUIModeKid())
 		prompts.push_back(HelpPrompt("x", _("FAVORITE")));
 
-	prompts.push_back(HelpPrompt("y", _("SEARCH") + std::string("/") + _("RANDOM")));
+	prompts.push_back(HelpPrompt("y", _("SEARCH") + std::string("/") + _("RANDOM"), [&] { showQuickSearch(); }));
 
 	return prompts;
+}
+
+void ISimpleGameListView::updateThemeExtrasBindings()
+{
+	FileData* file = getCursor();
+	if (file == nullptr)
+		return;
+
+	auto system = file->getSystem();
+
+	for (auto extra : mThemeExtras)
+		BindingManager::updateBindings(extra, file);
+}
+
+bool ISimpleGameListView::onAction(const std::string& action)
+{
+	if (action == "back")
+	{
+		goBack();
+		return true;
+	}
+
+	if (action == "options")
+	{
+		showGamelistOptions();
+		return true;
+	}
+
+	if (action == "gameoptions")
+	{
+		showSelectedGameOptions();
+		return true;
+	}
+
+	if (action == "launch")
+	{
+		launchSelectedGame();
+		return true;
+	}
+
+	if (action == "search")
+	{
+		showQuickSearch();
+		return true;
+	}
+
+	if (action == "savestates")
+	{
+		showSelectedGameSaveSnapshots();
+		return true;
+	}
+
+	if (action == "favorite")
+	{
+		toggleFavoritesFilter();
+		return true;
+	}
+	
+	if (action == "random")
+	{
+		moveToRandomGame();
+		return true;
+	}
+	
+	if (action == "video")
+	{
+		FileData* game = getCursor();
+		if (game != nullptr)
+		{
+			auto path = game->getMetadata(MetaDataId::Video);
+			if (!path.empty())
+				GuiVideoViewer::playVideo(mWindow, path);
+		}
+		return true;
+	}
+
+	if (action == "manual")
+	{
+		FileData* game = getCursor();
+		if (game != nullptr)
+		{
+			auto path = game->getMetadata(MetaDataId::Manual);
+			if (!path.empty())
+				GuiImageViewer::showPdf(mWindow, path);
+		}
+		return true;
+	}
+
+	if (action == "map")
+	{
+		FileData* game = getCursor();
+		if (game != nullptr)
+		{
+			auto path = game->getMetadata(MetaDataId::Map);
+			if (!path.empty())
+				GuiImageViewer::showImage(mWindow, path, Utils::String::toLower(Utils::FileSystem::getExtension(path)) != ".pdf");
+		}
+		return true;
+	}
+
+	if (action == "medias")
+	{
+		FileData* game = getCursor();
+		if (game != nullptr)
+		{
+			auto imageList = game->getSourceFileData()->getFileMedias();
+			if (imageList.size())
+				GuiImageViewer::showImages(mWindow, imageList);
+		}
+
+		return true;
+	}
+
+	if (action == "cheevos")
+	{
+		FileData* game = getCursor();
+		if (game != nullptr)
+		{
+			auto path = Utils::String::toInteger(game->getMetadata(MetaDataId::CheevosId));
+			if (path != 0)
+				GuiGameAchievements::show(mWindow, path);
+		}
+
+		return true;
+	}
+
+	
+	return false;
+}
+
+FolderData* ISimpleGameListView::createParentFolderData()
+{
+	SystemData* system = mCursorStack.size() ? mCursorStack.top()->getSystem() : mRoot->getSystem();
+	auto folder = new FolderData("..", system);
+	folder->setMetadata(MetaDataId::Name, ". .");
+
+	std::string dest = mRoot->getSystem()->getName();
+
+	if (mCursorStack.size() > 1)
+	{
+		std::stack<FileData*> tempStack = mCursorStack;
+		tempStack.pop();
+
+		FileData* top = tempStack.top();
+		
+		dest = top->getName();
+		folder->setMetadata(MetaDataId::Image, top->getMetadata(MetaDataId::Image));
+		folder->setMetadata(MetaDataId::Thumbnail, top->getMetadata(MetaDataId::Thumbnail));
+		folder->setMetadata(MetaDataId::Marquee, top->getMetadata(MetaDataId::Marquee));
+	}
+
+	auto backTo = Utils::String::format(_("Back to %s").c_str(), dest.c_str());
+	folder->setMetadata(MetaDataId::Desc, backTo); // _("Parent folder")
+
+	if (mCursorStack.size() <= 1)
+	{
+		auto logo = mRoot->getSystem()->getProperty("logo");
+		if (Utils::FileSystem::exists(logo.toString()))
+		{
+			folder->setMetadata(MetaDataId::Image, logo.toString());
+			folder->setMetadata(MetaDataId::Marquee, logo.toString());
+		}
+	}
+
+	if (mLastParentFolderData != nullptr)
+		delete mLastParentFolderData;
+
+	mLastParentFolderData = folder;
+
+	return folder;
+}
+
+
+FileData* ISimpleGameListView::createNoEntriesPlaceholder()
+{
+	// empty grid - add a placeholder
+	FileData* placeholder = new FileData(PLACEHOLDER, "<" + _("No Entries Found") + ">", mRoot->getSystem());
+
+	if (mLastParentFolderData != nullptr)
+		delete mLastParentFolderData;
+
+	mLastParentFolderData = placeholder;
+
+	return placeholder;
 }

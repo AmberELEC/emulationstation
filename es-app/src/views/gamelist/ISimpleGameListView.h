@@ -25,8 +25,8 @@ public:
 
 	virtual FileData* getCursor() = 0;
 	virtual void setCursor(FileData*) = 0;
-	virtual int getCursorIndex() =0; // batocera
-	virtual void setCursorIndex(int index) =0; // batocera
+	virtual int getCursorIndex() =0; 
+	virtual void setCursorIndex(int index) =0; 
 
 	virtual void resetLastCursor() = 0;
 
@@ -35,7 +35,7 @@ public:
 	virtual void launch(FileData* game) = 0;
 	
 	virtual std::vector<std::string> getEntriesLetters() override;
-	virtual std::vector<FileData*> getFileDataEntries() = 0;
+	// virtual std::vector<FileData*> getFileDataEntries() = 0;
 
 	void	moveToFolder(FolderData* folder);
 	FolderData*		getCurrentFolder();
@@ -50,13 +50,23 @@ public:
 	void showQuickSearch();
 	void launchSelectedGame();
 	void showSelectedGameOptions();
+	void showGamelistOptions();
 	void showSelectedGameSaveSnapshots();
 	void toggleFavoritesFilter();
 
 	virtual std::vector<HelpPrompt> getHelpPrompts() override;
+	virtual bool onAction(const std::string& action) override;
 
 protected:	
+	FolderData* createParentFolderData();
+	FileData*   createNoEntriesPlaceholder();
+	FileData*   mLastParentFolderData;
+
+	void	  updateThemeExtrasBindings();
+
 	void	  updateFolderPath();
+	void      updateHeaderLogoAndText();
+	void	  goBack();
 
 	virtual std::string getQuickSystemSelectRightButton() = 0;
 	virtual std::string getQuickSystemSelectLeftButton() = 0;

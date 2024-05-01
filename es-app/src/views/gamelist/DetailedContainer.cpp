@@ -11,6 +11,7 @@
 #include "Window.h"
 #include "components/ComponentGrid.h"
 #include <set>
+#include "BindingManager.h"
 
 #ifdef _RPI_
 #include "Settings.h"
@@ -23,10 +24,13 @@ DetailedContainer::DetailedContainer(ISimpleGameListView* parent, GuiComponent* 
 	mDescription(window),
 	mImage(nullptr), mVideo(nullptr), mThumbnail(nullptr), mFlag(nullptr),
 	mKidGame(nullptr), mNotKidGame(nullptr), mHidden(nullptr), 
+	mGunGame(nullptr), mNotGunGame(nullptr),
+	mWheelGame(nullptr), mNotWheelGame(nullptr),
 	mFavorite(nullptr), mNotFavorite(nullptr),
 	mManual(nullptr), mNoManual(nullptr), 
 	mMap(nullptr), mNoMap(nullptr),
 	mCheevos(nullptr), mNotCheevos(nullptr),
+	mNetplay(nullptr), mNotNetplay(nullptr),
 	mSaveState(nullptr), mNoSaveState(nullptr),
 	mState(true), mFolderView(nullptr),
 
@@ -39,14 +43,28 @@ DetailedContainer::DetailedContainer(ISimpleGameListView* parent, GuiComponent* 
 {
 	std::vector<MdImage> mdl = 
 	{ 
+		// Metadata that can be substituted if not found
 		{ "md_marquee", { MetaDataId::Marquee, MetaDataId::Wheel } },
 		{ "md_fanart", { MetaDataId::FanArt, MetaDataId::TitleShot, MetaDataId::Image } },
 		{ "md_titleshot", { MetaDataId::TitleShot, MetaDataId::Image } },
-		{ "md_boxart", { MetaDataId::BoxArt, MetaDataId::Thumbnail } },
+		{ "md_boxart", { MetaDataId::BoxArt, MetaDataId::Thumbnail } },		
 		{ "md_wheel",{ MetaDataId::Wheel, MetaDataId::Marquee } },
 		{ "md_cartridge",{ MetaDataId::Cartridge } },
 		{ "md_boxback",{ MetaDataId::BoxBack } },		
-		{ "md_mix",{ MetaDataId::Mix, MetaDataId::Image, MetaDataId::Thumbnail } }
+		{ "md_mix",{ MetaDataId::Mix, MetaDataId::Image, MetaDataId::Thumbnail } },
+
+		// Medias  that can't be substituted even if not found
+		{ "md_image_only", { MetaDataId::Image } },
+		{ "md_thumbnail_only", { MetaDataId::Thumbnail } },
+		{ "md_marquee_only", { MetaDataId::Marquee } },
+		{ "md_wheel_only", { MetaDataId::Wheel } },
+		{ "md_fanart_only", { MetaDataId::FanArt } },
+		{ "md_titleshot_only", { MetaDataId::TitleShot } },
+		{ "md_boxart_only", { MetaDataId::BoxArt } },
+		{ "md_boxback_only", { MetaDataId::BoxBack } },		
+		{ "md_cartridge_only",{ MetaDataId::Cartridge } },
+		{ "md_boxback_only",{ MetaDataId::BoxBack } },
+		{ "md_mix_only", { MetaDataId::Mix } }
 	};
 
 	for (auto md : mdl)
@@ -140,6 +158,11 @@ DetailedContainer::DetailedContainer(ISimpleGameListView* parent, GuiComponent* 
 
 DetailedContainer::~DetailedContainer()
 {
+	for (auto extra : mThemeExtras)
+		delete extra;
+
+	mThemeExtras.clear();
+
 	if (mFolderView != nullptr)
 		delete mFolderView;
 
@@ -185,11 +208,29 @@ DetailedContainer::~DetailedContainer()
 	if (mNotKidGame != nullptr)
 		delete mNotKidGame;
 
+	if (mGunGame != nullptr)
+		delete mGunGame;
+
+	if (mNotGunGame != nullptr)
+		delete mNotGunGame;
+
+	if (mWheelGame != nullptr)
+		delete mWheelGame;
+
+	if (mNotWheelGame != nullptr)
+		delete mNotWheelGame;
+
 	if (mCheevos != nullptr)
 		delete mCheevos;
 
 	if (mNotCheevos != nullptr)
 		delete mNotCheevos;
+
+	if (mNetplay != nullptr)
+		delete mNetplay;
+
+	if (mNotNetplay != nullptr)
+		delete mNotNetplay;	
 
 	if (mFavorite != nullptr)
 		delete mFavorite;
@@ -255,7 +296,7 @@ void DetailedContainer::createVideo()
 		mVideo = new VideoPlayerComponent(mWindow, "");
 	else
 #endif
-		mVideo = new VideoVlcComponent(mWindow, "");
+		mVideo = new VideoVlcComponent(mWindow);
 
 	// Default is IMAGE in Recalbox themes -> video view does not exist
 	mVideo->setSnapshotSource(IMAGE);
@@ -310,29 +351,29 @@ void DetailedContainer::initMDValues()
 {
 	auto mSize = mParent->getSize();
 
-	auto components = getMetaComponents();
-
 	std::shared_ptr<Font> defaultFont = Font::get(FONT_SIZE_SMALL);
 	mRating.setSize(defaultFont->getHeight() * 5.0f, (float)defaultFont->getHeight());
 
 	float bottom = 0.0f;
 
 	const float colSize = (mSize.x() * 0.48f) / 2;
-	for (unsigned int i = 0; i < components.size(); i++)
+
+	auto components = getMetaComponents();
+	for (auto mdc : components)
 	{
-		TextComponent* text = dynamic_cast<TextComponent*>(components[i].component);
+		TextComponent* text = dynamic_cast<TextComponent*>(mdc.component);
 		if (text != nullptr)
 			text->setFont(defaultFont);
 		
-		if (components[i].labelid.empty() || components[i].label == nullptr)
+		if (mdc.labelid.empty() || mdc.label == nullptr)
 			continue;
 
-		const float heightDiff = (components[i].label->getSize().y() - components[i].label->getSize().y()) / 2;
-		components[i].component->setPosition(components[i].label->getPosition() + Vector3f(components[i].label->getSize().x(), heightDiff, 0));
-		components[i].component->setSize(colSize - components[i].label->getSize().x(), components[i].component->getSize().y());
-		components[i].component->setDefaultZIndex(40);
+		const float heightDiff = (mdc.label->getSize().y() - mdc.label->getSize().y()) / 2;
+		mdc.component->setPosition(mdc.label->getPosition() + Vector3f(mdc.label->getSize().x(), heightDiff, 0));
+		mdc.component->setSize(colSize - mdc.label->getSize().x(), mdc.component->getSize().y());
+		mdc.component->setDefaultZIndex(40);
 
-		float testBot = components[i].component->getPosition().y() + components[i].component->getSize().y();
+		float testBot = mdc.component->getPosition().y() + mdc.component->getSize().y();
 		if (testBot > bottom)
 			bottom = testBot;
 	}
@@ -346,10 +387,11 @@ void DetailedContainer::loadIfThemed(ImageComponent** pImage, const std::shared_
 	using namespace ThemeFlags;
 
 	auto elem = theme->getElement(getName(), element, "image");
-	if (forceLoad || (elem && elem->properties.size() > 0))
+
+	if (forceLoad || (elem && elem->properties.size() > 0 && (!elem->has("visible") || elem->get<bool>("visible"))))
 	{
-		createImageComponent(pImage, element == "md_fanart", element == "md_fanart" && Settings::AllImagesAsync());
-		(*pImage)->applyTheme(theme, getName(), element, loadPath ? ALL : ALL ^ (PATH));
+		createImageComponent(pImage, element == "md_fanart", element == "md_fanart" && Settings::AllImagesAsync());			
+		(*pImage)->applyTheme(theme, getName(), element, loadPath ? ALL : ALL ^ (PATH));	
 	}
 	else if ((*pImage) != nullptr)
 	{
@@ -362,13 +404,30 @@ void DetailedContainer::loadIfThemed(ImageComponent** pImage, const std::shared_
 void DetailedContainer::onThemeChanged(const std::shared_ptr<ThemeData>& theme)
 {
 	using namespace ThemeFlags;
+	
+	std::string viewName = getName();
 
-	mName.applyTheme(theme, getName(), "md_name", ALL);	
+	if (theme != mCustomTheme)
+	{
+		mTheme = theme;
 
-	if (theme->getElement(getName(), "md_video", "video"))
+		const ThemeData::ThemeElement* elem = theme->getElement(viewName, "gameextras", "gameextras");
+		if (elem && elem->has("path"))
+			mPerGameExtrasPath = elem->get<std::string>("path");
+		else
+			mPerGameExtrasPath = "";
+
+		initMDLabels();
+		initMDValues();
+	}
+	
+	mName.applyTheme(theme, viewName, "md_name", ALL);
+
+	auto velem = theme->getElement(viewName, "md_video", "video");
+	if (velem && (!velem->has("visible") || velem->get<bool>("visible")))
 	{
 		createVideo();
-		mVideo->applyTheme(theme, getName(), "md_video", ALL ^ (PATH));
+		mVideo->applyTheme(theme, viewName, "md_video", ALL ^ (PATH));
 	}
 	else if (mVideo != nullptr)
 	{
@@ -387,8 +446,17 @@ void DetailedContainer::onThemeChanged(const std::shared_ptr<ThemeData>& theme)
 	loadIfThemed(&mKidGame, theme, "md_kidgame", false, true);
 	loadIfThemed(&mNotKidGame, theme, "md_notkidgame", false, true);
 
+	loadIfThemed(&mGunGame, theme, "md_gungame", false, true);
+	loadIfThemed(&mNotGunGame, theme, "md_notgungame", false, true);
+
+	loadIfThemed(&mWheelGame, theme, "md_wheelgame", false, true);
+	loadIfThemed(&mNotWheelGame, theme, "md_notwheelgame", false, true);
+
 	loadIfThemed(&mCheevos, theme, "md_cheevos", false, true);
 	loadIfThemed(&mNotCheevos, theme, "md_notcheevos", false, true);
+
+	loadIfThemed(&mNetplay, theme, "md_netplay", false, true);
+	loadIfThemed(&mNotNetplay, theme, "md_notnetplay", false, true);
 	
 	loadIfThemed(&mFavorite, theme, "md_favorite", false, true);
 	loadIfThemed(&mNotFavorite, theme, "md_notfavorite", false, true);
@@ -399,23 +467,23 @@ void DetailedContainer::onThemeChanged(const std::shared_ptr<ThemeData>& theme)
 	loadIfThemed(&mMap, theme, "md_map", false, true);
 	loadIfThemed(&mNoMap, theme, "md_nomap", false, true);
 	loadIfThemed(&mSaveState, theme, "md_savestate", false, true);
-	loadIfThemed(&mNoSaveState, theme, "md_nosavestate", false, true);	
-
-	initMDLabels();
-
-	for (auto ctrl : getMetaComponents())
-		if (ctrl.label != nullptr && theme->getElement(getName(), ctrl.labelid, "text"))
-			ctrl.label->applyTheme(theme, getName(), ctrl.labelid, ALL);
-
-	initMDValues();
+	loadIfThemed(&mNoSaveState, theme, "md_nosavestate", false, true);		
+	
+	for (auto comp : getComponents())
+		disableComponent(comp);
 
 	for (auto ctrl : getMetaComponents())
-		if (ctrl.component != nullptr && theme->getElement(getName(), ctrl.id, ctrl.expectedType))
-			ctrl.component->applyTheme(theme, getName(), ctrl.id, ALL);
-
-	if (theme->getElement(getName(), "md_description", "text"))
 	{
-		mDescription.applyTheme(theme, getName(), "md_description", ALL);
+		if (ctrl.label != nullptr && theme->getElement(viewName, ctrl.labelid, "text"))
+			ctrl.label->applyTheme(theme, viewName, ctrl.labelid, ALL);
+
+		if (ctrl.component != nullptr && theme->getElement(viewName, ctrl.id, ctrl.expectedType))
+			ctrl.component->applyTheme(theme, viewName, ctrl.id, ALL);
+	}
+
+	if (theme->getElement(viewName, "md_description", "text"))
+	{
+		mDescription.applyTheme(theme, viewName, "md_description", ALL);
 		mDescription.setAutoScroll(TextComponent::AutoScrollType::VERTICAL);
 
 		if (!isChild(&mDescription))
@@ -424,10 +492,15 @@ void DetailedContainer::onThemeChanged(const std::shared_ptr<ThemeData>& theme)
 	else if (mViewType == DetailedContainerType::GridView)
 		removeChild(&mDescription);
 
-	mThemeExtras.clear();
-
 	// Add new theme extras
-	mThemeExtras = ThemeData::makeExtras(theme, getName(), mWindow, false, ThemeData::ExtraImportType::WITH_ACTIVATESTORYBOARD);
+	for (auto extra : mThemeExtras)
+	{
+		removeChild(extra);
+		delete extra;
+	}
+
+	mThemeExtras.clear();
+	mThemeExtras = ThemeData::makeExtras(theme, viewName, mWindow, false, (ThemeData::ExtraImportType) (ThemeData::ExtraImportType::WITH_ACTIVATESTORYBOARD | ThemeData::ExtraImportType::PERGAMEEXTRAS));
 	for (auto extra : mThemeExtras)
 		addChild(extra);
 
@@ -613,17 +686,68 @@ void DetailedContainer::updateDetailsForFolder(FolderData* folder)
 	mReleaseDate.setValue(folder->getMetadata(MetaDataId::ReleaseDate));
 	mDeveloper.setValue(folder->getMetadata(MetaDataId::Developer));
 	mPublisher.setValue(folder->getMetadata(MetaDataId::Publisher));
-	mGenre.setValue(folder->getMetadata(MetaDataId::Genre));
+	mGenre.setValue(folder->getGenre());
 	mLastPlayed.setValue("");
 	mPlayCount.setValue("");
 	mGameTime.setValue("");
+}
+
+void DetailedContainer::resetThemedExtras()
+{
+	if (mCustomTheme != nullptr)
+	{
+		mCustomTheme = nullptr;
+
+		if (mTheme != nullptr)
+			onThemeChanged(mTheme);
+	}
+}
+
+void DetailedContainer::loadThemedExtras(FileData* file)
+{
+	if (mPerGameExtrasPath.empty())
+	{
+		resetThemedExtras();			
+		return;
+	}
+
+	auto path = Utils::FileSystem::combine(mPerGameExtrasPath, Utils::FileSystem::getStem(file->getPath()) + ".xml");
+	
+	if (!Utils::FileSystem::exists(path) && !file->getMetadata(MetaDataId::Crc32).empty())
+		path = Utils::FileSystem::combine(mPerGameExtrasPath, file->getMetadata(MetaDataId::Crc32) + ".xml");
+
+	if (!Utils::FileSystem::exists(path))
+		path = Utils::FileSystem::combine(mPerGameExtrasPath, Utils::FileSystem::getStem(file->getPath()) + "/theme.xml");
+
+	if (!Utils::FileSystem::exists(path) && !file->getMetadata(MetaDataId::Crc32).empty())
+		path = Utils::FileSystem::combine(mPerGameExtrasPath, file->getMetadata(MetaDataId::Crc32) + "/theme.xml");
+
+	if (!Utils::FileSystem::exists(path))
+	{
+		resetThemedExtras();
+		return;
+	}
+
+	auto customTheme = mTheme->clone(getName());
+	if (customTheme->appendFile(path, true))
+	{
+		auto currentTheme = mTheme;
+		mCustomTheme = customTheme;
+		onThemeChanged(mCustomTheme);
+		mTheme = currentTheme;
+	}
+	else
+		resetThemedExtras();
 }
 
 void DetailedContainer::updateControls(FileData* file, bool isClearing, int moveBy, bool isDeactivating)
 {
 	bool state = (file != NULL);
 	if (state)
-	{	
+	{
+		if (!isClearing && !isDeactivating)
+			loadThemedExtras(file);
+
 		if (mFolderView)
 		{
 			delete mFolderView;
@@ -648,7 +772,7 @@ void DetailedContainer::updateControls(FileData* file, bool isClearing, int move
 			else if (src == MARQUEE && !file->getMarqueePath().empty())
 				snapShot = file->getMarqueePath();
 			else if ((src == THUMBNAIL || src == BOXART) && !file->getThumbnailPath().empty())
-				snapShot = file->getThumbnailPath();			
+				snapShot = file->getThumbnailPath();
 			else if ((src == IMAGE || src == TITLESHOT) && !file->getImagePath().empty())
 				snapShot = file->getImagePath();
 			else if (src == FANART && Utils::FileSystem::exists(file->getMetadata(MetaDataId::FanArt)))
@@ -657,7 +781,7 @@ void DetailedContainer::updateControls(FileData* file, bool isClearing, int move
 				snapShot = file->getMetadata(MetaDataId::Cartridge);
 			else if (src == MIX && Utils::FileSystem::exists(file->getMetadata(MetaDataId::Mix)))
 				snapShot = file->getMetadata(MetaDataId::Mix);
-			
+
 			mVideo->setImage(snapShot, false, mVideo->getMaxSizeInfo());
 		}
 
@@ -668,7 +792,7 @@ void DetailedContainer::updateControls(FileData* file, bool isClearing, int move
 
 			mThumbnail->setImage(file->getThumbnailPath(), false, mThumbnail->getMaxSizeInfo());
 		}
-		
+
 		if (mImage != nullptr)
 		{
 			if (mViewType == DetailedContainerType::VideoView && mThumbnail == nullptr)
@@ -697,7 +821,7 @@ void DetailedContainer::updateControls(FileData* file, bool isClearing, int move
 					}
 
 					std::string path = file->getMetadata(id);
-					if (Utils::FileSystem::exists(path)) 
+					if (Utils::FileSystem::exists(path))
 					{
 						image = path;
 						break;
@@ -723,19 +847,31 @@ void DetailedContainer::updateControls(FileData* file, bool isClearing, int move
 				mFlag->setImage(":/folder.svg");
 		}
 
-		bool hasManualOrMagazine = Utils::FileSystem::exists(file->getMetadata(MetaDataId::Manual)) || Utils::FileSystem::exists(file->getMetadata(MetaDataId::Magazine));
+		if (mManual != nullptr || mNoManual != nullptr)
+		{
+			bool hasManualOrMagazine = Settings::getInstance()->getBool("PreloadMedias") ?
+				!file->getMetadata(MetaDataId::Manual).empty() || !file->getMetadata(MetaDataId::Magazine).empty() :
+				Utils::FileSystem::exists(file->getMetadata(MetaDataId::Manual)) || Utils::FileSystem::exists(file->getMetadata(MetaDataId::Magazine));
 
-		if (mManual != nullptr)
-			mManual->setVisible(hasManualOrMagazine);
+			if (mManual != nullptr)
+				mManual->setVisible(hasManualOrMagazine);
 
-		if (mNoManual != nullptr)
-			mNoManual->setVisible(!hasManualOrMagazine);
+			if (mNoManual != nullptr)
+				mNoManual->setVisible(!hasManualOrMagazine);
+		}
 
-		if (mMap != nullptr)
-			mMap->setVisible(Utils::FileSystem::exists(file->getMetadata(MetaDataId::Map)));
+		if (mMap != nullptr || mNoMap != nullptr)
+		{
+			bool hasMap = Settings::getInstance()->getBool("PreloadMedias") ?
+				!file->getMetadata(MetaDataId::Map).empty() :
+				Utils::FileSystem::exists(file->getMetadata(MetaDataId::Map));
 
-		if (mNoMap != nullptr)
-			mNoMap->setVisible(!Utils::FileSystem::exists(file->getMetadata(MetaDataId::Map)));
+			if (mMap != nullptr)
+				mMap->setVisible(hasMap);
+
+			if (mNoMap != nullptr)
+				mNoMap->setVisible(!hasMap);
+		}
 
 		// Save states
 		bool hasSaveState = false;
@@ -757,6 +893,20 @@ void DetailedContainer::updateControls(FileData* file, bool isClearing, int move
 		if (mNotKidGame != nullptr)
 			mNotKidGame->setVisible(!file->getKidGame());
 
+		// Gun game
+		if (mGunGame != nullptr)
+			mGunGame->setVisible(file->isLightGunGame());
+
+		if (mNotGunGame != nullptr)
+			mNotGunGame->setVisible(!file->isLightGunGame());
+
+		// Wheel game
+		if (mWheelGame != nullptr)
+			mWheelGame->setVisible(file->isWheelGame());
+
+		if (mNotWheelGame != nullptr)
+			mNotWheelGame->setVisible(!file->isWheelGame());
+
 		bool systemHasCheevos = 
 			SystemConf::getInstance()->getBool("global.retroachievements") && (
 			file->getSourceFileData()->getSystem()->isCheevosSupported() || 
@@ -769,6 +919,19 @@ void DetailedContainer::updateControls(FileData* file, bool isClearing, int move
 
 		if (mNotCheevos != nullptr)
 			mNotCheevos->setVisible(systemHasCheevos && !file->hasCheevos());
+
+		// Netplay
+		bool systemHasNetplay =
+			SystemConf::getInstance()->getBool("global.netplay") && (
+				file->getSourceFileData()->getSystem()->isNetplaySupported() ||
+				file->getSystem()->isCollection() ||
+				!file->getSystem()->isGameSystem());
+
+		if (mNetplay != nullptr)
+			mNetplay->setVisible(systemHasNetplay && file->isNetplaySupported());
+
+		if (mNotNetplay != nullptr)
+			mNotNetplay->setVisible(systemHasNetplay && !file->isNetplaySupported());
 
 		if (mFavorite != nullptr)
 			mFavorite->setVisible(file->getFavorite());
@@ -806,7 +969,7 @@ void DetailedContainer::updateControls(FileData* file, bool isClearing, int move
 		mReleaseDate.setValue(file->getMetadata(MetaDataId::ReleaseDate));
 		mDeveloper.setValue(valueOrUnknown(file->getMetadata(MetaDataId::Developer)));
 		mPublisher.setValue(valueOrUnknown(file->getMetadata(MetaDataId::Publisher)));
-		mGenre.setValue(valueOrUnknown(file->getMetadata(MetaDataId::Genre)));
+		mGenre.setValue(valueOrUnknown(file->getGenre()));
 
 		if (mPlayers.getOriginalThemeText() == "1")
 			mPlayers.setValue(valueOrOne(file->getMetadata(MetaDataId::Players)));
@@ -824,67 +987,24 @@ void DetailedContainer::updateControls(FileData* file, bool isClearing, int move
 		}
 		else if (file->getType() == FOLDER)
 			updateDetailsForFolder((FolderData*)file);
+
+		for (auto extra : mThemeExtras)
+			BindingManager::updateBindings(extra, file);
 	}
 
 	std::vector<GuiComponent*> comps = getComponents();
 
-	/*if (file == nullptr && !isClearing)
-	{
-		if (isDeactivating)
-			for (auto comp : getComponents())
-				comp->deselectStoryboard(!isDeactivating); // TODO !?
-	}
-	else */
 	if (state && file != nullptr && !isClearing)
 	{
 		for (auto comp : getComponents())
-		{
-			if (moveBy > 0 && comp->storyBoardExists("activateNext"))
-			{
-				comp->deselectStoryboard();
-				comp->selectStoryboard("activateNext");
-
-				if (comp->isShowing())
-					comp->startStoryboard();
-			}
-			else if (moveBy < 0 && comp->storyBoardExists("activatePrev"))
-			{
-				comp->deselectStoryboard();
-				comp->selectStoryboard("activatePrev");
-
-				if (comp->isShowing())
-					comp->startStoryboard();
-			}
-			else if (moveBy != 0 && comp->storyBoardExists("activate"))
-			{
-				comp->deselectStoryboard();
-				comp->selectStoryboard("activate");
-
-				if (comp->isShowing())
-					comp->startStoryboard();
-			}
-			else if (moveBy == 0 && comp->storyBoardExists("open"))
-			{
-				comp->deselectStoryboard();
-				comp->selectStoryboard("open");
-
-				if (comp->isShowing())
-					comp->startStoryboard();
-			}
-			else if (moveBy == 0 && comp->storyBoardExists("") && !comp->hasStoryBoard("", true))
-			{
-				comp->deselectStoryboard();
-				comp->selectStoryboard();
-
-				if (comp->isShowing())
-					comp->onShow();
-			}
-		}
+			handleStoryBoard(comp, true, moveBy);
 	}
 	
 	// We're clearing / populating : don't setup fade animations
 	if (file == nullptr && isClearing)
 	{
+		resetThemedExtras();
+
 		for (auto comp : comps)
 		{
 			comp->cancelAnimation(0);
@@ -905,30 +1025,7 @@ void DetailedContainer::updateControls(FileData* file, bool isClearing, int move
 	{
 		if (fadeOut && isDeactivating && hasActivationStoryboard(comp, false, true))
 		{
-			if (moveBy > 0 && comp->storyBoardExists("deactivateNext"))
-			{
-				comp->deselectStoryboard(false);
-				comp->selectStoryboard("deactivateNext");
-
-				if (comp->isShowing())
-					comp->startStoryboard();
-			}
-			else if (moveBy < 0 && comp->storyBoardExists("deactivatePrev"))
-			{
-				comp->deselectStoryboard(false);
-				comp->selectStoryboard("deactivatePrev");
-
-				if (comp->isShowing())
-					comp->startStoryboard();
-			}
-			else if (moveBy != 0 && comp->storyBoardExists("deactivate"))
-			{
-				comp->deselectStoryboard(false);
-				comp->selectStoryboard("deactivate");
-
-				if (comp->isShowing())
-					comp->startStoryboard();
-			}
+			handleStoryBoard(comp, false, moveBy);
 		}
 		else if (fadeOut && isDeactivating && !hasActivationStoryboard(comp))
 		{
@@ -966,7 +1063,68 @@ void DetailedContainer::updateControls(FileData* file, bool isClearing, int move
 		}
 	}
 
-	Utils::FileSystem::removeFile(getTitlePath());
+#ifdef _RPI_
+	if (Settings::getInstance()->getBool("ScreenSaverOmxPlayer"))
+		Utils::FileSystem::removeFile(getTitlePath());
+#endif
+}
+
+void DetailedContainer::handleStoryBoard(GuiComponent* comp, bool activate, int moveBy, bool recursive)
+{
+	if (moveBy > 0 && comp->storyBoardExists(activate ? "activateNext" : "deactivateNext"))
+	{
+		comp->deselectStoryboard(activate);
+		comp->selectStoryboard(activate ? "activateNext" : "deactivateNext");
+
+		if (comp->isShowing())
+			comp->startStoryboard();
+	}
+	else if (moveBy < 0 && comp->storyBoardExists(activate ? "activatePrev" : "deactivatePrev"))
+	{
+		comp->deselectStoryboard(activate);
+		comp->selectStoryboard(activate ? "activatePrev" : "deactivatePrev");
+
+		if (comp->isShowing())
+			comp->startStoryboard();
+	}
+	else if (moveBy != 0 && comp->storyBoardExists(activate ? "activate" : "deactivate"))
+	{
+		comp->deselectStoryboard(activate);
+		comp->selectStoryboard(activate ? "activate" : "deactivate");
+
+		if (comp->isShowing())
+			comp->startStoryboard();
+	}
+	else if (activate && moveBy == 0 && comp->storyBoardExists("open"))
+	{
+		comp->deselectStoryboard();
+		comp->selectStoryboard("open");
+
+		if (comp->isShowing())
+			comp->startStoryboard();
+	}
+	else if (activate && moveBy == 0 && comp->storyBoardExists("") && !comp->hasStoryBoard("", true))
+	{
+		comp->deselectStoryboard();
+		comp->selectStoryboard();
+
+		if (comp->isShowing())
+			comp->onShow();
+	}
+	else if (activate && moveBy == 0 && comp->storyBoardExists("activate"))
+	{
+		comp->deselectStoryboard(activate);
+		comp->selectStoryboard("activate");
+
+		if (comp->isShowing())
+			comp->startStoryboard();
+	}
+
+	if (!recursive)
+		return;
+	
+	for (auto child : comp->enumerateExtraChildrens())
+		handleStoryBoard(child, activate, moveBy, false);
 }
 
 bool DetailedContainer::hasActivationStoryboard(GuiComponent* comp, bool checkActivate, bool checkDeactivate)
@@ -1008,6 +1166,9 @@ bool DetailedContainer::anyComponentHasStoryBoard()
 
 void DetailedContainer::disableComponent(GuiComponent* comp)
 {
+	if (comp == nullptr)
+		return;
+
 	if (mVideo == comp) { mVideo->setImage(""); mVideo->setVideo(""); }
 	if (mImage == comp) mImage->setImage("");
 	if (mThumbnail == comp) mThumbnail->setImage("");
@@ -1020,8 +1181,14 @@ void DetailedContainer::disableComponent(GuiComponent* comp)
 	if (mNoSaveState == comp) mNoSaveState->setVisible(false);
 	if (mKidGame == comp) mKidGame->setVisible(false);
 	if (mNotKidGame == comp) mNotKidGame->setVisible(false);
+	if (mGunGame == comp) mGunGame->setVisible(false);
+	if (mNotGunGame == comp) mNotGunGame->setVisible(false);
+	if (mWheelGame == comp) mWheelGame->setVisible(false);
+	if (mNotWheelGame == comp) mNotWheelGame->setVisible(false);
 	if (mCheevos == comp) mCheevos->setVisible(false);
 	if (mNotCheevos == comp) mNotCheevos->setVisible(false);
+	if (mNetplay == comp) mNetplay->setVisible(false);
+	if (mNotNetplay == comp) mNotNetplay->setVisible(false);	
 	if (mFavorite == comp) mFavorite->setVisible(false);
 	if (mNotFavorite == comp) mNotFavorite->setVisible(false);
 	if (mHidden == comp) mHidden->setVisible(false);
@@ -1051,8 +1218,14 @@ std::vector<GuiComponent*>  DetailedContainer::getComponents()
 	if (mNoSaveState != nullptr) comps.push_back(mNoSaveState);
 	if (mKidGame != nullptr) comps.push_back(mKidGame);
 	if (mNotKidGame != nullptr) comps.push_back(mNotKidGame);
+	if (mGunGame != nullptr) comps.push_back(mGunGame);
+	if (mNotGunGame != nullptr) comps.push_back(mNotGunGame);
+	if (mWheelGame != nullptr) comps.push_back(mWheelGame);
+	if (mNotWheelGame != nullptr) comps.push_back(mNotWheelGame);
 	if (mCheevos != nullptr) comps.push_back(mCheevos);
 	if (mNotCheevos != nullptr) comps.push_back(mNotCheevos);
+	if (mNetplay != nullptr) comps.push_back(mNetplay);
+	if (mNotNetplay != nullptr) comps.push_back(mNotNetplay);	
 	if (mFavorite != nullptr) comps.push_back(mFavorite);
 	if (mNotFavorite != nullptr) comps.push_back(mNotFavorite);
 	if (mHidden != nullptr) comps.push_back(mHidden);
@@ -1108,25 +1281,30 @@ void DetailedContainerHost::update(int deltaTime)
 {
 	mContainer->updateFolderViewAmbiantProperties();
 
-	for (auto it = mContainers.begin(); it != mContainers.end(); it++)
+	int index = mContainers.size();
+	for (auto it = mContainers.begin(); it != mContainers.end(); )
 	{
 		DetailedContainer* dc = *it;
 
 		dc->updateFolderViewAmbiantProperties();
 
-		if (!dc->anyComponentHasStoryBoardRunning())
-		{			
-			mContainers.erase(it);
-			
+		if (!dc->anyComponentHasStoryBoardRunning() || index > 4)
+		{
+			it = mContainers.erase(it);
+
 			for (auto cp : dc->getComponents())
 			{
 				cp->setVisible(false);
 				cp->onHide();
 			}
-			
+
 			mWindow->postToUiThread([dc]() { delete dc; }, this);
-			break;
+			// break;
 		}
+		else
+			++it;
+
+		index--;
 	}
 }
 
@@ -1140,7 +1318,7 @@ void DetailedContainerHost::updateControls(FileData* file, bool isClearing, int 
 	if (!mContainer->anyComponentHasStoryBoard() || file == nullptr || isClearing || moveBy == 0)
 	{
 		if (file != nullptr && !isClearing)
-			file->speak();
+			file->setSelectedGame();
 
 		mContainer->updateControls(file, isClearing, moveBy);
 		return;
@@ -1156,7 +1334,7 @@ void DetailedContainerHost::updateControls(FileData* file, bool isClearing, int 
 	}
 
 	mActiveFile = file;
-	mActiveFile->speak();
+	mActiveFile->setSelectedGame();
 	bool clear = isClearing;
 	int by = moveBy;
 

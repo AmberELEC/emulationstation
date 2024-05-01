@@ -31,6 +31,7 @@ struct LobbyAppEntry
 	bool		has_spectate_password;
 	std::string core_name;
 	int         mitm_port;
+	std::string mitm_session;
 	bool		fixed;
 	std::string retroarch_version;
 	int         port;
@@ -50,6 +51,9 @@ public:
 	void onSizeChanged() override;
 	bool input(InputConfig* config, Input input) override;
 	std::vector<HelpPrompt> getHelpPrompts() override;
+
+	bool hitTest(int x, int y, Transform4x4f& parentTransform, std::vector<GuiComponent*>* pResult = nullptr) override;
+	bool onMouseClick(int button, bool pressed, int x, int y);
 
 private:
 	void startRequest();

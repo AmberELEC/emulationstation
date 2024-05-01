@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <string.h>
 #include <algorithm>
+#include <set>
 
 #if defined(_WIN32)
 // because windows...
@@ -31,35 +32,14 @@
 
 #include <fstream>
 #include <sstream>
+#include <unordered_map>
+
+#include "Paths.h"
 
 namespace Utils
 {
 	namespace FileSystem
-	{
-		std::string getEsConfigPath()
-		{
-#if defined WIN32 || defined _ENABLEEMUELEC
-			static std::string cfg;
-			if (cfg.empty())
-				cfg = Utils::FileSystem::getCanonicalPath(Utils::FileSystem::getHomePath() + "/.emulationstation");
-
-			return cfg;
-#else
-			return "/userdata/system/configs/emulationstation"; // batocera
-#endif
-		}
-
-		std::string getSharedConfigPath()
-		{
-#if defined WIN32 || defined _ENABLEEMUELEC
-			return Utils::FileSystem::getExePath();
-#else
-			return "/usr/share/emulationstation"; // batocera
-#endif
-		}
-
-	// FileCache
-
+	{		
 		struct FileCache
 		{
 			FileCache() {}
@@ -148,7 +128,7 @@ namespace Utils
 				return ret;
 			}
 
-			static void add(const std::string& key, FileCache cache)
+			static void add(const std::string& key, const FileCache& cache)
 			{
 				if (!mEnabled)
 					return;
@@ -165,15 +145,18 @@ namespace Utils
 
 				std::unique_lock<std::mutex> lock(mFileCacheMutex);
 
-				auto it = mFileCache.find(key);
-				if (it != mFileCache.cend())
-					return &it->second;
-
-				it = mFileCache.find(Utils::FileSystem::getParent(key) + "/*");
-				if (it != mFileCache.cend())
+				if (mFileCache.size())
 				{
-					mFileCache[key] = FileCache(false, false);
-					return &mFileCache[key];
+					auto it = mFileCache.find(key);
+					if (it != mFileCache.cend())
+						return &it->second;
+
+					it = mFileCache.find(Utils::FileSystem::getParent(key) + "/*");
+					if (it != mFileCache.cend())
+					{
+						mFileCache[key] = FileCache(false, false);
+						return &mFileCache[key];
+					}
 				}
 
 				return nullptr;
@@ -186,16 +169,16 @@ namespace Utils
 				mFileCacheMutex.unlock();
 			}
 
-			static void setEnabled(bool value) { mEnabled = value; }
-			static bool isEnabled() { return mEnabled; }
+			static inline void setEnabled(bool value) { mEnabled = value; }
+			static inline bool isEnabled() { return mEnabled; }
 
 		private:
-			static std::map<std::string, FileCache> mFileCache;
+			static std::unordered_map<std::string, FileCache> mFileCache;
 			static std::mutex mFileCacheMutex;
 			static bool mEnabled;
 		};
 
-		std::map<std::string, FileCache> FileCache::mFileCache;
+		std::unordered_map<std::string, FileCache> FileCache::mFileCache;
 		std::mutex FileCache::mFileCacheMutex;
 		bool FileCache::mEnabled = false;
 
@@ -384,16 +367,18 @@ namespace Utils
 					// loop over all files in the directory
 					do
 					{
-						std::string name = Utils::String::convertFromWideString(findData.cFileName);
+						if (findData.cFileName == nullptr)
+							continue;
 
-						if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY && (name == "." || name == ".."))
+						if ((findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY &&
+							(findData.cFileName[0] == '.' && (findData.cFileName[1] == '.' || findData.cFileName[1] == 0)))
 							continue;
 
 						FileInfo fi;
-						fi.path = path + "/" + name;
+						fi.path = path + "/" + Utils::String::convertFromWideString(findData.cFileName);
 						fi.hidden = (findData.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) == FILE_ATTRIBUTE_HIDDEN;
 						fi.directory = (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY;
-						fi.creationTime = to_time_t(findData.ftCreationTime);
+						fi.lastWriteTime = to_time_t(findData.ftLastWriteTime);
 
 						contentList.push_back(fi);
 
@@ -478,80 +463,11 @@ namespace Utils
 
 		} // getPathList
 
-		std::string homePath;
-
-		void setHomePath(const std::string& _path)
-		{
-			homePath = Utils::FileSystem::getGenericPath(_path);
-		}
-
-		std::string& getHomePath()
-		{
-			if (homePath.length())
-				return homePath;
-
-#ifdef WIN32
-			// Is it a portable installation ? Check if ".emulationstation/es_systems.cfg" exists in the exe's path
-			if (!homePath.length())
-			{
-				std::string portableCfg = getExePath() + "/.emulationstation/es_systems.cfg";
-				if (Utils::FileSystem::exists(portableCfg))
-					homePath = getExePath();
-			}
-#endif
-
-			// HOME has different usages in Linux & Windows
-			// On Windows,  "HOME" is not a system variable but a user's environment variable that can be defined by users in batch files. 
-			// If defined : The environment variable has priority over all
-			char* envHome = getenv("HOME");
-			if (envHome)
-				homePath = getGenericPath(envHome);		
-
-#ifdef WIN32
-			// On Windows, getenv("HOME") is not the system's user path but a user environment variable.
-			// Instead we get the home user's path using %HOMEDRIVE%/%HOMEPATH% which are system variables.
-			if (!homePath.length())
-			{
-				char* envHomeDrive = getenv("HOMEDRIVE");
-				char* envHomePath = getenv("HOMEPATH");
-				if (envHomeDrive && envHomePath)
-					homePath = getGenericPath(std::string(envHomeDrive) + "/" + envHomePath);
-			}
-#endif // _WIN32
-
-			// no homepath found, fall back to current working directory
-			if (!homePath.length())
-				homePath = getCWDPath();
-
-			homePath = getGenericPath(homePath);
-				
-			// return constructed homepath
-			return homePath;
-
-		} // getHomePath
-
-		
 		std::string getCWDPath()
 		{
 			// return current working directory path
 			char temp[2048];
 			return (getcwd(temp, 2048) ? getGenericPath(temp) : "");
-		}
-
-		std::string exePath;
-
-		void setExePath(const std::string& _path)
-		{
-			std::string path = getCanonicalPath(_path);
-			if (isRegularFile(path))
-				path = getParent(path);
-
-			exePath = Utils::FileSystem::getGenericPath(path);
-		}
-
-		std::string getExePath()
-		{
-			return exePath;
 		}
 
 		std::string getPreferredPath(const std::string& _path)
@@ -766,15 +682,21 @@ namespace Utils
 			return _path.substr(lastPathSplit, extPos - lastPathSplit);
 		}
 
-		std::string getExtension(const std::string& _path)
+		std::string getExtension(const std::string& _path, bool withPoint)
 		{
-			const char *str = _path.c_str();
+			const char* path = _path.c_str();
+			const char* ptr = path + _path.length();
 
-			const char *ext;
-			if (str && *str != '\0' && ((ext = strrchr(str, '.'))) && strpbrk(ext, "/\\") == nullptr)
-				return ext;
+			do
+			{
+				if (ptr[-1] == '.')
+					return withPoint ? ptr -1 : ptr;
 
-			return std::string();
+				--ptr;
+			} 
+			while (ptr > path);
+
+			return "";
 		}
 
 		std::string changeExtension(const std::string& _path, const std::string& extension)
@@ -828,7 +750,7 @@ namespace Utils
 
 			// replace '~' with homePath
 			if(_allowHome && (_path[0] == '~') && (_path[1] == '/' || _path[1] == '\\'))
-				return getCanonicalPath(getHomePath() + &(_path[1]));
+				return getCanonicalPath(Paths::getHomePath() + &(_path[1]));
 
 			// nothing to resolve
 			return getGenericPath(_path);
@@ -856,9 +778,8 @@ namespace Utils
 			}
 
 			if(_allowHome)
-			{
-#if WIN32
-				auto from_dirs = getPathList(getHomePath());
+			{				
+				auto from_dirs = getPathList(Paths::getHomePath());
 				auto to_dirs = getPathList(_path);
 
 				if (from_dirs.size() == 0 || to_dirs.size() == 0 || from_dirs[0] != to_dirs[0])
@@ -892,14 +813,6 @@ namespace Utils
 				}
 
 				return output;
-#else				
-				path = removeCommonPath(_path, getHomePath(), contains);
-				if(contains)
-				{
-					// success
-					return ("~/" + path);
-				}
-#endif
 			}
 
 			// nothing to resolve
@@ -948,11 +861,20 @@ namespace Utils
 			struct stat info;
 
 			// check if lstat succeeded
-			if(lstat(path.c_str(), &info) == 0)
+			if (lstat(path.c_str(), &info) == 0)
 			{
-				resolved.resize(info.st_size);
-				if(readlink(path.c_str(), (char*)resolved.data(), resolved.size()) > 0)
-					resolved = getGenericPath(resolved);
+				resolved.resize(4096);
+
+				int cnt = readlink(path.c_str(), (char*)resolved.data(), resolved.size());
+				if (cnt > 0)
+				{
+					resolved.resize(cnt);
+
+					if (resolved[0] == '.')
+						resolved = getAbsolutePath(resolved, getParent(path));
+					else 
+						resolved = getGenericPath(resolved);
+				}
 			}
 #endif // _WIN32
 
@@ -987,8 +909,14 @@ namespace Utils
 #if WIN32			
 			if (isDirectory(_path))
 				return RemoveDirectoryW(Utils::String::convertToWideString(getPreferredPath(_path)).c_str());
+						
+			if (!DeleteFileW(Utils::String::convertToWideString(_path).c_str()))
+			{
+				SetFileAttributesW(Utils::String::convertToWideString(_path).c_str(), FILE_ATTRIBUTE_NORMAL);
+				return DeleteFileW(Utils::String::convertToWideString(_path).c_str());
+			}
 
-			return DeleteFileW(Utils::String::convertToWideString(_path).c_str());
+			return true;
 #else
 			if (isDirectory(_path))
 				return (rmdir(path.c_str()) == 0);
@@ -1282,9 +1210,41 @@ namespace Utils
 			return Utils::Time::DateTime();
 		}
 
-		std::string	readAllText(const std::string fileName)
+		static void skipUtf8Bom(std::ifstream& file) 
+		{
+			if (!file.is_open())
+				return;
+
+			char bom[3];
+			if (file.read(bom, 3) && bom[0] == '\xEF' && bom[1] == '\xBB' && bom[2] == '\xBF')			
+				return;
+			
+			file.seekg(0);
+		}
+
+		std::list<std::string> readAllLines(const std::string& fileName)
+		{
+			std::list<std::string> lines;
+
+			std::ifstream file(WINSTRINGW(fileName));
+			if (!file.is_open()) 
+				return lines;
+
+			skipUtf8Bom(file);
+
+			std::string line;
+			while (std::getline(file, line))
+				lines.push_back(line);
+
+			file.close();
+			return lines;
+		}
+
+		std::string	readAllText(const std::string& fileName)
 		{
 			std::ifstream t(WINSTRINGW(fileName));
+
+			skipUtf8Bom(t);
 
 			std::stringstream buffer;
 			buffer << t.rdbuf();
@@ -1409,6 +1369,27 @@ namespace Utils
 			return out.str();
 		}
 
+		std::string kiloBytesToString(unsigned long size)
+		{
+			static const char *SIZES[] = { "KB", "MB", "GB", "TB" };
+			int div = 0;
+			unsigned long rem = 0;
+
+			while (size >= 1024 && div < (sizeof SIZES / sizeof *SIZES))
+			{
+				rem = (size % 1024);
+				div++;
+				size /= 1024;
+			}
+
+			double size_d = (float)size + (float)rem / 1024.0;
+
+			std::ostringstream out;
+			out.precision(2);
+			out << std::fixed << size_d << " " << SIZES[div];
+			return out.str();
+		}
+
 		std::string getTempPath()
 		{
 			static std::string path;
@@ -1424,7 +1405,7 @@ namespace Utils
 					path = Utils::FileSystem::getGenericPath(Utils::String::convertFromWideString(lpTempPathBuffer)) + "/emulationstation.tmp";
 				else
 #endif
-					path = Utils::FileSystem::getGenericPath(Utils::FileSystem::getEsConfigPath() + "/tmp");
+					path = Utils::FileSystem::getGenericPath(Paths::getUserEmulationStationPath() + "/tmp");
 			}
 
 			if (!Utils::FileSystem::isDirectory(path))
@@ -1448,7 +1429,7 @@ namespace Utils
 					pdfpath = Utils::FileSystem::getGenericPath(Utils::String::convertFromWideString(lpTempPathBuffer)) + "/pdftmp";
 				else
 #endif						
-					pdfpath = Utils::FileSystem::getGenericPath(Utils::FileSystem::getEsConfigPath() + "/pdftmp");
+					pdfpath = Utils::FileSystem::getGenericPath(Paths::getUserEmulationStationPath() + "/pdftmp");
 			}
 
 			if (!Utils::FileSystem::isDirectory(pdfpath))
@@ -1468,16 +1449,24 @@ namespace Utils
 #endif
 			if (file)
 			{
-				#define CRCBUFFERSIZE 64 * 1024
-				char* buffer = new char[CRCBUFFERSIZE];
+				// Retroarch CRC calculations are limited in size. See encoding_crc32.c
+				#define CRC32_BUFFER_SIZE 1048576
+				#define CRC32_MAX_MB 64
+
+				char* buffer = new char[CRC32_BUFFER_SIZE];
 				if (buffer)
 				{
 					size_t size;
-
 					unsigned int file_crc32 = 0;
 
-					while (size = fread(buffer, 1, CRCBUFFERSIZE, file))
+					for (int i = 0; i < CRC32_MAX_MB; i++)
+					{
+						size = fread(buffer, 1, CRC32_BUFFER_SIZE, file);
+						if (size == 0)
+							break;
+
 						file_crc32 = Utils::Zip::ZipFile::computeCRC(file_crc32, buffer, size);
+					}
 
 					hex = Utils::String::toHexString(file_crc32);
 
@@ -1524,6 +1513,30 @@ namespace Utils
 			return hex;
 		}		
 
+		static std::set<std::string> _imageExtensions = { ".jpg", ".png", ".jpeg", ".gif" };
+		static std::set<std::string> _videoExtensions = { ".mp4", ".avi", ".mkv", ".webm" };
+		static std::set<std::string> _audioExtensions = { ".mp3", ".wav", ".ogg", ".flac", ".mod", ".xm", ".stm", ".s3m", ".far", ".it", ".669", ".mtm" };
+
+		bool isSVG(const std::string& _path)
+		{
+			return Utils::String::toLower(Utils::FileSystem::getExtension(_path)) == ".svg";
+		}
+
+		bool isImage(const std::string& _path)
+		{
+			return _imageExtensions.find(Utils::String::toLower(Utils::FileSystem::getExtension(_path))) != _imageExtensions.cend();
+		}
+
+		bool isVideo(const std::string& _path)
+		{
+			return _videoExtensions.find(Utils::String::toLower(Utils::FileSystem::getExtension(_path))) != _videoExtensions.cend();
+		}
+
+		bool isAudio(const std::string& _path)
+		{
+			return _audioExtensions.find(Utils::String::toLower(Utils::FileSystem::getExtension(_path))) != _audioExtensions.cend();
+		}
+
 #ifdef WIN32
 		void splitCommand(std::string cmd, std::string* executable, std::string* parameters)
 		{
@@ -1560,6 +1573,45 @@ namespace Utils
 			}
 		}
 #endif
+		void preloadFileSystemCache(const std::string& path, bool trySaveStates)
+		{
+#if WIN32		
+			if (path.empty())
+				return;
+
+			static std::set<std::string> preloaded;
+
+			if (preloaded.find(path) != preloaded.cend())
+				return;
+
+			preloaded.insert(path);
+
+			auto doWork = [&](std::string* path)
+			{
+				if (trySaveStates)
+				{
+					std::string systemName = Utils::FileSystem::getFileName(*path);
+					for (auto file : Utils::FileSystem::getDirContent(Utils::FileSystem::combine(Paths::getSavesPath(), systemName)))
+						Utils::FileSystem::exists(file);
+				}
+
+				for (auto file : Utils::FileSystem::getDirContent(Utils::FileSystem::combine(*path, "/images")))
+					Utils::FileSystem::exists(file);
+
+				for (auto file : Utils::FileSystem::getDirContent(Utils::FileSystem::combine(*path, "/videos")))
+					Utils::FileSystem::exists(file);
+
+				for (auto file : Utils::FileSystem::getDirContent(Utils::FileSystem::combine(*path, "/manuals")))
+					Utils::FileSystem::exists(file);
+
+				delete path;
+			};
+
+			std::thread thread(doWork, new std::string(path));
+			::SetThreadPriority(thread.native_handle(), THREAD_PRIORITY_LOWEST);
+			thread.detach();
+#endif
+		}
 
 	} // FileSystem::
 

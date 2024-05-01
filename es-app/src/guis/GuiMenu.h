@@ -8,18 +8,7 @@
 #include "components/OptionListComponent.h"
 #include <SystemData.h>
 #include "KeyboardMapping.h"
-
-class StrInputConfig
-{
- public:
-  StrInputConfig(std::string ideviceName, std::string ideviceGUIDString) {
-    deviceName = ideviceName;
-    deviceGUIDString = ideviceGUIDString;
-  }
-
-  std::string deviceName;
-  std::string deviceGUIDString;
-};
+#include "utils/VectorEx.h"
 
 struct DecorationSetInfo
 {
@@ -34,16 +23,32 @@ struct DecorationSetInfo
 	std::string imageUrl;
 };
 
+#ifdef _ENABLEEMUELEC
+struct sScreenDimensions
+{
+	int width;
+	int height;
+};
+
+struct sScreenBorders
+{
+	float left;
+	float right;
+	float top;
+	float bottom;
+};
+
+#endif
+
 class GuiMenu : public GuiComponent
 {
 public:
 	GuiMenu(Window* window, bool animate = true);
-	~GuiMenu();
 
 	bool input(InputConfig* config, Input input) override;
 	void onSizeChanged() override;
 	std::vector<HelpPrompt> getHelpPrompts() override;	
-	static void openQuitMenu_batocera_static(Window *window, bool quickAccessMenu = false, bool animate = true); // batocera
+	static void openQuitMenu_static(Window *window, bool quickAccessMenu = false, bool animate = true);
 
 	static void popSystemConfigurationGui(Window* mWindow, SystemData *systemData);
 	static void popGameConfigurationGui(Window* mWindow, FileData* fileData);
@@ -54,7 +59,7 @@ public:
 	static void editKeyboardMappings(Window *window, IKeyboardMapContainer* mapping, bool editable);
 
 private:
-	void addEntry(std::string name, bool add_arrow, const std::function<void()>& func, const std::string iconName = "");
+	void addEntry(const std::string& name, bool add_arrow, const std::function<void()>& func, const std::string iconName = "");
 	void addVersionInfo();
 	void openCollectionSystemSettings();
 	void openConfigInput();	
@@ -63,18 +68,21 @@ private:
 	void openSoundSettings();
 	void openUISettings();
 	void openUpdatesSettings();
-
+	
 #ifdef _ENABLEEMUELEC
 	void openEmuELECSettings(); /* < emuelec */
     static void openDangerZone(Window* mWindow, std::string configName);
+    static void createGamepadConfig(Window* window, GuiSettings* systemConfiguration);
+    static void openExternalMounts(Window* mWindow, std::string configName);
+		static void addFrameBufferOptions(Window* mWindow, GuiSettings* guiSettings, std::string configName, std::string header);
 #endif
-	// batocera	
-	void openSystemSettings_batocera();
-	void openGamesSettings_batocera(int selectItem = -1);
-	void openControllersSettings_batocera(int autoSel = 0);
-	void openNetworkSettings_batocera(bool selectWifiEnable = false);	
-	void openQuitMenu_batocera();
-	void openSystemInformations_batocera();
+
+	void openSystemSettings();
+	void openGamesSettings();	
+	void openNetworkSettings(bool selectWifiEnable = false);	
+	void openQuitMenu();
+	void openSystemInformations();
+	void openServicesSettings();
 	void openDeveloperSettings();
 	void openNetplaySettings();
 	void openRetroachievementsSettings();
@@ -92,21 +100,32 @@ private:
 	TextComponent mVersion;
 
 	static std::shared_ptr<OptionListComponent<std::string>> createRatioOptionList(Window *window, std::string configname);
+	static std::shared_ptr<OptionListComponent<std::string>> createVideoResolutionModeOptionList(Window *window, std::string configname, std::string configoptname = "videomode");
 #ifdef _ENABLEEMUELEC
   static std::shared_ptr<OptionListComponent<std::string>> createNativeVideoResolutionModeOptionList(Window *window, std::string configname);
+
+  static std::shared_ptr<OptionListComponent<std::string>> createJoyBtnOptionList(Window *window, std::string prefixName, std::string title, int selectId = -1);
+  static std::shared_ptr<OptionListComponent<std::string>> createJoyBtnRemapOptionList(Window *window, std::string prefixName, std::string remapName, int btnIndex = -1);
+
+  static void createBtnJoyCfgName(Window *window, GuiSettings *systemConfiguration, std::string prefixName);
+  static void createBtnJoyCfgRemap(Window *window, GuiSettings *systemConfiguration, std::string prefixName, std::string remapName, int btnIndex = -1);
+  
+  static void deleteBtnJoyCfg(Window *window, GuiSettings *systemConfiguration, std::string prefixName);
+  static void editJoyBtnRemapOptionList(Window *window, GuiSettings *systemConfiguration, std::string prefixName);
+  static void removeJoyBtnEntry(int index);
+  static void addJoyBtnEntry(std::string name, std::string val);
 #endif
-	static std::shared_ptr<OptionListComponent<std::string>> createVideoResolutionModeOptionList(Window *window, std::string configname);
 	static void popSpecificConfigurationGui(Window* mWindow, std::string title, std::string configName, SystemData *systemData, FileData* fileData, bool selectCoreLine = false);
 
 	static void openLatencyReductionConfiguration(Window* mWindow, std::string configName);
 	static void openPerformanceSettingsConfiguration(Window* mWindow, std::string configName, int selectItem = -1);
 
-	std::vector<StrInputConfig*> mLoadedInput; // used to keep information about loaded devices in case there are unpluged between device window load and save
-	void clearLoadedInput();
-
 	static void addDecorationSetOptionListComponent(Window* window, GuiSettings* parentWindow, const std::vector<DecorationSetInfo>& sets, const std::string& configName = "global");
 	static void createDecorationItemTemplate(Window* window, std::vector<DecorationSetInfo> sets, std::string data, ComponentListRow& row);
 	static void openDecorationConfiguration(Window *mWindow, std::string configName, std::vector<DecorationSetInfo> sets);
+
+	static void addFeatureItem(Window* window, GuiSettings* settings, const CustomFeature& feat, const std::string& configName, const std::string& system, const std::string& emulator, const std::string& core);
+	static void addFeatures(const VectorEx<CustomFeature>& features, Window* window, GuiSettings* settings, const std::string& configName, const std::string& system, const std::string& emulator, const std::string& core, const std::string& defaultGroupName = "", bool addDefaultGroupOnlyIfNotFirst = false);
 
 	bool checkNetwork();
 
@@ -115,6 +134,14 @@ private:
 
 public:
 	static std::vector<DecorationSetInfo> getDecorationsSets(SystemData* system = nullptr);
+
+	virtual bool hitTest(int x, int y, Transform4x4f& parentTransform, std::vector<GuiComponent*>* pResult = nullptr) override;
+	virtual bool onMouseClick(int button, bool pressed, int x, int y);
+#ifdef _ENABLEEMUELEC
+  static std::shared_ptr<OptionListComponent<std::string>> btn_choice;
+  static std::shared_ptr<OptionListComponent<std::string>> del_choice;
+  static std::shared_ptr<OptionListComponent<std::string>> edit_choice;
+#endif
 };
 
 #endif // ES_APP_GUIS_GUI_MENU_H

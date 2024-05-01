@@ -866,9 +866,6 @@ msgstr ""
 msgid "BLUETOOTH"
 msgstr "BLUETOOTH"
 
-msgid "ENABLE BLUETOOTH"
-msgstr ""
-
 msgid "PAIR BLUETOOTH PADS AUTOMATICALLY"
 msgstr "YHDISTÄ BLUETOOTH-OHJAIMET AUTOMAATTISESTI"
 
@@ -876,9 +873,6 @@ msgid "PAIR A BLUETOOTH DEVICE MANUALLY"
 msgstr "YHDISTÄ BLUETOOTH-LAITE AUTOMAATTISESTI"
 
 msgid "DISPLAY OPTIONS"
-msgstr ""
-
-msgid "SHOW CONTROLLER NOTIFICATIONS"
 msgstr ""
 
 msgid "SHOW CONTROLLER ACTIVITY"
@@ -1751,81 +1745,6 @@ msgstr "AVATAKSESI, SYÖTÄ KOODI NYT"
 msgid "SERVICES"
 msgstr ""
 
-msgid "DMD"
-msgstr ""
-
-msgid "SERVER"
-msgstr ""
-
-msgid "DMDSERVER (for real dmd)"
-msgstr ""
-
-msgid "SIMULATOR (for web dmd)"
-msgstr ""
-
-msgid "dmd server"
-msgstr ""
-
-msgid "FORMAT"
-msgstr ""
-
-msgid "dmd matrix size"
-msgstr ""
-
-msgid "MATRIX"
-msgstr ""
-
-msgid "rgb dmd order"
-msgstr ""
-
-msgid "BRIGHTNESS"
-msgstr "KIRKKAUS"
-
-msgid "DMDSERVER stopped"
-msgstr ""
-
-msgid "DMDSERVER restarted"
-msgstr ""
-
-msgid "DMDSERVER started"
-msgstr ""
-
-msgid "MULTISCREENS"
-msgstr ""
-
-msgid "BACKGLASS / INFORMATION SCREEN"
-msgstr ""
-
-msgid "VIDEO OUTPUT"
-msgstr "VIDEON ULOSTULO"
-
-msgid "VIDEO MODE"
-msgstr "RESOLUUTIO"
-
-msgid "Sets the display's resolution."
-msgstr ""
-
-msgid "ROTATION"
-msgstr ""
-
-msgid "0 DEGREES"
-msgstr "0 ASTETTA"
-
-msgid "90 DEGREES"
-msgstr "90 ASTETTA"
-
-msgid "180 DEGREES"
-msgstr "180 ASTETTA"
-
-msgid "270 DEGREES"
-msgstr "270 ASTETTA"
-
-msgid "SCREEN ROTATION"
-msgstr "NÄYTÖN KIERTO"
-
-msgid "DMD SCREEN"
-msgstr ""
-
 msgid "FRONTEND DEVELOPER OPTIONS"
 msgstr "KÄYTTÖLIITTYMÄN KEHITTÄJÄASETUKSET"
 
@@ -1847,6 +1766,9 @@ msgstr "VSYNC"
 
 msgid "OVERSCAN"
 msgstr "YLISKANNAUS"
+
+msgid "VIDEO MODE"
+msgstr "RESOLUUTIO"
 
 msgid "Sets the display's resolution for emulationstation."
 msgstr ""
@@ -2012,12 +1934,6 @@ msgstr "OHJAA EMULATIONSTATIONIA PELKÄLLÄ OHJAUSSAUVALLA"
 msgid "GUN MOVE TOLERENCE"
 msgstr ""
 
-msgid "ENABLE PS3 CONTROLLER SUPPORT"
-msgstr ""
-
-msgid "Might have negative impact on security."
-msgstr ""
-
 msgid "ENABLE HID JOYSTICK DRIVERS"
 msgstr ""
 
@@ -2148,6 +2064,12 @@ msgstr "KÄYNNISTÄ KODI KÄYNNISTYESSÄ"
 msgid "HARDWARE"
 msgstr "LAITTEISTO"
 
+msgid "BRIGHTNESS"
+msgstr "KIRKKAUS"
+
+msgid "VIDEO OUTPUT"
+msgstr "VIDEON ULOSTULO"
+
 msgid "AUDIO OUTPUT"
 msgstr "ÄÄNEN ULOSTULO"
 
@@ -2158,6 +2080,21 @@ msgid "Available options can change depending on current audio output."
 msgstr ""
 "Saatavilla olevat asetukset voivat muuttua riippuen nykyisestä äänen "
 "ulostulosta."
+
+msgid "SCREEN ROTATION"
+msgstr "NÄYTÖN KIERTO"
+
+msgid "0 DEGREES"
+msgstr "0 ASTETTA"
+
+msgid "90 DEGREES"
+msgstr "90 ASTETTA"
+
+msgid "180 DEGREES"
+msgstr "180 ASTETTA"
+
+msgid "270 DEGREES"
+msgstr "270 ASTETTA"
 
 msgid "BOOT SPLASH"
 msgstr "KÄYNNISTYKSEN ANIMAATIO"

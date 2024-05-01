@@ -11,7 +11,7 @@
 
 class VideoComponent;
 
-class GridGameListView : public ISimpleGameListView
+class GridGameListView : public ISimpleGameListView, public ILongMouseClickEvent
 {
 public:
 	GridGameListView(Window* window, FolderData* root, const std::shared_ptr<ThemeData>& theme, std::string customThemeName = "", Vector2f gridSize = Vector2f(0,0));
@@ -20,10 +20,11 @@ public:
 
 	virtual FileData* getCursor() override;
 	virtual void setCursor(FileData*) override;
-	virtual int getCursorIndex() override; // batocera
-	virtual void setCursorIndex(int index) override; // batocera
+	virtual int getCursorIndex() override; 
+	virtual void setCursorIndex(int index) override; 
 	virtual void resetLastCursor() override;
 	virtual void moveToRandomGame() override;
+	virtual bool onMouseWheel(int delta) override;
 
 	virtual bool input(InputConfig* config, Input input) override;
 
@@ -43,6 +44,8 @@ public:
 	virtual std::vector<FileData*> getFileDataEntries() override;
 	virtual void update(int deltaTime) override;
 
+	virtual void onLongMouseClick(GuiComponent* component) override;
+
 protected:
 	virtual std::string getQuickSystemSelectRightButton() override;
 	virtual std::string getQuickSystemSelectLeftButton() override;
@@ -57,7 +60,6 @@ private:
 
 	void updateInfoPanel();
 	const std::string getImagePath(FileData* file);
-	const bool isVirtualFolder(FileData* file);
 };
 
 #endif // ES_APP_VIEWS_GAME_LIST_GRID_GAME_LIST_VIEW_H

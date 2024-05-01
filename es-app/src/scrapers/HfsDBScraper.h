@@ -21,7 +21,8 @@ public:
 		std::vector<ScraperSearchResult>& results) override;
 
 	bool isSupportedPlatform(SystemData* system) override;
-	bool hasMissingMedia(FileData* file) override;
+
+	const std::set<ScraperMediaSource>& getSupportedMedias() override;
 
 private:
 	std::string mToken;
@@ -32,23 +33,28 @@ class HfsDBRequest : public ScraperHttpRequest
 {
   public:
 	// ctor for a GetGameList request
-	HfsDBRequest(std::queue<std::unique_ptr<ScraperRequest>>& requestsWrite, std::vector<ScraperSearchResult>& resultsWrite, const std::string& url, HttpReqOptions* options, bool isArcade)
+	HfsDBRequest(std::queue<std::unique_ptr<ScraperRequest>>& requestsWrite, std::vector<ScraperSearchResult>& resultsWrite, const std::string& url, HttpReqOptions* options, bool isArcade, bool isManualScrape)
 		: ScraperHttpRequest(resultsWrite, url, options), mRequestQueue(&requestsWrite)
 	{
+		  mIsManualScrape = isManualScrape;
 		  mIsArcade = isArcade;
 	}
 
 	// ctor for a GetGame request
-	HfsDBRequest(std::vector<ScraperSearchResult>& resultsWrite, const std::string& url, HttpReqOptions* options, bool isArcade)
+	HfsDBRequest(std::vector<ScraperSearchResult>& resultsWrite, const std::string& url, HttpReqOptions* options, bool isArcade, bool isManualScrape)
 		: ScraperHttpRequest(resultsWrite, url, options), mRequestQueue(nullptr)
 	{		
+		  mIsManualScrape = isManualScrape;
 		  mIsArcade = isArcade;
 	}
+
+	virtual bool retryOn249() { return !mIsManualScrape; }
 
   protected:
 	bool process(HttpReq* request, std::vector<ScraperSearchResult>& results) override;
 	bool isGameRequest() { return !mRequestQueue; }
 
+	bool mIsManualScrape;
 	bool mIsArcade;
 	std::queue<std::unique_ptr<ScraperRequest>>* mRequestQueue;
 };

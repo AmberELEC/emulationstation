@@ -871,9 +871,6 @@ msgstr "STEAMDECK MAUS/GUN EINSTELLUNGEN"
 msgid "BLUETOOTH"
 msgstr "BLUETOOTH"
 
-msgid "ENABLE BLUETOOTH"
-msgstr ""
-
 msgid "PAIR BLUETOOTH PADS AUTOMATICALLY"
 msgstr "BLUETOOTH-GAMEPADS AUTOMATISCH KOPPELN"
 
@@ -882,9 +879,6 @@ msgstr "BLUETOOTH-GERÄT MANUELL KOPPELN"
 
 msgid "DISPLAY OPTIONS"
 msgstr "OPTIONEN ANZEIGEN"
-
-msgid "SHOW CONTROLLER NOTIFICATIONS"
-msgstr ""
 
 msgid "SHOW CONTROLLER ACTIVITY"
 msgstr "CONTROLLER-AKTIVITÄT ANZEIGEN"
@@ -1759,81 +1753,6 @@ msgstr "GEBEN SIE JETZT DEN CODE ZUM ENTSPERREN EIN"
 msgid "SERVICES"
 msgstr "SERVICES"
 
-msgid "DMD"
-msgstr ""
-
-msgid "SERVER"
-msgstr ""
-
-msgid "DMDSERVER (for real dmd)"
-msgstr ""
-
-msgid "SIMULATOR (for web dmd)"
-msgstr ""
-
-msgid "dmd server"
-msgstr ""
-
-msgid "FORMAT"
-msgstr ""
-
-msgid "dmd matrix size"
-msgstr ""
-
-msgid "MATRIX"
-msgstr ""
-
-msgid "rgb dmd order"
-msgstr ""
-
-msgid "BRIGHTNESS"
-msgstr "HELLIGKEIT"
-
-msgid "DMDSERVER stopped"
-msgstr ""
-
-msgid "DMDSERVER restarted"
-msgstr ""
-
-msgid "DMDSERVER started"
-msgstr ""
-
-msgid "MULTISCREENS"
-msgstr ""
-
-msgid "BACKGLASS / INFORMATION SCREEN"
-msgstr ""
-
-msgid "VIDEO OUTPUT"
-msgstr "VIDEOAUSGANG"
-
-msgid "VIDEO MODE"
-msgstr "VIDEOMODUS"
-
-msgid "Sets the display's resolution."
-msgstr ""
-
-msgid "ROTATION"
-msgstr ""
-
-msgid "0 DEGREES"
-msgstr "0 GRAD"
-
-msgid "90 DEGREES"
-msgstr "90 GRAD"
-
-msgid "180 DEGREES"
-msgstr "180 GRAD"
-
-msgid "270 DEGREES"
-msgstr "270 GRAD"
-
-msgid "SCREEN ROTATION"
-msgstr "BILDSCHIRMANZEIGE DREHEN"
-
-msgid "DMD SCREEN"
-msgstr ""
-
 msgid "FRONTEND DEVELOPER OPTIONS"
 msgstr "FRONTEND ENTWICKLEROPTIONEN"
 
@@ -1855,6 +1774,9 @@ msgstr "VSYNC"
 
 msgid "OVERSCAN"
 msgstr "OVERSCAN"
+
+msgid "VIDEO MODE"
+msgstr "VIDEOMODUS"
 
 msgid "Sets the display's resolution for emulationstation."
 msgstr "Legt die Auflösung für Emulationstation fest."
@@ -2033,12 +1955,6 @@ msgstr "EMULATIONSTATION NUR MIT ERSTEM JOYSTICK STEUERN"
 msgid "GUN MOVE TOLERENCE"
 msgstr "WAFFENBEWEGUNG TOLERANZ"
 
-msgid "ENABLE PS3 CONTROLLER SUPPORT"
-msgstr ""
-
-msgid "Might have negative impact on security."
-msgstr ""
-
 msgid "ENABLE HID JOYSTICK DRIVERS"
 msgstr "HID-JOYSTICK TREIBER AKTIVIEREN"
 
@@ -2171,6 +2087,12 @@ msgstr "KODI BEIM BOOTVORGANG STARTEN"
 msgid "HARDWARE"
 msgstr "HARDWARE"
 
+msgid "BRIGHTNESS"
+msgstr "HELLIGKEIT"
+
+msgid "VIDEO OUTPUT"
+msgstr "VIDEOAUSGANG"
+
 msgid "AUDIO OUTPUT"
 msgstr "AUDIOAUSGANG"
 
@@ -2180,6 +2102,21 @@ msgstr "AUDIOPROFIL"
 msgid "Available options can change depending on current audio output."
 msgstr ""
 "Die verfügbaren Optionen können sich je nach aktueller Audioausgabe ändern."
+
+msgid "SCREEN ROTATION"
+msgstr "BILDSCHIRMANZEIGE DREHEN"
+
+msgid "0 DEGREES"
+msgstr "0 GRAD"
+
+msgid "90 DEGREES"
+msgstr "90 GRAD"
+
+msgid "180 DEGREES"
+msgstr "180 GRAD"
+
+msgid "270 DEGREES"
+msgstr "270 GRAD"
 
 msgid "BOOT SPLASH"
 msgstr "BOOT SPLASH"

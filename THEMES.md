@@ -365,19 +365,50 @@ You can now change the order in which elements are rendered by setting `zIndex` 
 	* `text name="logoText"`
 	* `image name="logo"`
 
-### Theme variables
+### Theme static variables
 
-Theme variables can be used to simplify theme construction.  There are 2 types of variables available.
+Theme variables can be used to simplify theme construction.  
+They must be used surrounded by ${ and }. ( ex : ${global.clock} }
+There are 3 types of variables available.
 * System Variables
 * Theme Defined Variables
 
-#### System Variables
+#### Built-in static variables
 
-System variables are system specific and are derived from the values in es_systems.cfg.
-* `system.name`
-* `system.fullName`
-* `system.theme`
+System variables can be used with variables, elements & if conditions.
+
+* system.name
+* system.fullName
+* system.theme
+* global.architecture
+* global.help					( bool )
+* global.clock				( bool )
+* global.cheevos				( bool )
+* global.cheevos.username
+* global.netplay				( bool )
+* global.netplay.username
+* global.language
+* screen.width				( float )
+* screen.height				( float ) 
+* screen.ratio
+* screen.vertical             ( bool )
+* system.cheevos				( bool )
+* system.netplay				( bool )
+* system.savestates			( bool )
+* system.fullName
+* system.group
+* system.hardwareType
+* system.manufacturer
+* system.name
+* system.releaseYear
+* system.releaseYearOrNull
+* system.sortedBy
+* system.theme
+* system.command
+* cheevos.username
 * `lang`  ** Batocera 5.24
+* themePath                 (string)          root folder of the theme (not ending with /)             ** Batocera 5.39
+* currentPath               (string)          folder of current  theme xml file (not ending with /)    ** Batocera 5.39 
 
 #### Theme Defined Variables
 Variables can also be defined in the theme.
@@ -403,34 +434,54 @@ or to specify only a portion of the value of a theme property:
 
 ### Filter using attributes
 
-** Batocera 5.24
-
 System attributes allow filtering elements and adapt display under conditions :
 
 These attributes apply to every XML element in the theme.
 
 * `tinyScreen` - type : BOOLEAN
   
-* Allow elements to be active only with small screens like GPI Case (if true), or disable element with normal screens ( if false )
+  Allow elements to be active only with small screens like GPI Case (if true), or disable element with normal screens ( if false )
   
 * `ifHelpPrompts`- type : BOOLEAN
   
-* Allow elements to be active only if help is visible/invisible in ES menus.
+  Allow elements to be active only if help is visible/invisible in ES menus.
   
 * `lang` - type : STRING
-  * Allow elements to be used only if the lang is the current language in EmulationStation.
-  * lang is 2 lower characters. ( fr, br, en, ru, pt.... )
+  Allow elements to be used only if the lang is the current language in EmulationStation.
+  lang is 2 lower characters. ( fr, br, en, ru, pt.... )
   
 * `ifSubset` - type : STRING
+    
+  Allow filtering elements in a xml file  when subsets are active.   
   
-* BATOCERA 29 : Allow filtering elements in a xml file  when subsets are active.   
+    ```xml
+    <image ifSubset="systemview:horizontal|transparent|legacy, iconview=standard">
+    ```
   
-    ```xml <image ifSubset="systemview:horizontal|transparent|legacy, iconview=standard">```
+  name of the subset followed with  `:`  and the name value in the subset. To test multiple values, split with a comma `|`   
+  To test multiple subsets, split with a comma `,` 
   
-  * name of the subset followed with  `:`  and the name value in the subset. To test multiple values, split with a comma `|` 
-  
-  * To test multiple subsets, split with a comma `,` 
+* `ifArch` - type : STRING
 
+  Allow filtering elements in a xml file based on current architecture. The current list can be found in `getArchString()` at the bottom of [`platform.cpp`](https://github.com/batocera-linux/batocera-emulationstation/blob/master/es-core/src/platform.cpp)
+  
+    ```xml
+    <path ifArch="rpi3,rpi4">./art/lowerspecimages/logo.png</path>
+    ```
+
+* `if` - type : STRING
+
+  Allows to filter any element given a condition expression.
+  
+   ```xml
+   <image if="${screen.height} >= 1080">
+   ```
+   
+   ```xml
+   <image if="${screen.ratio} == '16/9'">
+   ```
+  
+  
 #### Usage in themes
 
 Variables can be used to specify the value of a theme property:
@@ -455,7 +506,9 @@ Variables can be used to specify the value of a theme property:
 
 or to specify only a portion of the value of a theme property:
 
+### Theme dynamic variables
 
+See THEMES_BINDINGS.md for dynamic variables documentation
 
 Reference
 =========
@@ -1418,3 +1471,23 @@ This element is designed to set a list of properties to transform, given a timin
     		EaseInOut
     		Bump
 
+
+Resource overrides
+==================
+
+EmulationStation uses a few elements from its [resources](https://github.com/batocera-linux/batocera-emulationstation/tree/master/resources) folder (by default, `/etc/emulationstation/resources`) in order to draw on-screen elements. These include the little trophy/region/save file icons that appear next to a game's title and the "no boxart available" cartridge. If you would like to override these elements in your theme, simply include a `resources` folder in the root of your theme, and any files in there will take priority over files with the same filename in EmulationStation's resources folder.
+
+Example:
+```
+...
+      theme_set/
+         resources/            
+            cartridge.svg
+```
+
+This would replace the default cartridge image in the theme.
+
+Show Empty Systems
+==================
+
+If you are creating per-system logos and would like to see what all systems look like in your theme on a live install without having to actually have ROMs in each system's folder, simply go to Main Menu → Game Collection Settings → Show Empty Systems

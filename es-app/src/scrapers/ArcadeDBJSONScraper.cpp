@@ -42,27 +42,21 @@ void ArcadeDBScraper::generateRequests(const ScraperSearchParams& params,
 
 bool ArcadeDBScraper::isSupportedPlatform(SystemData* system)
 {
-	return system && system->hasPlatformId(PlatformIds::ARCADE) || system->hasPlatformId(PlatformIds::NEOGEO);
+	return system && system->hasPlatformId(PlatformIds::ARCADE) || system->hasPlatformId(PlatformIds::NEOGEO) || system->hasPlatformId(PlatformIds::LCD_GAMES);
 }
 
-bool ArcadeDBScraper::hasMissingMedia(FileData* file)
+const std::set<Scraper::ScraperMediaSource>& ArcadeDBScraper::getSupportedMedias()
 {
-	if (!Settings::getInstance()->getString("ScrapperImageSrc").empty() && !Utils::FileSystem::exists(file->getMetadata(MetaDataId::Image)))
-		return true;
+	static std::set<ScraperMediaSource> mdds = {
+		ScraperMediaSource::Screenshot,
+		ScraperMediaSource::Box2d,
+		ScraperMediaSource::Marquee,
+		ScraperMediaSource::TitleShot,
+		ScraperMediaSource::Video,
+		ScraperMediaSource::ShortTitle
+	};
 
-	if (!Settings::getInstance()->getString("ScrapperThumbSrc").empty() && !Utils::FileSystem::exists(file->getMetadata(MetaDataId::Thumbnail)))
-		return true;
-
-	if (!Settings::getInstance()->getString("ScrapperLogoSrc").empty() && !Utils::FileSystem::exists(file->getMetadata(MetaDataId::Marquee)))
-		return true;
-
-	if (Settings::getInstance()->getBool("ScrapeTitleShot") && !Utils::FileSystem::exists(file->getMetadata(MetaDataId::TitleShot)))
-		return true;
-
-	if (Settings::getInstance()->getBool("ScrapeVideos") && !Utils::FileSystem::exists(file->getMetadata(MetaDataId::Video)))
-		return true;
-
-	return false;
+	return mdds;
 }
 
 namespace
@@ -124,9 +118,9 @@ std::string findMedia(const Value& v, std::string scrapeSource)
 
 void processGame(const Value& game, std::vector<ScraperSearchResult>& results)
 {
-	ScraperSearchResult result;
-
-	if (game.HasMember("short_title") && game["short_title"].IsString())
+	ScraperSearchResult result("ArcadeDB");
+	
+	if (Settings::getInstance()->getBool("ScrapeShortTitle") && game.HasMember("short_title") && game["short_title"].IsString())
 		result.mdl.set(MetaDataId::Name, getStringOrThrow(game, "short_title"));
 	else
 		result.mdl.set(MetaDataId::Name, getStringOrThrow(game, "title"));

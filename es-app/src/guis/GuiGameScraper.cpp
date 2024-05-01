@@ -19,6 +19,7 @@ GuiGameScraper::GuiGameScraper(Window* window, ScraperSearchParams params, std::
 	mBox.setEdgeColor(theme->Background.color);
 	mBox.setCenterColor(theme->Background.centerColor);
 	mBox.setCornerSize(theme->Background.cornerSize);
+	mBox.setPostProcessShader(theme->Background.menuShader);
 
 	PowerSaver::pause();
 	addChild(&mBox);
@@ -44,11 +45,11 @@ GuiGameScraper::GuiGameScraper(Window* window, ScraperSearchParams params, std::
 	// buttons
 	std::vector< std::shared_ptr<ButtonComponent> > buttons;
 
-	buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("INPUT"), _("SEARCH"), [&] { // batocera
+	buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("INPUT"), _("SEARCH"), [&] {
 		mSearch->openInputScreen(mSearchParams);
 		mGrid.resetCursor();
 	}));
-	buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("CANCEL"), _("CANCEL"), [&] { delete this; })); // batocera
+	buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("CANCEL"), _("CANCEL"), [&] { delete this; }));
 	mButtonGrid = makeButtonGrid(mWindow, buttons);
 
 	mGrid.setEntry(mButtonGrid, Vector2i(0, 6), true, false);
@@ -78,7 +79,7 @@ GuiGameScraper::GuiGameScraper(Window* window, ScraperSearchParams params, std::
 	mSearch->setAcceptCallback([this, doneFunc](const ScraperSearchResult& result) { doneFunc(result); close(); });
 	mSearch->setCancelCallback([&] { delete this; });
 
-	if (Renderer::isSmallScreen())
+	if (Renderer::ScreenSettings::fullScreenMenus())
 		setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
 	else
 		setSize(Renderer::getScreenWidth() * 0.90f, Renderer::getScreenHeight() * 0.85f);
@@ -91,6 +92,8 @@ GuiGameScraper::GuiGameScraper(Window* window, ScraperSearchParams params, std::
 
 void GuiGameScraper::onSizeChanged()
 {
+	GuiComponent::onSizeChanged();
+
 	mBox.fitTo(mSize, Vector3f::Zero(), Vector2f(-32, -32));
 
 	mGrid.setRowHeightPerc(0, 0.04f, false);

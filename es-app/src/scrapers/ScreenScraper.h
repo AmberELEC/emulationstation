@@ -21,8 +21,9 @@ public:
 		std::vector<ScraperSearchResult>& results) override;
 
 	bool isSupportedPlatform(SystemData* system) override;
-	bool hasMissingMedia(FileData* file) override;
 	int getThreadCount(std::string &result) override;
+
+	const std::set<ScraperMediaSource>& getSupportedMedias() override;
 };
 
 struct ScreenScraperUser
@@ -80,7 +81,7 @@ public:
 
 protected:
 	bool process(HttpReq* request, std::vector<ScraperSearchResult>& results) override;
-	std::string ensureUrl(const std::string url);
+	std::string ensureUrl(const std::string& url);
 	
 	void processGame(const pugi::xml_document& xmldoc, std::vector<ScraperSearchResult>& results);
 	bool isGameRequest() { return !mRequestQueue; }

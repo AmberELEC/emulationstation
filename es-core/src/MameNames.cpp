@@ -4,6 +4,7 @@
 #include "utils/FileSystemUtil.h"
 #include "Log.h"
 #include <pugixml/src/pugixml.hpp>
+#include "utils/StringUtil.h"
 #include <string.h>
 
 MameNames* MameNames::sInstance = nullptr;
@@ -34,81 +35,178 @@ MameNames* MameNames::getInstance()
 
 } // getInstance
 
+static ArcadeRomType& operator |=(ArcadeRomType& a, ArcadeRomType b)
+{
+	unsigned ai = static_cast<unsigned>(a);
+	unsigned bi = static_cast<unsigned>(b);
+	ai |= bi;
+	return a = static_cast<ArcadeRomType>(ai);
+}
+
+static bool hasFlag(ArcadeRomType& a, ArcadeRomType b)
+{
+	unsigned ai = static_cast<unsigned>(a);
+	unsigned bi = static_cast<unsigned>(b);
+	return (ai & bi) == bi;
+}
+
 MameNames::MameNames()
 {
-	std::string xmlpath = ResourceManager::getInstance()->getResourcePath(":/mamenames.xml");
-
-	if(!Utils::FileSystem::exists(xmlpath))
-		return;
-
-	LOG(LogInfo) << "Parsing XML file \"" << xmlpath << "\"...";
+	std::string xmlpath;
 
 	pugi::xml_document doc;
-	pugi::xml_parse_result result = doc.load_file(xmlpath.c_str());
+	pugi::xml_parse_result result;
 
-	if(!result)
-	{
-		LOG(LogError) << "Error parsing XML file \"" << xmlpath << "\"!\n	" << result.description();
-		return;
-	}
-
-	std::string sTrue = "true";
-	for(pugi::xml_node gameNode = doc.child("game"); gameNode; gameNode = gameNode.next_sibling("game"))
-	{
-		NamePair namePair = { gameNode.child("mamename").text().get(), gameNode.child("realname").text().get() };
-		mNamePairs.push_back(namePair);
-
-		if (gameNode.attribute("vert") && gameNode.attribute("vert").value() == sTrue)
-			mVerticalGames.insert(namePair.mameName);
-
-		if (gameNode.attribute("gun") && gameNode.attribute("gun").value() == sTrue)
-			mLightGunGames.insert(namePair.mameName);
-	}
-	
-	// Read bios
-	xmlpath = ResourceManager::getInstance()->getResourcePath(":/mamebioses.xml");
- 	
-	if(!Utils::FileSystem::exists(xmlpath))
-		return;
- 	
-	LOG(LogInfo) << "Parsing XML file \"" << xmlpath << "\"...";
- 	
-	result = doc.load_file(xmlpath.c_str());
- 	
-	if(!result)
-	{
-		LOG(LogError) << "Error parsing XML file \"" << xmlpath << "\"!\n	" << result.description();
-		return;
-	}
- 	
-	for(pugi::xml_node biosNode = doc.child("bios"); biosNode; biosNode = biosNode.next_sibling("bios"))
-	{
-		std::string bios = biosNode.text().get();
-		mMameBioses.insert(bios);
-	}
-	
-	// Read devices
-	xmlpath = ResourceManager::getInstance()->getResourcePath(":/mamedevices.xml");
- 	
-	if(!Utils::FileSystem::exists(xmlpath))
-		return;
- 	
-	LOG(LogInfo) << "Parsing XML file \"" << xmlpath << "\"...";
- 	
-	result = doc.load_file(xmlpath.c_str());
- 	
-	if(!result)
-	{
-		LOG(LogError) << "Error parsing XML file \"" << xmlpath << "\"!\n	" << result.description();
-		return;
-	}
- 	
-	for(pugi::xml_node deviceNode = doc.child("device"); deviceNode; deviceNode = deviceNode.next_sibling("device"))
+	// Read mame games information
+	xmlpath = ResourceManager::getInstance()->getResourcePath(":/arcaderoms.xml");
+	if (Utils::FileSystem::exists(xmlpath))
 	{		
-		std::string device = deviceNode.text().get();
-		mMameDevices.insert(device);
-	}
+		result = doc.load_file(WINSTRINGW(xmlpath).c_str());
+		if (result)
+		{
+			LOG(LogInfo) << "Parsing XML file \"" << xmlpath << "\"...";
 
+			pugi::xml_node games = doc.child("roms");
+			if (games)
+			{
+				std::string sTrue = "true";
+				for (pugi::xml_node gameNode = games.child("rom"); gameNode; gameNode = gameNode.next_sibling("rom"))
+				{
+					if (!gameNode.attribute("id"))
+						continue;
+
+					std::string name = gameNode.attribute("id").value();
+
+					ArcadeRom rom;
+
+					if (gameNode.attribute("device") && gameNode.attribute("device").value() == sTrue)
+					{
+						rom.type |= ArcadeRomType::DEVICE;
+						mArcadeRoms[name] = rom;
+						continue;
+					}
+
+					if (gameNode.attribute("bios") && gameNode.attribute("bios").value() == sTrue)
+					{
+						rom.type |= ArcadeRomType::BIOS;
+						mArcadeRoms[name] = rom;
+						continue;
+					}
+
+					if (!gameNode.attribute("name"))
+						continue;
+
+					rom.displayName = gameNode.attribute("name").value();
+
+					if (gameNode.attribute("vert") && gameNode.attribute("vert").value() == sTrue)
+						rom.type |= ArcadeRomType::VERTICAL;
+
+					//if (gameNode.attribute("gun") && gameNode.attribute("gun").value() == sTrue)
+					//	rom.type |= ArcadeRomType::LIGHTGUN;
+
+					//if (gameNode.attribute("wheel") && gameNode.attribute("wheel").value() == sTrue)
+					//	rom.type |= ArcadeRomType::WHEEL;
+
+					mArcadeRoms[name] = rom;
+				}
+			}
+			else
+				LOG(LogError) << "Error parsing XML file \"" << xmlpath << "\" <roms> root is missing !";
+		}
+		else
+			LOG(LogError) << "Error parsing XML file \"" << xmlpath << "\"!\n	" << result.description();
+	}
+	
+	// Read gun games for non arcade systems
+	xmlpath = ResourceManager::getInstance()->getResourcePath(":/gamesdb.xml");
+	if (Utils::FileSystem::exists(xmlpath))
+	{
+		result = doc.load_file(WINSTRINGW(xmlpath).c_str());
+		if (result)
+		{
+			pugi::xml_node systems = doc.child("systems");
+			if (systems)
+			{
+				LOG(LogInfo) << "Parsing XML file \"" << xmlpath;
+
+				for (pugi::xml_node systemNode = systems.child("system"); systemNode; systemNode = systemNode.next_sibling("system"))
+				{
+					if (!systemNode.attribute("name"))
+						continue;
+
+					std::string systemNames = systemNode.attribute("name").value();
+					for (auto systemName : Utils::String::split(systemNames, ','))
+					{
+						std::unordered_set<std::string> gunGames;
+						std::unordered_set<std::string> wheelGames;
+
+						for (pugi::xml_node gameNode = systemNode.child("game"); gameNode; gameNode = gameNode.next_sibling("game"))
+						{
+							if (!gameNode.attribute("name"))
+								continue;
+
+							std::string gameName = gameNode.attribute("name").value();
+							if (gameName.empty() || gameName == "default")
+								continue;
+								
+							if (gameNode.child("gun"))
+								gunGames.insert(gameName);
+
+							if (gameNode.child("wheel"))
+								wheelGames.insert(gameName);
+						}
+
+						if (gunGames.size())
+						{
+							if (systemNames == "arcade")
+							{
+								for (auto game : gunGames)
+								{
+									auto it = mArcadeRoms.find(game);
+									if (it == mArcadeRoms.cend())
+									{
+										ArcadeRom rom;
+										rom.type |= ArcadeRomType::LIGHTGUN;
+										mArcadeRoms[game] = rom;
+									}
+									else 
+										it->second.type |= ArcadeRomType::LIGHTGUN;
+								}
+							}
+							else
+								mNonArcadeGunGames[Utils::String::trim(systemName)] = gunGames;
+						}
+
+						if (wheelGames.size())
+						{
+							if (systemNames == "arcade")
+							{
+								for (auto game : wheelGames)
+								{
+									auto it = mArcadeRoms.find(game);
+									if (it == mArcadeRoms.cend())
+									{
+										ArcadeRom rom;
+										rom.type |= ArcadeRomType::WHEEL;
+										mArcadeRoms[game] = rom;
+									}
+									else
+										it->second.type |= ArcadeRomType::WHEEL;
+								}
+							}
+							else
+								mNonArcadeWheelGames[Utils::String::trim(systemName)] = wheelGames;
+						}
+					}	
+				}
+			}
+			else 
+				LOG(LogError) << "Error parsing XML file \"" << xmlpath << "\" <systems> root is missing !";
+		}
+		else
+			LOG(LogError) << "Error parsing XML file \"" << xmlpath << "\"!\n	" << result.description();
+	}
+	
 } // MameNames
 
 MameNames::~MameNames()
@@ -118,39 +216,106 @@ MameNames::~MameNames()
 
 std::string MameNames::getRealName(const std::string& _mameName)
 {
-	size_t start = 0;
-	size_t end   = mNamePairs.size();
-
-	while(start < end)
-	{
-		const size_t index   = (start + end) / 2;
-		const int    compare = strcmp(mNamePairs[index].mameName.c_str(), _mameName.c_str());
-
-		if(compare < 0)       start = index + 1;
-		else if( compare > 0) end   = index;
-		else                  return mNamePairs[index].realName;
-	}
+	auto it = mArcadeRoms.find(_mameName);
+	if (it != mArcadeRoms.cend() && !it->second.displayName.empty())
+		return it->second.displayName;
 
 	return _mameName;
 
 } // getRealName
 
-const bool MameNames::isBios(const std::string& _biosName)
+const bool MameNames::isBiosOrDevice(const std::string& _biosName)
 {
-	return (mMameBioses.find(_biosName) != mMameBioses.cend());
-} // isBios
+	auto it = mArcadeRoms.find(_biosName);
+	if (it != mArcadeRoms.cend())
+		return hasFlag(it->second.type, ArcadeRomType::BIOS) || hasFlag(it->second.type, ArcadeRomType::DEVICE);
 
-const bool MameNames::isDevice(const std::string& _deviceName)
-{
-	return (mMameDevices.find(_deviceName) != mMameDevices.cend());
-} // isDevice
+	return false;	
+}
 
 const bool MameNames::isVertical(const std::string& _nameName)
 {
-	return (mVerticalGames.find(_nameName) != mVerticalGames.cend());
+	auto it = mArcadeRoms.find(_nameName);
+	if (it != mArcadeRoms.cend())
+		return hasFlag(it->second.type, ArcadeRomType::VERTICAL);
+
+	return false;
 }
 
-const bool MameNames::isLightgun(const std::string& _nameName)
+static std::string getIndexedName(const std::string& name)
 {
-	return (mLightGunGames.find(_nameName) != mLightGunGames.cend());
+	std::string result;
+
+	bool inpar = false;
+	bool inblock = false;
+
+	for (auto c : Utils::String::toLower(name))
+	{
+		if (!inpar && !inblock && (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9'))
+			result += c;
+		else if (c == '(') inpar = true;
+		else if (c == ')') inpar = false;
+		else if (c == '[') inblock = true;
+		else if (c == ']') inblock = false;
+	}
+
+	return result;
+}
+
+const bool MameNames::isLightgun(const std::string& _nameName, const std::string& systemName, bool isArcade)
+{
+	if (isArcade)
+	{
+		auto it = mArcadeRoms.find(_nameName);
+		if (it != mArcadeRoms.cend())
+			return hasFlag(it->second.type, ArcadeRomType::LIGHTGUN);
+
+		return false;
+	}
+
+	auto it = mNonArcadeGunGames.find(systemName);
+	if (it == mNonArcadeGunGames.cend())
+		return false;
+
+	std::string indexedName = getIndexedName(_nameName);
+
+	// Exact match ?
+	if (it->second.find(indexedName) != it->second.cend())
+		return true;
+
+	// name contains ?
+	for (auto gameName : it->second)
+		if (indexedName.find(gameName) != std::string::npos)
+			return true;
+
+	return false;
+}
+
+const bool MameNames::isWheel(const std::string& _nameName, const std::string& systemName, bool isArcade)
+{
+	if (isArcade)
+	{
+		auto it = mArcadeRoms.find(_nameName);
+		if (it != mArcadeRoms.cend())
+			return hasFlag(it->second.type, ArcadeRomType::WHEEL);
+
+		return false;
+	}
+
+	auto it = mNonArcadeWheelGames.find(systemName);
+	if (it == mNonArcadeWheelGames.cend())
+		return false;
+
+	std::string indexedName = getIndexedName(_nameName);
+
+	// Exact match ?
+	if (it->second.find(indexedName) != it->second.cend())
+		return true;
+
+	// name contains ?
+	for (auto gameName : it->second)
+		if (indexedName.find(gameName) != std::string::npos)
+			return true;
+
+	return false;
 }

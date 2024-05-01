@@ -4,6 +4,7 @@
 
 #include "VideoComponent.h"
 #include "ThemeData.h"
+#include "renderers/Renderer.h"
 #include <mutex>
 
 struct libvlc_instance_t;
@@ -56,9 +57,9 @@ class VideoVlcComponent : public VideoComponent
 	};
 
 public:
-	static void setupVLC(std::string subtitles);
+	static void init();
 
-	VideoVlcComponent(Window* window, std::string subtitles="");
+	VideoVlcComponent(Window* window);
 	virtual ~VideoVlcComponent();
 
 	void render(const Transform4x4f& parentTrans) override;
@@ -90,6 +91,14 @@ public:
 	bool getLinearSmooth() { return mLinearSmooth; }
 	void setLinearSmooth(bool value = true) { mLinearSmooth = value; }
 
+	void setSaturation(float saturation);
+
+	void setRoundCorners(float value) override;
+	void onSizeChanged() override;
+	void onPaddingChanged() override;
+	
+	Vector2f getSize() const override;
+
 private:
 	// Calculates the correct mSize from our resizing information (set by setResize/setMaxSize).
 	// Used internally whenever the resizing parameters or texture change.
@@ -98,6 +107,11 @@ private:
 	virtual void startVideo();
 	// Stop the video
 	virtual void stopVideo();
+
+	virtual void pauseVideo();
+	virtual void resumeVideo();
+	virtual bool isPaused();
+
 	// Handle looping the video. Must be called periodically
 	virtual void handleLooping();
 
@@ -107,6 +121,8 @@ private:
 	void freeContext();
 
 private:
+	void crop(float left, float top, float right, float bot);
+
 	static libvlc_instance_t*		mVLC;
 	libvlc_media_t*					mMedia;
 	libvlc_media_player_t*			mMediaPlayer;
@@ -115,6 +131,7 @@ private:
 
 	std::string					    mSubtitlePath;
 	std::string					    mSubtitleTmpFile;
+	Renderer::ShaderInfo			mCustomShader;
 
 	VideoVlcFlags::VideoVlcEffect	mEffect;
 
@@ -125,6 +142,17 @@ private:
 	int								mLoops;
 
 	bool							mLinearSmooth;
+	float							mSaturation;
+
+	void updateVertices();
+	void updateColors();
+	void updateRoundCorners();
+	
+	Renderer::Vertex				mVertices[4];
+	std::vector<Renderer::Vertex>	mRoundCornerStencil;
+
+	Vector2f mTopLeftCrop;
+	Vector2f mBottomRightCrop;
 };
 
 #endif // ES_CORE_COMPONENTS_VIDEO_VLC_COMPONENT_H

@@ -49,12 +49,12 @@ public:
 		return mVolume;
 	}
 
-	void setVolume(int value)
+	void setVolume(int value, bool setSinkVolume = true)
 	{
-		if (mContext == nullptr)
-			return;
-
 		mVolume = value;
+		
+		if (mContext == nullptr || !setSinkVolume)
+			return;
 
 		pa_operation* o = pa_context_get_sink_info_by_name(mContext, DEFAULT_SINK_NAME, set_sink_volume_callback, this);
       	if (o != NULL)
@@ -98,7 +98,6 @@ public:
 		LOG(LogDebug) << "PulseAudioControl End Mainloop";
 	}
 
-
 private:
 	static void quit(void* userdata, int code)
 	{
@@ -125,7 +124,7 @@ private:
 			pThis->mMute = i->mute;
 			pThis->mVolume = (unsigned)(((uint64_t) i->volume.values[channel] * 100 + (uint64_t)PA_VOLUME_NORM / 2) / (uint64_t)PA_VOLUME_NORM);
 		}
-}
+	}
 
 	static void set_sink_volume_callback(pa_context *c, const pa_sink_info *i, int is_last, void *userdata)
 	{
@@ -229,7 +228,7 @@ std::weak_ptr<VolumeControl> VolumeControl::sInstance;
 
 
 VolumeControl::VolumeControl()
-	: originalVolume(0), internalVolume(0)
+	: internalVolume(0)
 #if defined (__APPLE__)
 	#error TODO: Not implemented for MacOS yet!!!
 #elif defined(__linux__)
@@ -239,24 +238,16 @@ VolumeControl::VolumeControl()
 #endif
 {
 	init();
-
-	//get original volume levels for system
-	originalVolume = getVolume();
 }
 
 VolumeControl::~VolumeControl()
 {
-	//set original volume levels for system
-	//setVolume(originalVolume);
-
 #ifdef _ENABLE_PULSE_
-  if (PulseAudio.isReady())
-    {
-      PulseAudio.exit();
-    }
- #endif
+	if (PulseAudio.isReady())
+		PulseAudio.exit();
+#endif
 
-  deinit();
+	deinit();
 }
 
 std::shared_ptr<VolumeControl> & VolumeControl::getInstance()
@@ -278,7 +269,10 @@ void VolumeControl::init()
 #elif defined(__linux__)
 
 #ifdef _ENABLE_PULSE_
-  return;
+	// Read initial volume from systemconf
+	std::string volume = SystemConf::getInstance()->get("audio.volume");
+	PulseAudio.setVolume(volume.empty() ? 100 : Utils::String::toInteger(volume), false);
+	return;
 #endif
 
 	//try to open mixer device
@@ -498,9 +492,7 @@ int VolumeControl::getVolume() const
 #elif defined(__linux__)
 
 #ifdef _ENABLE_PULSE_
-	if (PulseAudio.isReady())
-	  return PulseAudio.getVolume();
-	return 100;
+	return PulseAudio.getVolume();	
 #endif
 
 	if (mixerElem != nullptr)

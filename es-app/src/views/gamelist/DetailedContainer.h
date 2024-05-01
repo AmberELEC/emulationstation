@@ -77,6 +77,8 @@ protected:
 	bool anyComponentHasStoryBoard();
 	bool anyComponentHasStoryBoardRunning();
 
+	void handleStoryBoard(GuiComponent* comp, bool activate, int moveBy, bool recursive = true);
+
 	ISimpleGameListView* mParent;
 	GuiComponent* mList;
 	Window* mWindow;
@@ -88,6 +90,10 @@ protected:
 	void createVideo();
 	void createImageComponent(ImageComponent** pImage, bool forceLoad = false, bool allowFading = false);
 	void loadIfThemed(ImageComponent** pImage, const std::shared_ptr<ThemeData>& theme, const std::string& element, bool forceLoad = false, bool loadPath = false);
+	void loadThemedExtras(FileData* file);
+	void resetThemedExtras();
+
+	std::string     mPerGameExtrasPath;
 
 	ImageComponent* mImage;
 	ImageComponent* mThumbnail;
@@ -107,6 +113,9 @@ protected:
 	ImageComponent* mCheevos;
 	ImageComponent* mNotCheevos;
 
+	ImageComponent* mNetplay;
+	ImageComponent* mNotNetplay;
+
 	ImageComponent* mManual;
 	ImageComponent* mNoManual;
 
@@ -115,6 +124,12 @@ protected:
 
 	ImageComponent* mSaveState;
 	ImageComponent* mNoSaveState;
+
+	ImageComponent* mGunGame;
+	ImageComponent* mNotGunGame;
+
+  	ImageComponent* mWheelGame;
+	ImageComponent* mNotWheelGame;
 
 	TextComponent mLblRating, mLblReleaseDate, mLblDeveloper, mLblPublisher, mLblGenre, mLblPlayers, mLblLastPlayed, mLblPlayCount, mLblGameTime, mLblFavorite;
 	TextComponent mDeveloper, mPublisher, mGenre, mPlayers, mPlayCount, mName, mGameTime, mTextFavorite;
@@ -128,6 +143,9 @@ protected:
 
 	void createFolderGrid(Vector2f targetSize, std::vector<std::string> thumbs);
 	ComponentGrid* mFolderView;
+
+	std::shared_ptr<ThemeData> mTheme;
+	std::shared_ptr<ThemeData> mCustomTheme;
 
 	bool		mState;
 };

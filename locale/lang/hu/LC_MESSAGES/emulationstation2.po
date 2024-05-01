@@ -869,9 +869,6 @@ msgstr "STEAMDECK EGÉR/PISZTOLY BEÁLLÍTÁSOK"
 msgid "BLUETOOTH"
 msgstr "BLUETOOTH"
 
-msgid "ENABLE BLUETOOTH"
-msgstr ""
-
 msgid "PAIR BLUETOOTH PADS AUTOMATICALLY"
 msgstr "BLUETOOTH-PADOK AUTOMATIKUS PÁROSÍTÁSA"
 
@@ -880,9 +877,6 @@ msgstr "BLUETOOTH-ESZKÖZ MANUÁLIS PÁROSÍTÁSA"
 
 msgid "DISPLAY OPTIONS"
 msgstr "BEÁLLÍTÁSOK MEGJELENÍTÉSE"
-
-msgid "SHOW CONTROLLER NOTIFICATIONS"
-msgstr ""
 
 msgid "SHOW CONTROLLER ACTIVITY"
 msgstr "KONTROLLER AKTIVITÁS MEGJELENÍTÉSE"
@@ -1757,81 +1751,6 @@ msgstr "ÍRJA BE MOST A KÓDOT A FELOLDÁSHOZ"
 msgid "SERVICES"
 msgstr "SZOLGÁLTATÁSOK"
 
-msgid "DMD"
-msgstr ""
-
-msgid "SERVER"
-msgstr ""
-
-msgid "DMDSERVER (for real dmd)"
-msgstr ""
-
-msgid "SIMULATOR (for web dmd)"
-msgstr ""
-
-msgid "dmd server"
-msgstr ""
-
-msgid "FORMAT"
-msgstr ""
-
-msgid "dmd matrix size"
-msgstr ""
-
-msgid "MATRIX"
-msgstr ""
-
-msgid "rgb dmd order"
-msgstr ""
-
-msgid "BRIGHTNESS"
-msgstr "FÉNYERŐ"
-
-msgid "DMDSERVER stopped"
-msgstr ""
-
-msgid "DMDSERVER restarted"
-msgstr ""
-
-msgid "DMDSERVER started"
-msgstr ""
-
-msgid "MULTISCREENS"
-msgstr ""
-
-msgid "BACKGLASS / INFORMATION SCREEN"
-msgstr ""
-
-msgid "VIDEO OUTPUT"
-msgstr "VIDEÓ KIMENET"
-
-msgid "VIDEO MODE"
-msgstr "VIDEO MÓD"
-
-msgid "Sets the display's resolution."
-msgstr ""
-
-msgid "ROTATION"
-msgstr ""
-
-msgid "0 DEGREES"
-msgstr "0 FOK"
-
-msgid "90 DEGREES"
-msgstr "90 FOK"
-
-msgid "180 DEGREES"
-msgstr "180 FOK"
-
-msgid "270 DEGREES"
-msgstr "270 FOK"
-
-msgid "SCREEN ROTATION"
-msgstr "KÉPERNYŐ ELFORGATÁSA"
-
-msgid "DMD SCREEN"
-msgstr ""
-
 msgid "FRONTEND DEVELOPER OPTIONS"
 msgstr "FRONTEND FEJLESZTŐI BEÁLLÍTÁSOK"
 
@@ -1852,6 +1771,9 @@ msgstr "VSYNC"
 
 msgid "OVERSCAN"
 msgstr "OVERSCAN"
+
+msgid "VIDEO MODE"
+msgstr "VIDEO MÓD"
 
 msgid "Sets the display's resolution for emulationstation."
 msgstr "Kijelző felbontás beállítása az emulációhoz."
@@ -2029,12 +1951,6 @@ msgstr "AZ ES VEZÉRLÉSE CSAK AZ EGYES SZÁMÚ VEZÉRLŐVEL"
 msgid "GUN MOVE TOLERENCE"
 msgstr "FEGYVERMOZGÁS TŰRÉSHATÁR"
 
-msgid "ENABLE PS3 CONTROLLER SUPPORT"
-msgstr ""
-
-msgid "Might have negative impact on security."
-msgstr ""
-
 msgid "ENABLE HID JOYSTICK DRIVERS"
 msgstr "ENGEDÉLYEZZE A HID JOYSTICK-ILLESZTŐPROGRAMOKAT"
 
@@ -2171,6 +2087,12 @@ msgstr "KODI INDULÁSKOR"
 msgid "HARDWARE"
 msgstr "HARDVER"
 
+msgid "BRIGHTNESS"
+msgstr "FÉNYERŐ"
+
+msgid "VIDEO OUTPUT"
+msgstr "VIDEÓ KIMENET"
+
 msgid "AUDIO OUTPUT"
 msgstr "HANG KIMENET"
 
@@ -2180,6 +2102,21 @@ msgstr "HANGPROFIL"
 msgid "Available options can change depending on current audio output."
 msgstr ""
 "Az elérhető beállítások az aktuális hangkimenettől függően változhatnak."
+
+msgid "SCREEN ROTATION"
+msgstr "KÉPERNYŐ ELFORGATÁSA"
+
+msgid "0 DEGREES"
+msgstr "0 FOK"
+
+msgid "90 DEGREES"
+msgstr "90 FOK"
+
+msgid "180 DEGREES"
+msgstr "180 FOK"
+
+msgid "270 DEGREES"
+msgstr "270 FOK"
 
 msgid "BOOT SPLASH"
 msgstr "RENDSZERINDÍTÁS KEZDŐKÉP"

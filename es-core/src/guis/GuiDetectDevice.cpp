@@ -19,6 +19,7 @@ GuiDetectDevice::GuiDetectDevice(Window* window, bool firstRun, const std::funct
 	mBackground.setEdgeColor(theme->Background.color);
 	mBackground.setCenterColor(theme->Background.centerColor);
 	mBackground.setCornerSize(theme->Background.cornerSize);
+	mBackground.setPostProcessShader(theme->Background.menuShader);
 
 	mHoldingConfig = NULL;
 	mHoldTime = 0;
@@ -28,41 +29,41 @@ GuiDetectDevice::GuiDetectDevice(Window* window, bool firstRun, const std::funct
 	addChild(&mGrid);
 	
 	// title
-	mTitle = std::make_shared<TextComponent>(mWindow, firstRun ? _("WELCOME") : _("CONFIGURE INPUT"), // batocera
-		theme->Title.font, theme->Title.color, ALIGN_CENTER);
+	mTitle = std::make_shared<TextComponent>(mWindow, firstRun ? _("WELCOME") : _("CONFIGURE INPUT"), theme->Title.font, theme->Title.color, ALIGN_CENTER);
 	mGrid.setEntry(mTitle, Vector2i(0, 0), false, true, Vector2i(1, 1), GridFlags::BORDER_BOTTOM);
 
 	// device info
 	std::stringstream deviceInfo;
 	int numDevices = InputManager::getInstance()->getNumJoysticks();
 	
-	if(numDevices > 0) {
+	if(numDevices > 0) 
+	{
 	  char strbuf[256];
-	  snprintf(strbuf, 256, ngettext("%i GAMEPAD DETECTED", "%i GAMEPADS DETECTED", numDevices), numDevices); // batocera
+	  snprintf(strbuf, 256, ngettext("%i GAMEPAD DETECTED", "%i GAMEPADS DETECTED", numDevices), numDevices); 
 	  deviceInfo << strbuf;
 	}
 	else
-		deviceInfo << _("NO GAMEPADS DETECTED"); // batocera
+		deviceInfo << _("NO GAMEPADS DETECTED"); 
+
 	mDeviceInfo = std::make_shared<TextComponent>(mWindow, deviceInfo.str(), theme->TextSmall.font, theme->TextSmall.color, ALIGN_CENTER);
 	mGrid.setEntry(mDeviceInfo, Vector2i(0, 1), false, true);
 
 	// message
-	mMsg1 = std::make_shared<TextComponent>(mWindow, _("HOLD A BUTTON ON YOUR DEVICE TO CONFIGURE IT."), theme->TextSmall.font, theme->Text.color, ALIGN_CENTER); // batocera
+	mMsg1 = std::make_shared<TextComponent>(mWindow, _("HOLD A BUTTON ON YOUR DEVICE TO CONFIGURE IT."), theme->TextSmall.font, theme->Text.color, ALIGN_CENTER); 
 	mGrid.setEntry(mMsg1, Vector2i(0, 2), false, true);
-
-	// batocera
-	if(firstRun) {
-	  mMsg2 = std::make_shared<TextComponent>(mWindow, "", theme->TextSmall.font, theme->Text.color, ALIGN_CENTER); // batocera
-	} else {
-	  mMsg2 = std::make_shared<TextComponent>(mWindow, "", theme->TextSmall.font, theme->Text.color, ALIGN_CENTER); // batocera
-	}
+	
+	if(firstRun)
+	  mMsg2 = std::make_shared<TextComponent>(mWindow, _("PRESS ESC TO CANCEL."), theme->TextSmall.font, theme->Text.color, ALIGN_CENTER);
+	else
+	  mMsg2 = std::make_shared<TextComponent>(mWindow, _("PRESS ESC OR A HOTKEY TO CANCEL."), theme->TextSmall.font, theme->Text.color, ALIGN_CENTER);
+	
 	mGrid.setEntry(mMsg2, Vector2i(0, 3), false, true);
 
 	// currently held device
 	mDeviceHeld = std::make_shared<TextComponent>(mWindow, "", theme->Text.font, theme->Text.selectedColor, ALIGN_CENTER);
 	mGrid.setEntry(mDeviceHeld, Vector2i(0, 4), false, true);
 
-	if (Renderer::isSmallScreen())
+	if (Renderer::ScreenSettings::fullScreenMenus())
 		setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
 	else
 		setSize(Renderer::getScreenWidth() * 0.6f, Renderer::getScreenHeight() * 0.5f);
@@ -72,22 +73,32 @@ GuiDetectDevice::GuiDetectDevice(Window* window, bool firstRun, const std::funct
 
 void GuiDetectDevice::onSizeChanged()
 {
+	GuiComponent::onSizeChanged();
+
 	mBackground.fitTo(mSize, Vector3f::Zero(), Vector2f(-32, -32));
 
 	// grid
 	mGrid.setSize(mSize);
-	mGrid.setRowHeightPerc(0, mTitle->getFont()->getHeight() / mSize.y());
-	//mGrid.setRowHeightPerc(1, mDeviceInfo->getFont()->getHeight() / mSize.y());
-	mGrid.setRowHeightPerc(2, mMsg1->getFont()->getHeight() / mSize.y());
-	mGrid.setRowHeightPerc(3, mMsg2->getFont()->getHeight() / mSize.y());
-	//mGrid.setRowHeightPerc(4, mDeviceHeld->getFont()->getHeight() / mSize.y());
+	mGrid.setRowHeight(0, mTitle->getFont()->getHeight() * 1.1f);	
+	mGrid.setRowHeight(2, mMsg1->getFont()->getHeight());
+	mGrid.setRowHeight(3, mMsg2->getFont()->getHeight());	
 }
 
 bool GuiDetectDevice::input(InputConfig* config, Input input)
 {
 	PowerSaver::pause();
+
+	if (input.device == DEVICE_MOUSE)
+		return true;
+
+#ifdef _ENABLEEMUELEC
 	if(!mFirstRun && (input.device == DEVICE_KEYBOARD && input.type == TYPE_KEY && input.value && input.id == SDLK_ESCAPE) ||
 	                 (input.device != DEVICE_KEYBOARD && config->isMappedTo("HotKeyEnable", input)))
+#else
+	if(!mFirstRun && (input.device == DEVICE_KEYBOARD && input.type == TYPE_KEY && input.value && input.id == SDLK_ESCAPE) ||
+	                 (input.device != DEVICE_KEYBOARD && config->isMappedTo("hotkey", input))) 
+
+#endif
 	{
 		// cancel configuring
 		PowerSaver::resume();

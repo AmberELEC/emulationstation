@@ -27,6 +27,11 @@
 #include "guis/GuiSaveState.h"
 #include "SystemConf.h"
 
+#ifdef _ENABLEEMUELEC
+#include <regex>
+#include "utils/Platform.h"
+#endif
+
 GuiGameOptions::GuiGameOptions(Window* window, FileData* game) : GuiComponent(window),
 	mMenu(window, game->getName()), mReloadAll(false)
 {
@@ -124,7 +129,7 @@ GuiGameOptions::GuiGameOptions(Window* window, FileData* game) : GuiComponent(wi
 				{
 					GuiGameAchievements::show(window, Utils::String::toInteger(game->getMetadata(MetaDataId::CheevosId)));
 					close();
-				}, "", false, true, true);
+				}, "", false, true);
 			}
 			else
 			{
@@ -142,18 +147,22 @@ GuiGameOptions::GuiGameOptions(Window* window, FileData* game) : GuiComponent(wi
 	{
 		mMenu.addGroup(_("GAME"));
 
+ 
 		if (SaveStateRepository::isEnabled(game))
 		{
 			mMenu.addEntry(_("SAVE STATES"), false, [window, game, this]
 			{
-				mWindow->pushGui(new GuiSaveState(mWindow, game, [this, game](SaveState state)
+				mWindow->pushGui(new GuiSaveState(mWindow, game, [this, game](SaveState* state)
 				{
 					LaunchGameOptions options;
 					options.saveStateInfo = state;
 					ViewController::get()->launch(game, options);
 				}));
-
+#ifdef _ENABLEEMUELEC
+					guiSaveStateLoad(mWindow, game);
+#endif
 				this->close();
+
 			});
 		}
 		else
@@ -167,13 +176,13 @@ GuiGameOptions::GuiGameOptions(Window* window, FileData* game) : GuiComponent(wi
 
 		if (game->isNetplaySupported())
 		{
-			mMenu.addEntry(_("NETPLAY HOSTING/OPTIONS"), false, [window, game, this]
+			mMenu.addEntry(_("START A NETPLAY GAME"), false, [window, game, this]
 			{
 				GuiSettings* msgBox = new GuiSettings(mWindow, _("NETPLAY"));
 				msgBox->setSubTitle(game->getName());
 				msgBox->addGroup(_("START GAME"));
 
-				msgBox->addEntry(_U("\uF144 ") + _("BEGIN HOSTING A NETPLAY SESSION"), false, [window, msgBox, game]
+				msgBox->addEntry(_U("\uF144 ") + _("HOST A NETPLAY GAME"), false, [window, msgBox, game]
 				{
 					if (ApiSystem::getInstance()->getIpAdress() == "NOT CONNECTED")
 					{
@@ -196,8 +205,8 @@ GuiGameOptions::GuiGameOptions(Window* window, FileData* game) : GuiComponent(wi
 				msgBox->addSaveFunc([public_announce] { SystemConf::getInstance()->setBool("global.netplay_public_announce", public_announce->getState()); });
 						
 				// passwords
-				msgBox->addInputTextRow(_("SET PLAYER PASSWORD"), "global.netplay.password", false);
-				msgBox->addInputTextRow(_("SET VIEWER PASSWORD"), "global.netplay.spectatepassword", false);
+				msgBox->addInputTextRow(_("PLAYER PASSWORD"), "global.netplay.password", false);
+				msgBox->addInputTextRow(_("VIEWER PASSWORD"), "global.netplay.spectatepassword", false);
 
 				mWindow->pushGui(msgBox);
 				close();
@@ -243,7 +252,44 @@ GuiGameOptions::GuiGameOptions(Window* window, FileData* game) : GuiComponent(wi
 
 
 			});
+#ifdef _ENABLEEMUELEC			
+			if (!isImageViewer) {
+				if (game->getMetadata(MetaDataId::Hidden) == "false")
+				{
+					mMenu.addEntry(_("HIDE GAME"), false, [this, game]
+					{
+						hideGame(game, true);
+						close();
+					});
+				}
+				else {
+					mMenu.addEntry(_("UNHIDE GAME"), false, [this, game]
+					{
+						hideGame(game, false);
+						close();
+					});
+				}
+			}
+#endif
 		}
+
+#ifdef _ENABLEEMUELEC
+	std::regex str_expr (".*(disc\\s*\\d)[^\\d]{0,1}.*", std::regex_constants::icase);
+	if (std::regex_match(game->getName(),str_expr))
+		mMenu.addEntry(isImageViewer ? _("CREATE MULTIDISC") : _("CREATE MULTIDISC"), false, [this, game]
+		{
+			mWindow->pushGui(new GuiMsgBox(mWindow, _("THIS WILL CREATE A MULTI-DISC FILE(S)!\nARE YOU SURE?"), _("YES"),
+				[this, game]
+			{
+				createMultidisc(game);
+				close();
+			},
+				_("NO"), nullptr));
+
+
+		});
+#endif
+
 	}
 
 	bool isCustomCollection = (mSystem->isCollection() && game->getType() == FOLDER && CollectionSystemManager::get()->isCustomCollection(mSystem->getName()));
@@ -350,6 +396,9 @@ GuiGameOptions::GuiGameOptions(Window* window, FileData* game) : GuiComponent(wi
 			{
 				game->importP2k(result.p2k);
 				game->getMetadata().importScrappedMetadata(result.mdl);	
+				game->detectLanguageAndRegion(true);
+				game->getMetadata().setScrapeDate(result.scraper);
+
 				ViewController::get()->onFileChanged(game, FILE_METADATA_CHANGED);
 			});
 
@@ -411,7 +460,7 @@ GuiGameOptions::GuiGameOptions(Window* window, FileData* game) : GuiComponent(wi
 		});
 	}
 
-	if (Renderer::isSmallScreen())
+	if (Renderer::ScreenSettings::fullScreenMenus())
 	{	
 		mMenu.addButton(_("BACK"), _("go back"), [this] { close(); });
 
@@ -486,6 +535,68 @@ void GuiGameOptions::deleteGame(FileData* file)
 	}
 }
 
+#ifdef _ENABLEEMUELEC
+
+void GuiGameOptions::hideGame(FileData* file, bool hide)
+{
+	if (file->getType() != GAME)
+		return;
+
+	auto sourceFile = file->getSourceFileData();
+	file->setMetadata(MetaDataId::Hidden, (hide) ? "true" : "false");
+	ViewController::get()->onFileChanged(file, FILE_METADATA_CHANGED);
+
+	auto sys = sourceFile->getSystem();
+	if (sys->isGroupChildSystem())
+		sys = sys->getParentGroupSystem();
+
+	sys->getRootFolder()->getMetadata().setDirty();
+	
+	CollectionSystemManager::get()->deleteCollectionFiles(sourceFile);
+
+	auto view = ViewController::get()->getGameListView(sys, false);
+	if (view != nullptr)
+		ViewController::get()->reloadGameListView(view.get());
+}
+
+void GuiGameOptions::createMultidisc(FileData* file)
+{
+	if (file->getType() != GAME)
+		return;
+
+	auto sourceFile = file->getSourceFileData();
+
+	std::string args = "createMultidisc \""+sourceFile->getPath()+"\"";
+	args="(/usr/bin/emuelec-utils "+args+")";
+	LOG(LogInfo) << "createMultidisc:" << args;
+	std::stringstream ss(Utils::Platform::getShOutput(args));
+	std::string newFileName;
+	getline(ss, newFileName);
+
+	if (newFileName.empty())
+		return;
+
+	FileData* newFile = new FileData(GAME, newFileName, sourceFile->getSystem());
+
+	auto sys = sourceFile->getSystem();
+	if (sys->isGroupChildSystem())
+		sys = sys->getParentGroupSystem();
+
+	sourceFile->getSystem()->getRootFolder()->addChild(newFile);
+
+	// NOT WORKING UNSURE WHY
+	CollectionSystemManager::get()->refreshCollectionSystems(newFile);
+
+	auto view = ViewController::get()->getGameListView(sys, false);
+	if (view != nullptr) {
+			view.get()->repopulate();
+			view->setCursor(newFile);
+	}
+	ViewController::get()->reloadGameListView(sys);
+}
+
+#endif
+
 void GuiGameOptions::openMetaDataEd()
 {
 	if (ThreadedScraper::isRunning() || ThreadedHasher::isRunning())
@@ -547,10 +658,16 @@ HelpStyle GuiGameOptions::getHelpStyle()
 std::vector<HelpPrompt> GuiGameOptions::getHelpPrompts()
 {
 	auto prompts = mMenu.getHelpPrompts();
-	prompts.push_back(HelpPrompt(BUTTON_BACK, _("CLOSE")));
+	prompts.push_back(HelpPrompt(BUTTON_BACK, _("CLOSE"), [&] { close(); }));
 
 	if (mHasAdvancedGameOptions)
-		prompts.push_back(HelpPrompt("x", _("ADVANCED GAME OPTIONS")));
+	{
+		prompts.push_back(HelpPrompt("x", _("ADVANCED GAME OPTIONS"), [&] 
+		{
+			GuiMenu::popGameConfigurationGui(mWindow, mGame);
+			close();
+		}));
+	}
 
 	return prompts;
 }
@@ -597,4 +714,24 @@ void GuiGameOptions::deleteCollection()
 void GuiGameOptions::close()
 {
 	delete this;
+}
+
+bool GuiGameOptions::hitTest(int x, int y, Transform4x4f& parentTransform, std::vector<GuiComponent*>* pResult)
+{
+	if (pResult)
+		pResult->push_back(this);
+
+	GuiComponent::hitTest(x, y, parentTransform, pResult);
+	return true;
+}
+
+bool GuiGameOptions::onMouseClick(int button, bool pressed, int x, int y)
+{
+	if (pressed && button == 1 && !mMenu.isMouseOver())
+	{
+		close();
+		return true;
+	}
+
+	return (button == 1);
 }

@@ -24,24 +24,32 @@
 #include "components/VolumeInfoComponent.h"
 #include "Splash.h"
 #include "PowerSaver.h"
+#include "renderers/Renderer.h"
 #ifdef _ENABLEEMUELEC
 #include "utils/FileSystemUtil.h"
 #endif
 
+#if WIN32
+#include <SDL_syswm.h>
+#endif
+
 Window::Window() : mNormalizeNextUpdate(false), mFrameTimeElapsed(0), mFrameCountElapsed(0), mAverageDeltaTime(10),
-  mAllowSleep(true), mSleeping(false), mTimeSinceLastInput(0), mScreenSaver(NULL), mRenderScreenSaver(false), mClockElapsed(0) // batocera
-{		
+  mAllowSleep(true), mSleeping(false), mTimeSinceLastInput(0), mScreenSaver(NULL), mRenderScreenSaver(false), mClockElapsed(0), mMouseCapture(nullptr), mMenuBackgroundShaderTextureCache(-1)
+{			
 	mTransitionOffset = 0;
 
 	mHelp = new HelpComponent(this);
 	mBackgroundOverlay = new ImageComponent(this);
-	mBackgroundOverlay->setImage(":/scroll_gradient.png"); // batocera
+	mBackgroundOverlay->setImage(":/scroll_gradient.png"); 
 
 	mSplash = nullptr;
+	mLastShowCursor = -2;
 }
 
 Window::~Window()
 {
+	resetMenuBackgroundShader();
+
 	for (auto extra : mScreenExtras)
 		delete extra;
 
@@ -56,11 +64,15 @@ Window::~Window()
 
 void Window::pushGui(GuiComponent* gui)
 {
+	resetMenuBackgroundShader();
+
 	if (mGuiStack.size() > 0)
 	{
 		auto& top = mGuiStack.back();
 		top->topWindow(false);		
 	}
+
+	hitTest(-1, -1);
 
 	gui->onShow();
 	mGuiStack.push_back(gui);
@@ -69,6 +81,11 @@ void Window::pushGui(GuiComponent* gui)
 
 void Window::removeGui(GuiComponent* gui)
 {
+	resetMenuBackgroundShader();
+
+	if (mMouseCapture == gui)
+		mMouseCapture = nullptr;
+
 	for(auto i = mGuiStack.cbegin(); i != mGuiStack.cend(); i++)
 	{
 		if(*i == gui)
@@ -150,8 +167,7 @@ bool Window::init(bool initRenderer, bool initInputManager)
 
 	// update our help because font sizes probably changed
 	if (peekGui())
-	peekGui()->updateHelpPrompts();
-
+		peekGui()->updateHelpPrompts();
 	return true;
 }
 
@@ -169,6 +185,8 @@ void Window::reactivateGui()
 
 void Window::deinit(bool deinitRenderer)
 {
+	resetMenuBackgroundShader();
+
 	for (auto extra : mScreenExtras)
 		extra->onHide();
 
@@ -197,8 +215,19 @@ void Window::input(InputConfig* config, Input input)
 	if (config == nullptr)
 		return;
 	
-	if (config->getDeviceIndex() > 0 && Settings::getInstance()->getBool("FirstJoystickOnly"))
-		return;
+	if (config->getDeviceIndex() >= 0 && Settings::getInstance()->getBool("FirstJoystickOnly"))
+	{
+		// Find first player controller info
+		auto playerDevices = InputManager::getInstance()->lastKnownPlayersDeviceIndexes();
+		auto playerDevice = playerDevices.find(0); 
+		if (playerDevice != playerDevices.cend())
+		{
+			if (config->getDeviceIndex() != playerDevice->second.index)
+				return;
+		}
+		else if (config->getDeviceIndex() > 0) // Not found ? Use SDL device index
+			return;
+	}
 
 	if (mScreenSaver) 
 	{
@@ -216,7 +245,7 @@ void Window::input(InputConfig* config, Input input)
 			}
 			else if (config->isMappedTo("start", input) && input.value != 0 && mScreenSaver->getCurrentGame() != nullptr)
 			{
-				// launch game!
+				// launch game!				
 				cancelScreenSaver();
 				mScreenSaver->launchGame();
 				// to force handling the wake up process
@@ -225,35 +254,28 @@ void Window::input(InputConfig* config, Input input)
 		}
 	}
 
-	if (mSleeping)
-	{
-		// wake up
-		mTimeSinceLastInput = 0;
-		cancelScreenSaver();
-		mSleeping = false;
-		onWake();
-		return;
-	}
-
-	mTimeSinceLastInput = 0;
-	// Only cancel screensave if a 'mapped' button is pushed (not volume, etc)
-	if (config->getMappedTo(input).size() > 0 && cancelScreenSaver())
+	if (cancelScreenSaver())
 		return;
 
 	if (config->getDeviceId() == DEVICE_KEYBOARD && input.value && input.id == SDLK_g && SDL_GetModState() & KMOD_LCTRL) // && Settings::getInstance()->getBool("Debug"))
 	{
 		// toggle debug grid with Ctrl-G
-		Settings::DebugGrid = !Settings::DebugGrid;
+		Settings::setDebugGrid(!Settings::DebugGrid());
 	}
 	else if (config->getDeviceId() == DEVICE_KEYBOARD && input.value && input.id == SDLK_t && SDL_GetModState() & KMOD_LCTRL) // && Settings::getInstance()->getBool("Debug"))
 	{
 		// toggle TextComponent debug view with Ctrl-T
-		Settings::DebugText = !Settings::DebugText;
+		Settings::setDebugText(!Settings::DebugText());
 	}
 	else if (config->getDeviceId() == DEVICE_KEYBOARD && input.value && input.id == SDLK_i && SDL_GetModState() & KMOD_LCTRL) // && Settings::getInstance()->getBool("Debug"))
 	{
 		// toggle TextComponent debug view with Ctrl-I
-		Settings::DebugImage = !Settings::DebugImage;
+		Settings::setDebugImage(!Settings::DebugImage());
+	}
+	else if (config->getDeviceId() == DEVICE_KEYBOARD && input.value && input.id == SDLK_m && SDL_GetModState() & KMOD_LCTRL) // && Settings::getInstance()->getBool("Debug"))
+	{
+		// toggle TextComponent debug view with Ctrl-I
+		Settings::setDebugMouse(!Settings::DebugMouse());
 	}
 	else
 	{
@@ -265,7 +287,7 @@ void Window::input(InputConfig* config, Input input)
 	}
 }
 
-// batocera Notification messages
+// Notification messages
 static std::mutex mNotificationMessagesLock;
 
 void Window::displayNotificationMessage(std::string message, int duration)
@@ -408,6 +430,16 @@ void Window::processSongTitleNotifications()
 
 void Window::update(int deltaTime)
 {
+	if (mLastShowCursor >= 0)
+	{
+		mLastShowCursor += deltaTime;
+		if (mLastShowCursor > 5000)
+		{
+			SDL_ShowCursor(0);
+			mLastShowCursor = -1;
+		}
+	}
+
 	processPostedFunctions();
 	processSongTitleNotifications();
 	processNotificationMessages();
@@ -419,6 +451,9 @@ void Window::update(int deltaTime)
 			deltaTime = mAverageDeltaTime;
 	}
 
+	for (auto extra : mScreenExtras)
+		extra->update(deltaTime);
+
 	if (mVolumeInfo)
 		mVolumeInfo->update(deltaTime);
 
@@ -428,7 +463,7 @@ void Window::update(int deltaTime)
 	{
 		mAverageDeltaTime = mFrameTimeElapsed / mFrameCountElapsed;
 
-		if (Settings::getInstance()->getBool("DrawFramerate"))
+		if (Settings::DrawFramerate())
 		{
 			std::stringstream ss;
 
@@ -437,21 +472,22 @@ void Window::update(int deltaTime)
 			ss << std::fixed << std::setprecision(2) << ((float)mFrameTimeElapsed / (float)mFrameCountElapsed) << "ms";
 
 			// vram
-			float textureVramUsageMb = TextureResource::getTotalMemUsage() / 1000.0f / 1000.0f;
-			float textureTotalUsageMb = TextureResource::getTotalTextureSize() / 1000.0f / 1000.0f;
-			float fontVramUsageMb = Font::getTotalMemUsage() / 1000.0f / 1000.0f;
+			float textureVramUsageMb = TextureResource::getTotalMemUsage(false) / 1024.0f / 1024.0f;
+			float textureTotalUsageMb = TextureResource::getTotalTextureSize() / 1024.0f / 1024.0f;
+			float fontVramUsageMb = Font::getTotalMemUsage() / 1024.0f / 1024.0f;
+			size_t max_texture = Settings::getInstance()->getInt("MaxVRAM");
 
-			ss << "\nFont VRAM: " << fontVramUsageMb << " Tex VRAM: " << textureVramUsageMb <<
-				" Tex Max: " << textureTotalUsageMb;
-			mFrameDataText = std::unique_ptr<TextCache>(mDefaultFonts.at(1)->buildTextCache(ss.str(), 50.f, 50.f, 0xFF00FFFF));
+			ss << "\nFont VRAM: " << fontVramUsageMb << " Tex VRAM: " << textureVramUsageMb << " Known Tex: " << textureTotalUsageMb << " Max VRAM: " << max_texture;
+
+			mFrameDataText = std::unique_ptr<TextCache>(mDefaultFonts.at(0)->buildTextCache(ss.str(), Vector2f(50.f, 50.f), 0xFFFF40FF, 0.0f, ALIGN_LEFT, 1.2f));			
 		}
 
 		mFrameTimeElapsed = 0;
 		mFrameCountElapsed = 0;
 	}
 
-	/* draw the clock */ // batocera
-	if (Settings::getInstance()->getBool("DrawClock") && mClock) 
+	/* draw the clock */ 
+	if (Settings::DrawClock() && mClock) 
 	{
 		mClockElapsed -= deltaTime;
 		if (mClockElapsed <= 0)
@@ -465,7 +501,7 @@ void Window::update(int deltaTime)
 				// Visit http://en.cppreference.com/w/cpp/chrono/c/strftime for more information about date/time format
 
 				std::string clockBuf;
-				if (Settings::getInstance()->getBool("ClockMode12"))
+				if (Settings::ClockMode12())
 					clockBuf = Utils::Time::timeToString(clockNow, "%I:%M %p");
 				else
 					clockBuf = Utils::Time::timeToString(clockNow, "%H:%M");
@@ -486,7 +522,7 @@ void Window::update(int deltaTime)
 	if (mScreenSaver)
 		mScreenSaver->update(deltaTime);
 
-	// update pads // batocera
+	// update pads 
 	if (mControllerActivity)
 		mControllerActivity->update(deltaTime);
 
@@ -499,24 +535,144 @@ void Window::update(int deltaTime)
 	AudioManager::update(deltaTime);
 }
 
+static std::vector<unsigned int> _gunAimColors = { 0xFFFFFF00, 0xFFFF00FF, 0xFF00FFFF, 0xFF0000FF, 0xFFFF0000, 0xFF00FF00 };
+
+void Window::renderSindenBorders()
+{
+	bool drawGunBorders = false;
+
+	for (auto gun : InputManager::getInstance()->getGuns())
+		if (gun->needBorders()) 
+			drawGunBorders = true;		
+
+	// normal (default) : draw borders when required
+	// hidden : the border are not displayed (assume that there are provided by an other way like bezels)
+	// force  : force even if no gun requires it (or even no gun at all)
+	// gameonly : borders are not visible in es, just in game (for boards having a sinden gun alway plugged in)
+	auto bordersMode = SystemConf::getInstance()->get("controllers.guns.bordersmode");
+	if (drawGunBorders)
+	  if(bordersMode == "hidden" || bordersMode == "gameonly")
+	    drawGunBorders = false;
+
+	if (!drawGunBorders)
+	  if(bordersMode == "force")
+	    // SETTING FOR DEBUGGING BORDERS
+	    drawGunBorders = true;
+
+	if (drawGunBorders)
+	{
+		int outerBorderWidth = Renderer::getScreenHeight() * 0.00f;
+		int innerBorderWidth = Renderer::getScreenHeight() * 0.02f;
+
+		// sinden.bordersize=thin/big/medium
+		auto bordersize = SystemConf::getInstance()->get("controllers.guns.borderssize");
+		if (bordersize == "thin")
+		{
+			outerBorderWidth = Renderer::getScreenHeight() * 0.00f;
+			innerBorderWidth = Renderer::getScreenHeight() * 0.01f;
+		}
+		else if (bordersize == "big")
+		{
+			outerBorderWidth = Renderer::getScreenHeight() * 0.01f;
+			innerBorderWidth = Renderer::getScreenHeight() * 0.02f;
+		}
+
+		Renderer::setScreenMargin(0, 0);
+		Renderer::setMatrix(Transform4x4f::Identity());
+
+		const unsigned int outerBorderColor = 0x000000FF;
+		unsigned int innerBorderColor = 0xFFFFFFFF;
+
+		auto bordersColor = SystemConf::getInstance()->get("controllers.guns.borderscolor");
+		if (bordersColor == "red")   innerBorderColor = 0xFF0000FF;
+		if (bordersColor == "green") innerBorderColor = 0x00FF00FF;
+		if (bordersColor == "blue")  innerBorderColor = 0x0000FFFF;
+		if (bordersColor == "white") innerBorderColor = 0xFFFFFFFF;
+
+		// outer border
+		Renderer::drawRect(0, 0, Renderer::getScreenWidth(), outerBorderWidth, outerBorderColor);
+		Renderer::drawRect(Renderer::getScreenWidth() - outerBorderWidth, 0, outerBorderWidth, Renderer::getScreenHeight(), outerBorderColor);
+		Renderer::drawRect(0, Renderer::getScreenHeight() - outerBorderWidth, Renderer::getScreenWidth(), outerBorderWidth, outerBorderColor);
+		Renderer::drawRect(0, 0, outerBorderWidth, Renderer::getScreenHeight(), outerBorderColor);
+
+		// inner border
+		Renderer::drawRect(outerBorderWidth, outerBorderWidth, Renderer::getScreenWidth() - outerBorderWidth * 2, innerBorderWidth, innerBorderColor);
+		Renderer::drawRect(Renderer::getScreenWidth() - outerBorderWidth - innerBorderWidth, outerBorderWidth, innerBorderWidth, Renderer::getScreenHeight() - outerBorderWidth * 2, innerBorderColor);
+		Renderer::drawRect(outerBorderWidth, Renderer::getScreenHeight() - outerBorderWidth - innerBorderWidth, Renderer::getScreenWidth() - outerBorderWidth * 2, innerBorderWidth, innerBorderColor);
+		Renderer::drawRect(outerBorderWidth, outerBorderWidth, innerBorderWidth, Renderer::getScreenHeight() - outerBorderWidth * 2, innerBorderColor);
+
+		Renderer::setScreenMargin(outerBorderWidth + innerBorderWidth, outerBorderWidth + innerBorderWidth);
+		Renderer::setMatrix(Transform4x4f::Identity());
+	}
+	else
+		Renderer::setScreenMargin(0, 0);
+}
+
+void Window::renderMenuBackgroundShader()
+{
+	auto menuBackground = ThemeData::getMenuTheme()->Background;
+
+	const Renderer::ShaderInfo& info = menuBackground.shader;
+	if (!info.path.empty())
+	{
+		if (mMenuBackgroundShaderTextureCache == -1)
+			Renderer::postProcessShader(info.path, 0, 0, Renderer::getScreenWidth(), Renderer::getScreenHeight(), info.parameters, &mMenuBackgroundShaderTextureCache);
+
+		if (mMenuBackgroundShaderTextureCache != -1)
+		{
+			Renderer::bindTexture(mMenuBackgroundShaderTextureCache);
+			Renderer::setMatrix(Transform4x4f::Identity());
+
+			int w = Renderer::getScreenWidth();
+			int h = Renderer::getScreenHeight();
+
+			Renderer::Vertex vertices[4];
+			vertices[0] = { { (float)0    , (float)0       }, { 0.0f, 1.0f }, 0xFFFFFFFF };
+			vertices[1] = { { (float)0    , (float)0 + h   }, { 0.0f, 0.0f }, 0xFFFFFFFF };
+			vertices[2] = { { (float)0 + w, (float)0       }, { 1.0f, 1.0f }, 0xFFFFFFFF };
+			vertices[3] = { { (float)0 + w, (float)0 + h   }, { 1.0f, 0.0f }, 0xFFFFFFFF };
+
+			Renderer::drawTriangleStrips(&vertices[0], 4, Renderer::Blend::ONE, Renderer::Blend::ONE);
+			Renderer::bindTexture(0);
+		}
+	}
+	else
+		resetMenuBackgroundShader();
+}
+
+void Window::resetMenuBackgroundShader()
+{
+	if (mMenuBackgroundShaderTextureCache != -1)
+	{
+		Renderer::destroyTexture(mMenuBackgroundShaderTextureCache);
+		mMenuBackgroundShaderTextureCache = -1;
+	}
+}
+
 void Window::render()
 {
 	Transform4x4f transform = Transform4x4f::Identity();
 
 	mRenderedHelpPrompts = false;
-
+	
 	// draw only bottom and top of GuiStack (if they are different)
-	if(mGuiStack.size())
+	if (mGuiStack.size())
 	{
 		auto& bottom = mGuiStack.front();
 		auto& top = mGuiStack.back();
 
-		bottom->render(transform);
-		if(bottom != top)
+		auto menuBackground = ThemeData::getMenuTheme()->Background;
+
+		// Don't render bottom if we have a MenuBackgroundShaderTextureCache
+		if (mMenuBackgroundShaderTextureCache == -1)
+			bottom->render(transform);
+
+		if (bottom != top)
 		{
 			if ((top->getTag() == "GuiLoading") && mGuiStack.size() > 2)
 			{
 				mBackgroundOverlay->render(transform);
+				renderMenuBackgroundShader();
 
 				auto& middle = mGuiStack.at(mGuiStack.size() - 2);
 				if (middle != bottom)
@@ -534,34 +690,54 @@ void Window::render()
 				}
 
 				mBackgroundOverlay->render(transform);
+				renderMenuBackgroundShader();
+
 				top->render(transform);
 			}
 		}
+		else  
+			resetMenuBackgroundShader();
 	}
-	
-	if (mGuiStack.size() < 2 || !Renderer::isSmallScreen())
-		if(!mRenderedHelpPrompts)
+	else 
+		resetMenuBackgroundShader();
+
+	renderSindenBorders();
+
+	if (mGuiStack.size() < 2 || !Renderer::ScreenSettings::fullScreenMenus())
+		if (!mRenderedHelpPrompts)
 			mHelp->render(transform);
 
-	if(Settings::getInstance()->getBool("DrawFramerate") && mFrameDataText)
+	// FPS overlay
+	if (Settings::DrawFramerate() && mFrameDataText)
 	{
-		Renderer::setMatrix(Transform4x4f::Identity());
+		Renderer::setMatrix(transform);
+		Renderer::drawSolidRectangle(40.f, 45.f, mFrameDataText->metrics.size.x() + 10.f, mFrameDataText->metrics.size.y() + 10.f, 0x00000080, 0xFFFFFF30, 2.0f, 3.0f);
+
+		auto trans = transform;
+		trans.translate(1, 1);
+		Renderer::setMatrix(trans);
+
+		mFrameDataText->setColor(0x000000FF);
+		mDefaultFonts.at(1)->renderTextCache(mFrameDataText.get());
+		Renderer::setMatrix(transform);
+
+		mFrameDataText->setColor(0xFFFF40FF);		
 		mDefaultFonts.at(1)->renderTextCache(mFrameDataText.get());
 	}
 
-    // clock // batocera
-	if (Settings::getInstance()->getBool("DrawClock") && mClock && (mGuiStack.size() < 2 || !Renderer::isSmallScreen()))
+	// clock 
+	if (Settings::DrawClock() && mClock && (mGuiStack.size() < 2 || !Renderer::ScreenSettings::fullScreenMenus()))
 		mClock->render(transform);
-	
-	if (Settings::getInstance()->getBool("ShowControllerActivity") && mControllerActivity != nullptr && (mGuiStack.size() < 2 || !Renderer::isSmallScreen()))
+
+	if (Settings::ShowControllerActivity() && mControllerActivity != nullptr && (mGuiStack.size() < 2 || !Renderer::isSmallScreen()))
 		mControllerActivity->render(transform);
 
-	if (mBatteryIndicator != nullptr && (mGuiStack.size() < 2 || !Renderer::isSmallScreen()))
+	if (mBatteryIndicator != nullptr && (mGuiStack.size() < 2 || !Renderer::ScreenSettings::fullScreenMenus()))
 		mBatteryIndicator->render(transform);
 
-	Renderer::setMatrix(Transform4x4f::Identity());
+	Renderer::setMatrix(transform);
 
-	unsigned int screensaverTime = (unsigned int)Settings::getInstance()->getInt("ScreenSaverTime");
+	unsigned int screensaverTime = (unsigned int)Settings::ScreenSaverTime();
 	if (mTimeSinceLastInput >= screensaverTime && screensaverTime != 0)
 	{
 
@@ -588,20 +764,23 @@ void Window::render()
 
 		renderAsyncNotifications(transform);
 	}
-	
+
 	// Always call the screensaver render function regardless of whether the screensaver is active
 	// or not because it may perform a fade on transition
 	renderScreenSaver();
 
-	for (auto extra : mScreenExtras)
-		extra->render(transform);
+	if (!mRenderScreenSaver)
+	{
+		for (auto extra : mScreenExtras)
+			extra->render(transform);
+	}
 
-	if (mVolumeInfo && Settings::getInstance()->getBool("VolumePopup"))
+	if (mVolumeInfo && Settings::VolumePopup())
 		mVolumeInfo->render(transform);
 
-	if(mTimeSinceLastInput >= screensaverTime && screensaverTime != 0)
+	if (mTimeSinceLastInput >= screensaverTime && screensaverTime != 0)
 	{
-		if (!isProcessing() && mAllowSleep && (!mScreenSaver || mScreenSaver->allowSleep()))
+		if (mAllowSleep && (!mScreenSaver || mScreenSaver->allowSleep()))
 		{
 			// go to sleep
 			if (mSleeping == false) {
@@ -609,6 +788,129 @@ void Window::render()
 				onSleep();
 			}
 		}
+	}
+
+	// Render calibration dark background & text
+	if (mCalibrationText)
+	{
+		Renderer::setMatrix(transform);
+		Renderer::drawRect(0, 0, Renderer::getScreenWidth(), Renderer::getScreenHeight(), 0x000000A0);
+		mCalibrationText->render(transform);
+	}
+
+	// Render guns aims
+	auto guns = InputManager::getInstance()->getGuns();
+	if (!mRenderScreenSaver && guns.size())
+	{
+		auto margin = Renderer::setScreenMargin(0, 0);
+		Renderer::setMatrix(Transform4x4f::Identity());
+
+		bool hasMousePointer = false;
+
+		if (mGunAimTexture == nullptr)
+			mGunAimTexture = TextureResource::get(":/gun.png", false, false, true, false);
+
+		if (mGunAimTexture->bind())
+		{
+			for (auto gun : guns)
+			{
+				if (gun->isMouse())
+				{
+					hasMousePointer = true;
+					continue;
+				}
+
+				if (gun->isLastTickElapsed())
+					continue;
+
+				int pointerSize = (Renderer::isVerticalScreen() ? Renderer::getScreenWidth() : Renderer::getScreenHeight()) / 32;
+
+				Vector2f topLeft = { gun->x() - pointerSize, gun->y() - pointerSize };
+				Vector2f bottomRight = { gun->x() + pointerSize, gun->y() + pointerSize };
+
+				auto aimColor = guns.size() == 1 ? 0xFFFFFFFF : _gunAimColors[gun->index() % _gunAimColors.size()];
+
+				if (gun->isLButtonDown() || gun->isRButtonDown())
+				{
+					auto mixIndex = (gun->index() + 3) % _gunAimColors.size();
+					auto invertColor = _gunAimColors[mixIndex];
+
+					aimColor = Renderer::mixColors(aimColor, invertColor, 0.5);
+				}
+
+				Renderer::Vertex vertices[4];
+				vertices[0] = { { topLeft.x() ,     topLeft.y() }, { 0.0f,          0.0f }, aimColor };
+				vertices[1] = { { topLeft.x() ,     bottomRight.y() }, { 0.0f,          1.0f }, aimColor };
+				vertices[2] = { { bottomRight.x(), topLeft.y() }, { 1.0f, 0.0f }, aimColor };
+				vertices[3] = { { bottomRight.x(), bottomRight.y() }, { 1.0f, 1.0f }, aimColor };
+
+				Renderer::drawTriangleStrips(&vertices[0], 4);
+			}
+		}	
+
+#if WIN32
+		if (hasMousePointer)
+		{
+			if (mMouseCursorTexture == nullptr)
+				mMouseCursorTexture = TextureResource::get(":/cursor.png", false, true, true, false);
+
+			if (mMouseCursorTexture->bind())
+			{
+				for (auto gun : guns)
+				{
+					if (!gun->isMouse())
+						continue;
+
+					if (gun->isLastTickElapsed())
+						break;
+
+					SDL_SysWMinfo wmInfo;
+					SDL_VERSION(&wmInfo.version);
+					if (SDL_GetWindowWMInfo(Renderer::getSDLWindow(), &wmInfo))
+					{
+						HWND hWnd = wmInfo.info.win.window;
+
+						POINT cursorPos;
+						GetCursorPos(&cursorPos);
+
+						// Convert screen coordinates to client coordinates
+						ScreenToClient(hWnd, &cursorPos);
+
+						// Get the client rectangle of the window
+						RECT clientRect;
+						GetClientRect(hWnd, &clientRect);
+
+						// Check if the cursor is within the client area
+						if (!PtInRect(&clientRect, cursorPos))
+							continue;
+					}					
+
+					int pointerSize = (Renderer::isVerticalScreen() ? Renderer::getScreenWidth() : Renderer::getScreenHeight()) / 38;
+					
+					Vector2i sz = ImageIO::adjustPictureSize(mMouseCursorTexture->getSize(), Vector2i(pointerSize, pointerSize));
+
+					Vector2f topLeft = { gun->x(), gun->y() };
+					Vector2f bottomRight = { gun->x() + sz.x(), gun->y() + sz.y() };
+
+					auto aimColor = 0xFFFFFFFF;
+					
+					if (gun->isLButtonDown() || gun->isRButtonDown())
+						aimColor = 0xC0FAFAFF;
+
+					Renderer::Vertex vertices[4];
+					vertices[0] = { { topLeft.x() ,     topLeft.y() }, { 0.0f,          1.0f }, aimColor };
+					vertices[1] = { { topLeft.x() ,     bottomRight.y() }, { 0.0f,          0.0f }, aimColor };
+					vertices[2] = { { bottomRight.x(), topLeft.y() }, { 1.0f, 1.0f }, aimColor };
+					vertices[3] = { { bottomRight.x(), bottomRight.y() }, { 1.0f, 0.0f }, aimColor };
+
+					Renderer::drawTriangleStrips(&vertices[0], 4);
+					break;
+				}
+			}
+		}
+#endif
+
+		Renderer::setScreenMargin(margin.x(), margin.y());
 	}
 }
 
@@ -627,13 +929,20 @@ void Window::setAllowSleep(bool sleep)
 	mAllowSleep = sleep;
 }
 
+std::string Window::getCustomSplashScreenImage() {
+  std::string alternateSplashScreen = Settings::getInstance()->getString("AlternateSplashScreen");
+  if(alternateSplashScreen != "" && Utils::FileSystem::exists(alternateSplashScreen))
+    return alternateSplashScreen;
+  return DEFAULT_SPLASH_IMAGE;
+}
+
 void Window::setCustomSplashScreen(std::string imagePath, std::string customText)
 {
 	if (Settings::getInstance()->getBool("HideWindow"))
 		return;
-		
+
 	if (!Utils::FileSystem::exists(imagePath))
-		mSplash = std::make_shared<Splash>(this, DEFAULT_SPLASH_IMAGE, false);
+		mSplash = std::make_shared<Splash>(this, getCustomSplashScreenImage(), false);
 	else
 		mSplash = std::make_shared<Splash>(this, imagePath, false);
 
@@ -643,7 +952,7 @@ void Window::setCustomSplashScreen(std::string imagePath, std::string customText
 void Window::renderSplashScreen(std::string text, float percent, float opacity)
 {
 	if (mSplash == NULL)
-		mSplash = std::make_shared<Splash>(this);
+		mSplash = std::make_shared<Splash>(this, getCustomSplashScreenImage());
 
 	mSplash->update(text, percent);
 	mSplash->render(opacity);	
@@ -660,9 +969,9 @@ void Window::closeSplashScreen()
 	mSplash = nullptr;
 }
 
-void Window::renderHelpPromptsEarly()
+void Window::renderHelpPromptsEarly(const Transform4x4f& transform)
 {
-	mHelp->render(Transform4x4f::Identity());
+	mHelp->render(transform);
 	mRenderedHelpPrompts = true;
 }
 
@@ -718,7 +1027,7 @@ void Window::setHelpPrompts(const std::vector<HelpPrompt>& prompts, const HelpSt
 			"up/down/left/right",
 			"up/down",
 			"left/right",
-			BUTTON_BACK, BUTTON_OK, "x", "y", "l", "r",
+			BUTTON_OK, "x", "y", "l", "r", BUTTON_BACK,
 			"start", "select",
 			NULL
 		};
@@ -752,11 +1061,6 @@ void Window::onWake()
 	Scripting::fireEvent("wake");
 }
 
-bool Window::isProcessing()
-{
-	return count_if(mGuiStack.cbegin(), mGuiStack.cend(), [](GuiComponent* c) { return c->isProcessing(); }) > 0;
-}
-
 void Window::startScreenSaver()
 {
 	if (mScreenSaver && !mRenderScreenSaver)
@@ -775,6 +1079,10 @@ void Window::startScreenSaver()
 
 bool Window::cancelScreenSaver()
 {
+	bool ret = false;
+
+	mTimeSinceLastInput = 0;
+
 	if (mScreenSaver && mRenderScreenSaver)
 	{		
 		mScreenSaver->stopScreenSaver();
@@ -788,10 +1096,18 @@ bool Window::cancelScreenSaver()
 		for (auto extra : mScreenExtras)
 			extra->onScreenSaverDeactivate();
 
-		return true;
+		ret = true;
 	}
 
-	return false;
+	if (mSleeping)
+	{
+		mSleeping = false;
+		onWake();
+
+		ret = true;
+	}
+
+	return ret;
 }
 
 void Window::renderScreenSaver()
@@ -922,14 +1238,19 @@ void Window::postToUiThread(const std::function<void()>& func, void* data)
 
 void Window::processPostedFunctions()
 {
-	std::unique_lock<std::mutex> lock(mNotificationMessagesLock);
+	std::vector<PostedFunction> functions;
+
+	mNotificationMessagesLock.lock();
 
 	for (auto func : mFunctions)
-	{
-		TRYCATCH("processPostedFunction", func.func())
-	}
+		functions.push_back(func);
 
 	mFunctions.clear();
+
+	mNotificationMessagesLock.unlock();
+
+	for (auto func : functions)
+		TRYCATCH("processPostedFunction", func.func())
 }
 
 void Window::onThemeChanged(const std::shared_ptr<ThemeData>& theme)
@@ -939,7 +1260,7 @@ void Window::onThemeChanged(const std::shared_ptr<ThemeData>& theme)
 
 	mScreenExtras.clear();
 	mScreenExtras = ThemeData::makeExtras(theme, "screen", this);
-
+	
 	std::stable_sort(mScreenExtras.begin(), mScreenExtras.end(), [](GuiComponent* a, GuiComponent* b) { return b->getZIndex() > a->getZIndex(); });
 
 	if (mBackgroundOverlay)
@@ -949,6 +1270,7 @@ void Window::onThemeChanged(const std::shared_ptr<ThemeData>& theme)
 	{
 		mClock->setFont(Font::get(FONT_SIZE_SMALL));
 		mClock->setColor(0x777777FF);		
+		mClock->setOrigin(Vector2f::Zero());
 		mClock->setHorizontalAlignment(ALIGN_RIGHT);
 		mClock->setVerticalAlignment(ALIGN_TOP);
 		
@@ -977,4 +1299,132 @@ void Window::onThemeChanged(const std::shared_ptr<ThemeData>& theme)
 		mBatteryIndicator->applyTheme(theme, "screen", "batteryIndicator", ThemeFlags::ALL);
 	
 	mVolumeInfo = std::make_shared<VolumeInfoComponent>(this);
+}
+
+void Window::setGunCalibrationState(bool isCalibrating)
+{
+	if (isCalibrating)
+	{
+		if (mCalibrationText == nullptr)
+		{
+			mCalibrationText = std::make_shared<TextComponent>(this);
+			mCalibrationText->setText(_("CALIBRATING GUN\nFire on targets to calibrate"));
+			mCalibrationText->setFont(Font::get(FONT_SIZE_MEDIUM));
+			mCalibrationText->setHorizontalAlignment(ALIGN_CENTER);
+			mCalibrationText->setVerticalAlignment(ALIGN_CENTER);
+			mCalibrationText->setPosition(0.0f, 0.0f);
+			mCalibrationText->setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight() / 2.1f);
+			mCalibrationText->setColor(0xFFFFFFFF);
+			mCalibrationText->setGlowSize(1);
+			mCalibrationText->setGlowColor(0x00000040);			
+		}
+	}
+	else
+		mCalibrationText = nullptr;	
+}
+
+std::vector<GuiComponent*> Window::hitTest(int x, int y)
+{
+	GuiComponent* gui = peekGui();
+	if (!gui)
+		return std::vector<GuiComponent*>();
+
+	auto trans = Transform4x4f::Identity();
+
+	std::vector<GuiComponent*> ret;
+
+	gui->hitTest(x, y, trans, &ret);
+
+	if (mClock && mClock->isVisible())
+		mClock->hitTest(x, y, trans, &ret);
+
+	if (mHelp && mHelp->isVisible())
+		mHelp->hitTest(x, y, trans, &ret);
+
+	return ret;
+}
+
+void Window::processMouseWheel(int delta)
+{
+	GuiComponent* gui = peekGui();
+	if (!gui)
+		return;
+
+	auto hits = hitTest(mLastMousePoint.x(), mLastMousePoint.y());
+
+	if (mMouseCapture != nullptr)
+	{
+		mMouseCapture->onMouseWheel(delta);
+		return;
+	}
+	else
+	{
+		std::reverse(hits.begin(), hits.end());
+
+		for (auto hit : hits)
+			if (hit->onMouseWheel(delta))
+				break;
+
+		hitTest(mLastMousePoint.x(), mLastMousePoint.y());
+	}
+}
+
+void Window::processMouseMove(int x, int y, bool touchScreen)
+{
+	if (!touchScreen && (mLastShowCursor != -2 || x != 0 || y != 0))
+	{
+#if WIN32
+		auto guns = InputManager::getInstance()->getGuns();
+		if (guns.size() == 0 || std::find_if(guns.cbegin(), guns.cend(), [](Gun* x) { return x->name() == "Wiimote Gun"; }) == guns.cend())
+#endif
+		SDL_ShowCursor(1);
+
+		mLastShowCursor = 0;
+	}
+
+	auto point = Renderer::physicalScreenToRotatedScreen(x, y);
+
+	mLastMousePoint.x() = point.x(); mLastMousePoint.y() = point.y();
+
+	GuiComponent* gui = peekGui();
+	if (!gui)
+		return;
+
+	auto hits = hitTest(point.x(), point.y());
+
+	if (mMouseCapture != nullptr)
+	{
+		mMouseCapture->onMouseMove(point.x(), point.y());
+		return;
+	}
+	else
+	{
+		std::reverse(hits.begin(), hits.end());
+
+		for(auto hit : hits)
+			hit->onMouseMove(point.x(), point.y());
+	}
+}
+
+bool Window::processMouseButton(int button, bool down, int x, int y)
+{
+	auto point = Renderer::physicalScreenToRotatedScreen(x, y);
+
+	mLastMousePoint.x() = point.x(); mLastMousePoint.y() = point.y();
+
+	if (mMouseCapture != nullptr)
+	{
+	//	auto hits = hitTest(x, y);
+		mMouseCapture->onMouseClick(button, down, point.x(), point.y());
+		return true;
+	}
+
+	auto ctrls = hitTest(point.x(), point.y());
+	std::reverse(ctrls.begin(), ctrls.end());
+
+	for (auto ctrl : ctrls)		
+		if (ctrl->onMouseClick(button, down, point.x(), point.y()))
+			return true;
+
+	return false;
 }

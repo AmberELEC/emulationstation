@@ -12,6 +12,7 @@
 #include "Settings.h"
 #include "ImageIO.h"
 #include <algorithm>
+#include "math/Transform4x4f.h"
 
 #ifdef WIN32
 #include <Windows.h>
@@ -29,6 +30,8 @@ Font::FontFace::FontFace(ResourceData&& d, int size) : data(d)
 	int err = FT_New_Memory_Face(sLibrary, data.ptr.get(), (FT_Long)data.length, 0, &face);
 	if (!err)
 		FT_Set_Pixel_Sizes(face, 0, size);
+	else
+		face = nullptr;
 }
 
 Font::FontFace::~FontFace()
@@ -82,20 +85,15 @@ size_t Font::getTotalMemUsage()
 	return total;
 }
 
-Font::Font(int size, const std::string& path) : mSize(size), mPath(path)
+Font::Font(int size, const std::string& path, bool menuScaling) : mSize(size), mPath(path)
 {
 	mSize = size;
 	//if(mSize > 160) mSize = 160; // maximize the font size while it is causing issues on linux
 
 	// GPI
-	if (Renderer::isSmallScreen())
-	{
-		float sz = Math::min(Renderer::getScreenWidth(), Renderer::getScreenHeight());
-		if (sz >= 320) // ODROID 480x320;
-			mSize = size * 1.31;
-		else // GPI 320x240
-			mSize = size * 1.5;
-	}
+	float scale = menuScaling ? Renderer::ScreenSettings::menuFontScale() : Renderer::ScreenSettings::fontScale();
+	if (scale > 0.0f && scale != 1.0f)
+		mSize = size * scale;
 
 	if (mSize == 0)
 		mSize = 2;
@@ -155,11 +153,14 @@ bool Font::unload()
 	return false;
 }
 
-std::shared_ptr<Font> Font::get(int size, const std::string& path)
+std::shared_ptr<Font> Font::get(int size, const std::string& path, bool menuScaling)
 {
 	const std::string canonicalPath = Utils::FileSystem::getCanonicalPath(path);
 
-	std::pair<std::string, int> def(canonicalPath.empty() ? getDefaultPath() : canonicalPath, size);
+	float scale = menuScaling ? Renderer::ScreenSettings::menuFontScale() : Renderer::ScreenSettings::fontScale();
+	int scaledSize = size * scale;
+
+	std::pair<std::string, int> def(canonicalPath.empty() ? getDefaultPath() : canonicalPath, scaledSize);
 	auto foundFont = sFontMap.find(def);
 	if(foundFont != sFontMap.cend())
 	{
@@ -167,7 +168,7 @@ std::shared_ptr<Font> Font::get(int size, const std::string& path)
 			return foundFont->second.lock();
 	}
 
-	std::shared_ptr<Font> font = std::shared_ptr<Font>(new Font(def.second, def.first));
+	std::shared_ptr<Font> font = std::shared_ptr<Font>(new Font(size, def.first, menuScaling));
 	sFontMap[def] = std::weak_ptr<Font>(font);
 	ResourceManager::getInstance()->addReloadable(font);
 	return font;
@@ -292,6 +293,10 @@ std::vector<std::string> getFallbackFontPaths()
 	return paths;
 }
 
+#if defined(WIN32) || defined(X86) || defined(X86_64)
+static std::map<std::string, ResourceData> globalTTFCache;
+#endif
+
 FT_Face Font::getFaceForChar(unsigned int id)
 {
 	static const std::vector<std::string> fallbackFonts = getFallbackFontPaths();
@@ -306,8 +311,24 @@ FT_Face Font::getFaceForChar(unsigned int id)
 			// i == 0 -> mPath
 			// otherwise, take from fallbackFonts
 			const std::string& path = (i == 0 ? mPath : fallbackFonts.at(i - 1));
+
+#if defined(WIN32) || defined(X86) || defined(X86_64)
+			auto itCache = globalTTFCache.find(path);
+			if (itCache == globalTTFCache.cend())
+			{
+				ResourceData dataX = ResourceManager::getInstance()->getFileData(path);
+				globalTTFCache.insert(std::pair<std::string, ResourceData>(path, dataX));
+				itCache = globalTTFCache.find(path);
+			}
+						
+			if (itCache == globalTTFCache.cend())
+				continue;
+
+			mFaceCache[i] = std::unique_ptr<FontFace>(new FontFace(std::move(itCache->second), mSize));
+#else
 			ResourceData data = ResourceManager::getInstance()->getFileData(path);
 			mFaceCache[i] = std::unique_ptr<FontFace>(new FontFace(std::move(data), mSize));
+#endif
 			fit = mFaceCache.find(i);
 		}
 
@@ -383,10 +404,11 @@ Font::Glyph* Font::getGlyph(unsigned int id)
 	pGlyph->glyphSize = glyphSize;
 
 	// upload glyph bitmap to texture
-	Renderer::updateTexture(tex->textureId, Renderer::Texture::ALPHA, cursor.x(), cursor.y(), glyphSize.x(), glyphSize.y(), g->bitmap.buffer);
+	if (glyphSize.x() > 0 && glyphSize.y() > 0)
+		Renderer::updateTexture(tex->textureId, Renderer::Texture::ALPHA, cursor.x(), cursor.y(), glyphSize.x(), glyphSize.y(), g->bitmap.buffer);
 
-	// update max glyph height
-	if(glyphSize.y() > mMaxGlyphHeight)
+	// update max glyph height - Limit to ascii table. If we don't it can take in the fallback fonts
+	if (glyphSize.y() > mMaxGlyphHeight && id >= 32 && id < 128)
 		mMaxGlyphHeight = glyphSize.y();
 
 	mGlyphMap[id] = pGlyph;
@@ -424,7 +446,71 @@ void Font::rebuildTextures()
 	}
 }
 
-void Font::renderTextCache(TextCache* cache)
+void Font::renderSingleGlow(TextCache* cache, const Transform4x4f& parentTrans, float x, float y, bool verticesChanged)
+{
+	Transform4x4f trans = parentTrans;
+	trans.translate(x, y);
+	trans.round();
+	Renderer::setMatrix(trans);
+	renderTextCache(cache, verticesChanged);
+}
+
+void Font::renderTextCacheEx(TextCache* cache, const Transform4x4f& parentTrans, unsigned int mGlowSize, unsigned int mGlowColor, Vector2f& mGlowOffset, unsigned char mOpacity)
+{
+	if ((mGlowColor & 0x000000FF) != 0 && mGlowSize > 0)
+	{
+		Transform4x4f glowTrans = parentTrans;
+		glowTrans.translate(mGlowOffset.x(), mGlowOffset.y());
+		glowTrans.round();
+		Renderer::setMatrix(glowTrans);
+
+		auto copy = cache->vertexLists;
+
+		cache->setRenderingGlow(true);
+
+		if (mGlowSize == 1 && mGlowOffset == Vector2f::Zero())
+		{
+			int a = Math::min(0xFF, (mGlowColor & 0xFF) * 2);
+			cache->setColor((mGlowColor & 0xFFFFFF00) | (unsigned char)(a * (mOpacity / 255.0)));
+
+			renderSingleGlow(cache, glowTrans, 1, 0);
+			renderSingleGlow(cache, glowTrans, 0, 1, false);
+			renderSingleGlow(cache, glowTrans, -1, 0, false);
+			renderSingleGlow(cache, glowTrans, 0, -1, false);
+		}
+		else
+		{
+			cache->setColor((mGlowColor & 0xFFFFFF00) | (unsigned char)((mGlowColor & 0xFF) * (mOpacity / 255.0)));
+
+			int x = -mGlowSize;
+			int y = -mGlowSize;
+
+			renderSingleGlow(cache, glowTrans, x, y);
+
+			for (int i = 0; i < 2 * mGlowSize; i++)
+				renderSingleGlow(cache, glowTrans, ++x, y, false);
+
+			for (int i = 0; i < 2 * mGlowSize; i++)
+				renderSingleGlow(cache, glowTrans, x, ++y, false);
+
+			for (int i = 0; i < 2 * mGlowSize; i++)
+				renderSingleGlow(cache, glowTrans, --x, y, false);
+
+			for (int i = 0; i < 2 * mGlowSize; i++)
+				renderSingleGlow(cache, glowTrans, x, --y, false);
+		}
+
+		cache->setRenderingGlow(false);
+		cache->vertexLists = copy;
+	}
+
+	auto trans = parentTrans;
+	trans.round();
+	Renderer::setMatrix(trans);
+	renderTextCache(cache);
+}
+
+void Font::renderTextCache(TextCache* cache, bool verticesChanged)
 {
 	if(cache == NULL)
 	{
@@ -446,17 +532,21 @@ void Font::renderTextCache(TextCache* cache)
 		}
 
 		if (tex != 0)
-			Renderer::drawTriangleStrips(&vertex.verts[0], vertex.verts.size());
+		{
+			vertex.verts[0].customShader = cache->customShader.path.empty() ? nullptr : &cache->customShader;
+			Renderer::drawTriangleStrips(&vertex.verts[0], vertex.verts.size(), Renderer::Blend::SRC_ALPHA, Renderer::Blend::ONE_MINUS_SRC_ALPHA, cache->vertexLists.size() > 1 || verticesChanged);
+			vertex.verts[0].customShader = nullptr;
+		}
 	}
 
-	if (cache->renderingGlow)
+	if (cache->renderingGlow || !verticesChanged)
 		return;
 
 	for (auto sub : cache->imageSubstitutes)
 	{
 		if (sub.texture && sub.texture->bind())
 		{
-			if (Settings::DebugImage)
+			if (Settings::DebugImage())
 				Renderer::drawRect(
 					sub.vertex[0].pos.x(), 
 					sub.vertex[0].pos.y(), 
@@ -685,6 +775,9 @@ std::string Font::wrapText(std::string text, float maxWidth)
 		else // need to cut at last whitespace or lacking that, the previous cursor.
 		{
 			size_t cut = (lastWhiteSpace != 0) ? lastWhiteSpace : lastCursor;
+			if (cut == 0)
+				break;
+
 			out += text.substr(0, cut) + "\n";
 			text.erase(0, cut);
 			lineWidth = 0.0f;
@@ -769,7 +862,8 @@ TextCache* Font::buildTextCache(const std::string& _text, Vector2f offset, unsig
 {
 	float x = offset[0] + (xLen != 0 ? getNewlineStartOffset(_text, 0, xLen, alignment) : 0);
 	
-	float yTop = getGlyph('S')->bearing.y();
+	auto glyph = getGlyph('S');
+	float yTop = glyph ? glyph->bearing.y() : 35;
 	float yBot = getHeight(lineSpacing);
 	float yDecal = (yBot + yTop) / 2.0f;
 	float y = offset[1] + (yBot + yTop)/2.0f;
@@ -829,6 +923,9 @@ TextCache* Font::buildTextCache(const std::string& _text, Vector2f offset, unsig
 
 	std::vector<TextImageSubstitute> imageSubstitutes;
 
+	bool inParenthesis = false;
+	bool inBlock = false;
+
 	tabIndex = 0;
 	size_t cursor = 0;
 	while(cursor < text.length())
@@ -840,10 +937,10 @@ TextCache* Font::buildTextCache(const std::string& _text, Vector2f offset, unsig
 		{
 			auto padding = (yTop / 4.0f);
 
-			MaxSizeInfo mx(yBot - (2.0f * padding), yBot - (2.0f * padding));
+			//MaxSizeInfo mx(yBot - (2.0f * padding), yBot - (2.0f * padding));
 
 			TextImageSubstitute is;
-			is.texture = TextureResource::get(it->second, true, true, true, false, true, &mx);
+			is.texture = TextureResource::get(it->second, true, true, true, false, true/*, &mx*/);
 			if (is.texture != nullptr)
 			{
 				Renderer::Rect rect(
@@ -852,7 +949,7 @@ TextCache* Font::buildTextCache(const std::string& _text, Vector2f offset, unsig
 					yBot - (2.0f * padding),
 					yBot - padding);
 
-				auto imgSize = is.texture->getSourceImageSize();
+				auto imgSize = is.texture->getPhysicalSize();
 				auto sz = ImageIO::adjustPictureSize(Vector2i(imgSize.x(), imgSize.y()), Vector2i(rect.w, rect.h));
 
 				Renderer::Rect rc(
@@ -861,10 +958,12 @@ TextCache* Font::buildTextCache(const std::string& _text, Vector2f offset, unsig
 					sz.x(),
 					sz.y());
 				
-				is.vertex[0] = { { (float) rc.x			, (float) rc.y + rc.h }	, { 0.0f, 0.0f }, 0xFFFFFFFF };
-				is.vertex[1] = { { (float) rc.x			, (float) rc.y }		, { 0.0f, 1.0f }, 0xFFFFFFFF };
-				is.vertex[2] = { { (float) rc.x + rc.w  , (float) rc.y + rc.h }	, { 1.0f, 0.0f }, 0xFFFFFFFF };
-				is.vertex[3] = { { (float) rc.x + rc.w  , (float) rc.y }		, { 1.0f, 1.0f }, 0xFFFFFFFF };
+				unsigned int vertexColor = Renderer::convertColor(0xFFFFFF00 | (color & 0xFF));
+				
+				is.vertex[0] = { { (float) rc.x			, (float) rc.y + rc.h }	, { 0.0f, 0.0f }, vertexColor };
+				is.vertex[1] = { { (float) rc.x			, (float) rc.y }		, { 0.0f, 1.0f }, vertexColor };
+				is.vertex[2] = { { (float) rc.x + rc.w  , (float) rc.y + rc.h }	, { 1.0f, 0.0f }, vertexColor };
+				is.vertex[3] = { { (float) rc.x + rc.w  , (float) rc.y }		, { 1.0f, 1.0f }, vertexColor };
 
 				imageSubstitutes.push_back(is);
 
@@ -904,6 +1003,16 @@ TextCache* Font::buildTextCache(const std::string& _text, Vector2f offset, unsig
 			tabIndex++;
 		}
 
+		if (character == '(')
+			inParenthesis = true;
+		else if (character == ')')
+			inParenthesis = false;
+
+		if (character == '[')
+			inBlock = true;
+		else if (character == ']')
+			inBlock = false;
+
 		glyph = getGlyph(character);
 		if(glyph == NULL)
 			continue;
@@ -922,8 +1031,15 @@ TextCache* Font::buildTextCache(const std::string& _text, Vector2f offset, unsig
 		vertices[4] = { { glyphStartX + glyph->glyphSize.x()                , y - glyph->bearing.y() + (glyph->glyphSize.y())                 }, { glyph->texPos.x() + glyph->texSize.x(), glyph->texPos.y() + glyph->texSize.y() }, convertedColor };
 
 		// round vertices
-		for(int i = 1; i < 5; ++i)
+		for (int i = 1; i < 5; ++i)
+		{
 			vertices[i].pos.round();
+
+			if (inParenthesis || inBlock || character == ']' || character == ')')
+				vertices[i].saturation = 0.0f;
+			else
+				vertices[i].saturation = 1.0f;
+		}
 
 		// make duplicates of first and last vertex so this can be rendered as a triangle strip
 		vertices[0] = vertices[1];
@@ -960,16 +1076,51 @@ TextCache* Font::buildTextCache(const std::string& text, float offsetX, float of
 	return buildTextCache(text, Vector2f(offsetX, offsetY), color, 0.0f);
 }
 
+void TextCache::setColors(unsigned int color, unsigned int extraColor)
+{
+	const unsigned int convertedColor = Renderer::convertColor(color);
+	const unsigned int convertedExtraColor = Renderer::convertColor(extraColor);
+
+	for (auto it = vertexLists.begin(); it != vertexLists.end(); it++)
+	{
+		for (auto it2 = it->verts.begin(); it2 != it->verts.end(); it2++)
+		{
+			if (!renderingGlow && it2->saturation == 0)
+				it2->col = convertedExtraColor;
+			else
+				it2->col = convertedColor;
+		}
+	}
+
+	if (renderingGlow)
+		return;
+
+	unsigned int substitColor = Renderer::convertColor(0xFFFFFF00 | (color & 0xFF));
+
+	for (TextImageSubstitute& it : imageSubstitutes)
+		for (int i = 0; i < 4; i++)
+			it.vertex[i].col = substitColor;
+}
+
 void TextCache::setColor(unsigned int color)
 {
 	const unsigned int convertedColor = Renderer::convertColor(color);
 
-	for(auto it = vertexLists.begin(); it != vertexLists.end(); it++)
-		for(auto it2 = it->verts.begin(); it2 != it->verts.end(); it2++)
-			it2->col = convertedColor;
+	for (auto it = vertexLists.begin(); it != vertexLists.end(); it++)
+		for (auto it2 = it->verts.begin(); it2 != it->verts.end(); it2++)
+				it2->col = convertedColor;
+	
+	if (renderingGlow)
+		return;
+
+	unsigned int substitColor = Renderer::convertColor(0xFFFFFF00 | (color & 0xFF));
+
+	for (TextImageSubstitute& it : imageSubstitutes)
+		for (int i = 0; i < 4; i++)
+			it.vertex[i].col = substitColor;
 }
 
-std::shared_ptr<Font> Font::getFromTheme(const ThemeData::ThemeElement* elem, unsigned int properties, const std::shared_ptr<Font>& orig)
+std::shared_ptr<Font> Font::getFromTheme(const ThemeData::ThemeElement* elem, unsigned int properties, const std::shared_ptr<Font>& orig, bool menu)
 {
 	using namespace ThemeFlags;
 	if(!(properties & FONT_PATH) && !(properties & FONT_SIZE))
@@ -993,7 +1144,7 @@ std::shared_ptr<Font> Font::getFromTheme(const ThemeData::ThemeElement* elem, un
 			path = tmppath;
 	}
 
-	return get(size, path);
+	return get(size, path, menu);
 }
 
 void Font::OnThemeChanged()

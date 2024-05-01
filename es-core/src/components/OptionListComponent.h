@@ -10,6 +10,8 @@
 #include "components/MultiLineMenuEntry.h"
 #include "components/MenuComponent.h"
 
+#include <tuple>
+
 //Used to display a list of options.
 //Can select one or multiple options.
 
@@ -153,7 +155,7 @@ private:
 				mMenu.addRow(row, (!mParent->mMultiSelect && it->selected), false);
 			}
 
-			mMenu.addButton(_("BACK"), _("accept"), [this] { delete this; }); // batocera
+			mMenu.addButton(_("BACK"), _("accept"), [this] { delete this; }); 
 
 			if (mParent->mMultiSelect)
 			{
@@ -178,7 +180,7 @@ private:
 				});
 			}
 
-			if (Renderer::isSmallScreen())
+			if (Renderer::ScreenSettings::fullScreenMenus())
 				mMenu.setPosition((Renderer::getScreenWidth() - mMenu.getSize().x()) / 2, (Renderer::getScreenHeight() - mMenu.getSize().y()) / 2);
 			else
 				mMenu.setPosition((Renderer::getScreenWidth() - mMenu.getSize().x()) / 2, Renderer::getScreenHeight() * 0.15f);
@@ -188,7 +190,7 @@ private:
 
 		bool input(InputConfig* config, Input input) override
 		{
-			if(config->isMappedTo(BUTTON_BACK, input) && input.value != 0) // batocera
+			if(config->isMappedTo(BUTTON_BACK, input) && input.value != 0) 
 			{
 				delete this;
 				return true;
@@ -263,6 +265,8 @@ public:
 	// handles positioning/resizing of text and arrows
 	void onSizeChanged() override
 	{
+		GuiComponent::onSizeChanged();
+
 		mLeftArrow.setResize(0, mText.getFont()->getLetterHeight());
 		mRightArrow.setResize(0, mText.getFont()->getLetterHeight());
 
@@ -347,23 +351,36 @@ public:
 
   	bool IsMultiSelect() { return mMultiSelect; }
         
-        // batocera
 	std::string getSelectedName()
 	{
-                assert(mMultiSelect == false);
-                for(unsigned int i = 0; i < mEntries.size(); i++)
-		{
-			if(mEntries.at(i).selected)
+		assert(mMultiSelect == false);
+
+		for (unsigned int i = 0; i < mEntries.size(); i++)
+			if (mEntries.at(i).selected)
 				return mEntries.at(i).name;
-		}
-                return "";
+
+		return "";
 	}
-        
-	void addEx(const std::string name, const std::string description, const T& obj, bool selected, bool treeChild = false)
+
+	int getSelectedIndex()
 	{
-		for (auto sysIt = mEntries.cbegin(); sysIt != mEntries.cend(); sysIt++)
-			if (sysIt->name == name)
-				return;
+		assert(mMultiSelect == false);
+
+		for (unsigned int i = 0; i < mEntries.size(); i++)
+			if (mEntries.at(i).selected)
+				return i;
+
+		return -1;
+	}
+
+	void addEx(const std::string& name, const std::string& description, const T& obj, bool selected, bool treeChild = false, bool distinct = true)
+	{
+		if (distinct)
+		{
+			for (auto sysIt = mEntries.cbegin(); sysIt != mEntries.cend(); sysIt++)
+				if (sysIt->name == name)
+					return;
+		}
 
 		OptionListData e;
 		e.name = name;
@@ -381,7 +398,7 @@ public:
 		onSelectedChanged();
 	}
 
-	void add(const std::string name, const T& obj, bool selected, bool distinct = true, bool treeChild = false)
+	void add(const std::string& name, const T& obj, bool selected, bool distinct = true, bool treeChild = false)
 	{
 		if (distinct)
 		{
@@ -405,6 +422,15 @@ public:
 		onSelectedChanged();
 	}
 
+	std::string getItemDisplayName(const T& obj)
+	{
+		for (auto e : mEntries)
+			if (e.object == obj)
+				return e.name;
+
+		return "";
+	}
+
 	void addRange(const std::vector<std::string> values, const std::string selectedValue = "")
 	{
 		for (auto value : values)
@@ -413,11 +439,20 @@ public:
 		if (!hasSelection())
 			selectFirstItem();
 	}
-
+	
 	void addRange(const std::vector<std::pair<std::string, T>> values, const T selectedValue)
 	{
 		for (auto value : values)
 			add(value.first.c_str(), value.second, selectedValue == value.second);
+
+		if (!hasSelection())
+			selectFirstItem();
+	}
+
+	void addRange(const std::vector<std::tuple<std::string, std::string, T>> values, const T selectedValue)
+	{
+		for (auto value : values)
+			addEx(std::get<0>(value), std::get<1>(value), std::get<2>(value), selectedValue == std::get<2>(value));
 
 		if (!hasSelection())
 			selectFirstItem();
@@ -445,9 +480,9 @@ public:
 			}
 		}
 	}
-
-        // batocera
-	inline void setSelectedChangedCallback(const std::function<void(const T&)>& callback) {
+        
+	inline void setSelectedChangedCallback(const std::function<void(const T&)>& callback) 
+	{
 		mSelectedChangedCallback = callback;
 	}
 
@@ -468,9 +503,9 @@ public:
 		}
 		onSelectedChanged();
 	}
-
-        // batocera
-	bool changed(){
+        
+	bool changed()
+	{
 	  auto selected = getSelectedObjects();
 	  if(selected.size() != 1) return false;
 	  return firstSelected != getSelected();
@@ -501,6 +536,24 @@ public:
 
 		onSelectedChanged();
 	}
+
+#ifdef _ENABLEEMUELEC
+	void removeIndex(const int i)
+	{
+		if (i <= 0 || i >= mEntries.size())
+			return;
+
+		auto sysIt = mEntries.cbegin() + i;
+		mEntries.erase(sysIt);
+	}
+
+	void selectIndex(unsigned int i)
+	{
+		selectNone();
+		mEntries.at(i).selected = true;
+		onSelectedChanged();
+	}
+#endif
 
 	void clear() {
 		mEntries.clear();
@@ -557,6 +610,7 @@ private:
 			mText.setText(name);
 			mText.setSize(0, mText.getSize().y());
 			setSize(mText.getSize().x() + mLeftArrow.getSize().x() + mRightArrow.getSize().x() + 24, mText.getSize().y());
+			onSizeChanged();
 			if (mParent) // hack since theres no "on child size changed" callback atm...
 				mParent->onSizeChanged();
 		}
@@ -570,6 +624,8 @@ private:
 
 			mText.setSize(0, mText.getSize().y());
 			setSize(mText.getSize().x() + mRightArrow.getSize().x() + 24, mText.getSize().y());
+			onSizeChanged();
+
 			if(mParent) // hack since theres no "on child size changed" callback atm...
 				mParent->onSizeChanged();
 		}
@@ -583,14 +639,14 @@ private:
 					mText.setText(Utils::String::toUpper(it->name));
 					mText.setSize(0, mText.getSize().y());
 					setSize(mText.getSize().x() + mLeftArrow.getSize().x() + mRightArrow.getSize().x() + 24, mText.getSize().y());
+					onSizeChanged();
 					if(mParent) // hack since theres no "on child size changed" callback atm...
 						mParent->onSizeChanged();
 					break;
 				}
 			}
 		}
-
-        // batocera
+        
 		if (mSelectedChangedCallback)
 			mSelectedChangedCallback(mEntries.at(getSelectedId()).object);		
 	}
@@ -599,7 +655,7 @@ private:
 	{
 		std::vector<HelpPrompt> prompts;
 		if(!mMultiSelect)
-			prompts.push_back(HelpPrompt("left/right", _("CHANGE"))); // batocera
+			prompts.push_back(HelpPrompt("left/right", _("CHANGE")));
 
 		prompts.push_back(HelpPrompt(BUTTON_OK, _("SELECT")));
 		return prompts;
@@ -611,13 +667,13 @@ private:
 	std::string mName;
 	std::string mGroup;
 
-	T firstSelected; // batocera
+	T firstSelected;
 	TextComponent mText;
 	ImageComponent mLeftArrow;
 	ImageComponent mRightArrow;
 
 	std::vector<OptionListData> mEntries;
-	std::function<void(const T&)> mSelectedChangedCallback; // batocera
+	std::function<void(const T&)> mSelectedChangedCallback;
 };
 
 #endif // ES_CORE_COMPONENTS_OPTION_LIST_COMPONENT_H

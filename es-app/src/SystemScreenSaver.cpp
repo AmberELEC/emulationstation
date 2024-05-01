@@ -11,6 +11,7 @@
 #include "FileFilterIndex.h"
 #include "Log.h"
 #include "PowerSaver.h"
+#include "Scripting.h"
 #include "Sound.h"
 #include "SystemData.h"
 #include "components/ImageComponent.h"
@@ -22,6 +23,8 @@
 #include "SystemConf.h"
 #include "ImageIO.h"
 #include "utils/Randomizer.h"
+#include "Paths.h"
+#include "ApiSystem.h"
 
 #define FADE_TIME 			500
 
@@ -36,10 +39,8 @@ SystemScreenSaver::SystemScreenSaver(Window* window) :
 	mVideoScreensaver(NULL),
 	mImageScreensaver(NULL),
 	mWindow(window),
-	mVideosCounted(false),
-	mVideoCount(0),
-	mImagesCounted(false),
-	mImageCount(0),
+	mGamesWithVideosLoaded(false),
+	mGamesWithImagesLoaded(false),
 	mState(STATE_INACTIVE),
 	mOpacity(0.0f),
 	mTimer(0),
@@ -76,14 +77,34 @@ bool SystemScreenSaver::isScreenSaverActive()
 
 void SystemScreenSaver::startScreenSaver()
 {
+	std::string screensaver_behavior = Settings::getInstance()->getString("ScreenSaverBehavior");
+
 	bool loadingNext = mLoadingNext;
 
+	if (mState == STATE_INACTIVE)
+		Scripting::fireEvent("screensaver-start", screensaver_behavior);
+
 	stopScreenSaver();
+
+
+	if (screensaver_behavior == "suspend")
+	{
+		if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::SUSPEND))
+		{
+			ApiSystem::getInstance()->suspend();
+
+			mLoadingNext = false;
+			mWindow->cancelScreenSaver();
+			return;
+		}
+		else
+			screensaver_behavior = "black";
+	}
 
 	if (!loadingNext && Settings::getInstance()->getBool("StopMusicOnScreenSaver")) //(Settings::getInstance()->getBool("VideoAudio") && !Settings::getInstance()->getBool("ScreenSaverVideoMute")))
 		AudioManager::getInstance()->deinit();
 
-	std::string screensaver_behavior = Settings::getInstance()->getString("ScreenSaverBehavior");
+
 	if (screensaver_behavior == "random video")
 	{
 		mVideoChangeTime = Settings::getInstance()->getInt("ScreenSaverSwapVideoTimeout");
@@ -111,13 +132,13 @@ void SystemScreenSaver::startScreenSaver()
 		else
 		{
 			// Load a random video
-			path = pickRandomVideo();
+			path = pickRandomGameMedia(true);
 
 			int retry = 10;
 			while (retry > 0 && !Utils::FileSystem::exists(path))
 			{
 				retry--;
-				path = pickRandomVideo();
+				path = pickRandomGameMedia(true);
 			}
 		}
 
@@ -125,9 +146,12 @@ void SystemScreenSaver::startScreenSaver()
 		{
 			LOG(LogDebug) << "VideoScreenSaver::startScreenSaver " << path.c_str();
 
-			mVideoScreensaver = std::make_shared<VideoScreenSaver>(mWindow);
+			mVideoScreensaver = std::make_shared<VideoScreenSaver>(mWindow, this);
 			mVideoScreensaver->setGame(mCurrentGame);
 			mVideoScreensaver->setVideo(path);
+
+			if (mCurrentGame)
+				Scripting::fireEvent("game-selected", mCurrentGame->getSystem()->getName(), mCurrentGame->getPath(), mCurrentGame->getName());
 
 			PowerSaver::runningScreenSaver(true);
 			mTimer = 0;
@@ -160,7 +184,7 @@ void SystemScreenSaver::startScreenSaver()
 			mCurrentGame = NULL;
 		}
 		else
-			path = pickRandomGameListImage();
+			path = pickRandomGameMedia();
 
 		if (!path.empty() && Utils::FileSystem::exists(path))
 		{
@@ -169,6 +193,9 @@ void SystemScreenSaver::startScreenSaver()
 			mImageScreensaver = std::make_shared<ImageScreenSaver>(mWindow);
 			mImageScreensaver->setGame(mCurrentGame);
 			mImageScreensaver->setImage(path);
+
+			if (mCurrentGame)
+				Scripting::fireEvent("game-selected", mCurrentGame->getSystem()->getName(), mCurrentGame->getPath(), mCurrentGame->getName());
 
 			PowerSaver::runningScreenSaver(true);
 			mTimer = 0;
@@ -200,6 +227,10 @@ void SystemScreenSaver::stopScreenSaver()
 
 	mVideoScreensaver = nullptr;
 	mImageScreensaver = nullptr;
+
+	if(isExitingScreenSaver && mState != STATE_INACTIVE) {
+	  Scripting::fireEvent("screensaver-stop");
+	}
 
 	// we need this to loop through different videos
 	mState = STATE_INACTIVE;
@@ -273,133 +304,116 @@ void SystemScreenSaver::renderScreenSaver()
 	}
 }
 
-unsigned long SystemScreenSaver::countGameListNodes(const char *nodeName)
+unsigned long SystemScreenSaver::countGameListNodes(bool video)
 {
+	if (video && mGamesWithVideosLoaded)
+		return mGamesWithVideos.size();
+
+	if (!video && mGamesWithImagesLoaded)
+		return mGamesWithImages.size();
+
 	unsigned long nodeCount = 0;
-	std::vector<SystemData*>::const_iterator it;
-	for (it = SystemData::sSystemVector.cbegin(); it != SystemData::sSystemVector.cend(); ++it)
+
+	if (video)
+	{
+		mGamesWithVideosLoaded = true;
+		mGamesWithVideos.clear();
+	}
+	else
+	{
+		mGamesWithImagesLoaded = true;
+		mGamesWithImages.clear();
+	}
+
+	for (auto system : SystemData::sSystemVector)
 	{
 		// We only want nodes from game systems that are not collections
-		if (!(*it)->isGameSystem() || (*it)->isCollection())
+		if (!system->isGameSystem() || system->isCollection() || system->hasPlatformId(PlatformIds::IMAGEVIEWER) || system->hasPlatformId(PlatformIds::PLATFORM_IGNORE))
 			continue;
 
-		FolderData* rootFileData = (*it)->getRootFolder();
-
-		std::vector<FileData*> allFiles = rootFileData->getFilesRecursive(GAME, true);
-		std::vector<FileData*>::const_iterator itf;  // declare an iterator to a vector of strings
-
-		for (itf=allFiles.cbegin() ; itf < allFiles.cend(); itf++) 
+		auto games = system->getRootFolder()->getFilesRecursive(GAME, true);
+		for (auto game : games)
 		{
-			if ((strcmp(nodeName, "video") == 0 && (*itf)->getVideoPath() != "") ||
-				(strcmp(nodeName, "image") == 0 && (*itf)->getImagePath() != ""))
+			if (video && !game->getVideoPath().empty())
 			{
+				mGamesWithVideos.push_back(game);
+				nodeCount++;
+			}
+			else if (!video && !game->getImagePath().empty())
+			{
+				mGamesWithImages.push_back(game);
 				nodeCount++;
 			}
 		}
 	}
+
 	return nodeCount;
 }
 
-void SystemScreenSaver::countVideos()
+std::string  SystemScreenSaver::selectGameMedia(FileData* game, bool video)
 {
-	if (!mVideosCounted)
-	{
-		mVideoCount = countGameListNodes("video");
-		mVideosCounted = true;
-	}
-}
+	std::string path = video ? game->getVideoPath() : game->getImagePath();
+	if (!Utils::FileSystem::exists(path))
+		return "";
 
-void SystemScreenSaver::countImages()
-{
-	if (!mImagesCounted)
-	{
-		mImageCount = countGameListNodes("image");
-		mImagesCounted = true;
-	}
-}
-
-std::string SystemScreenSaver::pickGameListNode(unsigned long index, const char *nodeName)
-{
-	std::string path;
-
-	std::vector<SystemData*>::const_iterator it;
-	for (it = SystemData::sSystemVector.cbegin(); it != SystemData::sSystemVector.cend(); ++it)
-	{
-		// We only want nodes from game systems that are not collections
-		if (!(*it)->isGameSystem() || (*it)->isCollection())
-			continue;
-
-		FolderData* rootFileData = (*it)->getRootFolder();
-
-		FileType type = GAME;
-		std::vector<FileData*> allFiles = rootFileData->getFilesRecursive(type, true);
-		std::vector<FileData*>::const_iterator itf;  // declare an iterator to a vector of strings
-
-		for(itf=allFiles.cbegin() ; itf < allFiles.cend(); itf++) 
-		{
-			if ((strcmp(nodeName, "video") == 0 && (*itf)->getVideoPath() != "") ||
-				(strcmp(nodeName, "image") == 0 && (*itf)->getImagePath() != ""))
-			{
-				if (index-- <= 0)
-				{
-					// We have it
-					if (strcmp(nodeName, "video") == 0)
-						path = (*itf)->getVideoPath();
-					else if (strcmp(nodeName, "image") == 0)
-						path = (*itf)->getImagePath();
-
-					if (!Utils::FileSystem::exists(path))
-						continue;
-
-					mSystemName = (*it)->getFullName();
-					mGameName = (*itf)->getName();
-					mCurrentGame = (*itf);
-
+	mSystemName = game->getSourceFileData()->getSystem()->getFullName();
+	mGameName = game->getSourceFileData()->getSystem()->getName();
+	mCurrentGame = game;
 
 #ifdef _RPI_
-					if (Settings::getInstance()->getBool("ScreenSaverOmxPlayer"))
-					{
-						if (Settings::getInstance()->getString("ScreenSaverGameInfo") != "never" && strcmp(nodeName, "video") == 0)
-						{
-							std::string path = getTitleFolder();
-							if (!Utils::FileSystem::exists(path))
-								Utils::FileSystem::createDirectory(path);
+	if (Settings::getInstance()->getBool("ScreenSaverOmxPlayer"))
+	{
+		if (Settings::getInstance()->getString("ScreenSaverGameInfo") != "never" && video)
+		{
+			std::string path = getTitleFolder();
+			if (!Utils::FileSystem::exists(path))
+				Utils::FileSystem::createDirectory(path);
 
-							writeSubtitle(mGameName.c_str(), mSystemName.c_str(), (Settings::getInstance()->getString("ScreenSaverGameInfo") == "always"));
-						}
-				}
+			writeSubtitle(mGameName.c_str(), mSystemName.c_str(), (Settings::getInstance()->getString("ScreenSaverGameInfo") == "always"));
+		}
+	}
 #endif
 
-					return path;
-				}
-			}
-		}
+	return path;
+}
+
+std::string SystemScreenSaver::pickRandomGameMedia(bool video)
+{
+	mCurrentGame = NULL;
+
+	int count = countGameListNodes(video);
+	if (count == 0)
+		return "";
+
+	std::vector<FileData*>* games = &mGamesWithImages;
+	if (video)
+		games = &mGamesWithVideos;	
+
+	int randomValue = Randomizer::random(count) % count;
+	int index = randomValue;
+
+	while (true)
+	{
+		auto path = selectGameMedia(games->at(index), video);
+		if (!path.empty())
+			return path;
+		
+		games->erase(std::next(games->begin(), index));
+		
+		count = games->size();
+		if (count == 0)
+			break;
+
+		index--;
+
+		if (index < 0)
+			index = count - 1;
+
+		if (index == randomValue)
+			break;
 	}
 
 	return "";
-}
-
-std::string SystemScreenSaver::pickRandomVideo()
-{
-	countVideos();
-	mCurrentGame = NULL;
-	if (mVideoCount == 0)
-		return "";
-		
-	int video = Randomizer::random(mVideoCount); // (int)(((float)rand() / float(RAND_MAX)) * (float)mVideoCount);
-	return pickGameListNode(video, "video");
-}
-
-std::string SystemScreenSaver::pickRandomGameListImage()
-{
-	countImages();
-	mCurrentGame = NULL;
-	if (mImageCount == 0)
-		return "";
-	
-	//rand();
-	int image = Randomizer::random(mImageCount); // (int)(((float)rand() / float(RAND_MAX)) * (float)mImageCount);
-	return pickGameListNode(image, "image");
 }
 
 std::string SystemScreenSaver::pickRandomCustomImage(bool video)
@@ -407,7 +421,10 @@ std::string SystemScreenSaver::pickRandomCustomImage(bool video)
 	std::string path;
 
 	std::string imageDir = Settings::getInstance()->getString(video ? "SlideshowScreenSaverVideoDir" : "SlideshowScreenSaverImageDir");
-	if ((imageDir != "") && (Utils::FileSystem::exists(imageDir)))
+	if (imageDir.empty())
+		imageDir = Paths::getScreenShotPath();
+
+	if (Utils::FileSystem::isDirectory(imageDir))
 	{
 		std::string                   imageFilter = Settings::getInstance()->getString(video ? "SlideshowScreenSaverVideoFilter" : "SlideshowScreenSaverImageFilter");
 		std::vector<std::string>      matchingFiles;
@@ -691,11 +708,14 @@ void GameScreenSaverBase::setGame(FileData* game)
 				}
 			}
 
-			mDecoration = new ImageComponent(mWindow, true);
-			mDecoration->setImage(sets[setId].imageUrl);
-			mDecoration->setOrigin(0.5f, 0.5f);
-			mDecoration->setPosition(Renderer::getScreenWidth() / 2.0f, (float)Renderer::getScreenHeight() / 2.0f);
-			mDecoration->setMaxSize((float)Renderer::getScreenWidth(), (float)Renderer::getScreenHeight());
+			if (!Renderer::isVerticalScreen())
+			{
+				mDecoration = new ImageComponent(mWindow, true);
+				mDecoration->setImage(sets[setId].imageUrl);
+				mDecoration->setOrigin(0.5f, 0.5f);
+				mDecoration->setPosition(Renderer::getScreenWidth() / 2.0f, (float)Renderer::getScreenHeight() / 2.0f);
+				mDecoration->setMaxSize((float)Renderer::getScreenWidth() * Renderer::getScreenProportion(), (float)Renderer::getScreenHeight());
+			}
 		}
 	}
 
@@ -829,8 +849,9 @@ void ImageScreenSaver::render(const Transform4x4f& transform)
 // VIDEO SCREEN SAVER CLASS
 // ------------------------------------------------------------------------------------------------------------------------
 
-VideoScreenSaver::VideoScreenSaver(Window* window) : GameScreenSaverBase(window)
+VideoScreenSaver::VideoScreenSaver(Window* window, SystemScreenSaver* systemScreenSaver) : GameScreenSaverBase(window)
 {
+	mSystemScreenSaver = systemScreenSaver;
 	mVideo = nullptr;
 	mTime = 0;
 	mFade = 1.0;
@@ -868,6 +889,16 @@ void VideoScreenSaver::setVideo(const std::string path)
 		mVideo->setVideo(path);
 		mVideo->setScreensaverMode(true);
 		mVideo->onShow();
+
+		if (mSystemScreenSaver != nullptr)
+		{
+			mVideo->setOnVideoEnded([&]() 
+			{ 				
+				auto ss = mSystemScreenSaver;
+				mWindow->postToUiThread([ss]() { ss->nextVideo(); });
+				return false; 
+			});
+		}
 	}
 
 	mFade = 1.0;
@@ -921,7 +952,7 @@ void VideoScreenSaver::render(const Transform4x4f& transform)
 		mDecoration->render(transform);		
 	}
 
-	if (Settings::DebugImage)
+	if (Settings::DebugImage())
 		Renderer::drawRect(mViewport.x, mViewport.y, mViewport.w, mViewport.h, 0xFFFF0090, 0xFFFF0090);
 }
 

@@ -3,15 +3,17 @@
 #include "resources/Font.h"
 #include "LocaleES.h"
 
-SwitchComponent::SwitchComponent(Window* window, bool state) : GuiComponent(window), mImage(window), mState(state)
+SwitchComponent::SwitchComponent(Window* window, bool state) : GuiComponent(window), mImage(window), mState(state), mInitialState(state)
 {
-	auto menuTheme = ThemeData::getMenuTheme();
-
 	float height = Font::get(FONT_SIZE_MEDIUM)->getLetterHeight();
 
-	mImage.setImage(ThemeData::getMenuTheme()->Icons.off);
-	mImage.setResize(0, height);
+	auto menuTheme = ThemeData::getMenuTheme();
+	if (menuTheme->Text.font != nullptr)
+		height = menuTheme->Text.font->getHeight(1.1f);
+
+	mImage.setImage(menuTheme->Icons.off);
 	mImage.setColorShift(menuTheme->Text.color);
+	mImage.setResize(0, height);
 
 	if (EsLocale::isRTL())
 		mImage.setFlipX(true);
@@ -24,8 +26,14 @@ void SwitchComponent::setColor(unsigned int color)
 	mImage.setColorShift(color);
 }
 
+void SwitchComponent::onOpacityChanged()
+{
+	mImage.setOpacity(getOpacity());
+}
+
 void SwitchComponent::onSizeChanged()
 {
+	GuiComponent::onSizeChanged();
 	mImage.setSize(mSize);
 }
 
@@ -72,7 +80,7 @@ bool SwitchComponent::getState() const
 void SwitchComponent::setState(bool state)
 {
 	mState = state;
-	mInitialState = mState; // batocera
+	mInitialState = mState;
 	onStateChanged();
 }
 
@@ -109,7 +117,7 @@ std::vector<HelpPrompt> SwitchComponent::getHelpPrompts()
 	return prompts;
 }
 
-// batocera
-bool SwitchComponent::changed() {
+bool SwitchComponent::changed() 
+{
 	return mInitialState != mState;
 }

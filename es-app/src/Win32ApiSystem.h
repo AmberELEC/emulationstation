@@ -11,8 +11,6 @@ public:
 	virtual void deinit();
 
 	bool isScriptingSupported(ScriptId script) override;
-	std::string getVersion() override;
-	std::string getApplicationName() override;
 
 	std::vector<std::string> getSystemInformations() override;
 	std::vector<std::string> getAvailableStorageDevices() override;
@@ -25,11 +23,6 @@ public:
 
 	void setReadyFlag(bool ready = true) override;
 	bool isReadyFlagSet() override;
-
-	// Themes
-	std::vector<BatoceraTheme> getBatoceraThemesList() override;
-	std::pair<std::string, int> installBatoceraTheme(std::string thname, const std::function<void(const std::string)>& func) override;
-	std::pair<std::string, int> uninstallBatoceraTheme(std::string bezelsystem, const std::function<void(const std::string)>& func = nullptr) override;
 
 	// Bezels
 	virtual std::vector<BatoceraBezel> getBatoceraBezelsList();
@@ -44,12 +37,16 @@ public:
 
 	bool launchKodi(Window *window) override;	
 
-	static std::string getEmulatorLauncherPath(const std::string variable);
-
-	std::vector<std::string> getShaderList(const std::string systemName = "") override;
+	std::vector<std::string> getShaderList(const std::string& systemName, const std::string& emulator, const std::string& core) override;
 
 	virtual std::string getSevenZipCommand() override;
 	virtual std::string getHostsName() override;
+
+	bool canSuspend();
+	virtual void suspend() override;
+
+	virtual bool isPlaneMode() override;
+	virtual bool setPlaneMode(bool enable) override;
 
 protected:
 

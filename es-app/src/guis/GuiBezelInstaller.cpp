@@ -80,8 +80,11 @@ void GuiBezelInstaller::loadList()
 	int i = 0;
 	for (auto bezel : mBezels)
 	{
-		ComponentListRow row;
+		auto system = SystemData::sSystemVector.firstOrDefault([bezel](SystemData* sys) { return sys->getName() == bezel.name; });
+		if (system == nullptr)
+			continue;
 
+		ComponentListRow row;
 		auto grid = std::make_shared<GuiBatoceraBezelEntry>(mWindow, bezel);
 		row.addElement(grid, true);
 
@@ -101,21 +104,21 @@ void GuiBezelInstaller::loadBezelsAsync()
 	Window* window = mWindow;
 
 	mWindow->pushGui(new GuiLoading<std::vector<BatoceraBezel>>(mWindow, _("PLEASE WAIT"),
-		[this]
-	{
-		return ApiSystem::getInstance()->getBatoceraBezelsList();
-	},
+		[this](auto gui)
+		{
+			return ApiSystem::getInstance()->getBatoceraBezelsList();
+		},
 		[this](std::vector<BatoceraBezel> bezels)
-	{
-		mBezels = bezels;
-		loadList();
-	}
+		{
+			mBezels = bezels;
+			loadList();
+		}
 	));
 }
 
 void GuiBezelInstaller::centerWindow()
 {
-	if (Renderer::isSmallScreen())
+	if (Renderer::ScreenSettings::fullScreenMenus())
 		mMenu.setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
 	else
 		mMenu.setSize(WINDOW_WIDTH, Renderer::getScreenHeight() * 0.875f);
@@ -228,20 +231,23 @@ GuiBatoceraBezelEntry::GuiBatoceraBezelEntry(Window* window, BatoceraBezel& entr
 
 	mImage = std::make_shared<TextComponent>(mWindow);
 	mImage->setColor(theme->Text.color);
-	if (!isInstalled)
-		mImage->setOpacity(192);
-
 	mImage->setHorizontalAlignment(Alignment::ALIGN_CENTER);
 	mImage->setVerticalAlignment(Alignment::ALIGN_TOP);
 	mImage->setFont(theme->Text.font);
 	mImage->setText(isInstalled ? _U("\uF058") : _U("\uF019"));
 	mImage->setSize(theme->Text.font->getLetterHeight() * 1.5f, 0);
 
-	mText = std::make_shared<TextComponent>(mWindow, entry.name, theme->Text.font, theme->Text.color);
+	std::string name = entry.name;
+
+	auto system = SystemData::sSystemVector.firstOrDefault([entry](SystemData* sys) { return sys->getName() == entry.name; });
+	if (system != nullptr)
+		name = (*system)->getFullName();
+
+	mText = std::make_shared<TextComponent>(mWindow, name, theme->Text.font, theme->Text.color);
 	mText->setLineSpacing(1.5);
 	mText->setVerticalAlignment(ALIGN_TOP);
 
-	std::string details = entry.url;
+	std::string details = _U("\uf0AC  ") + entry.url;
 
 	if (mIsPending)
 	{
@@ -260,7 +266,7 @@ GuiBatoceraBezelEntry::GuiBatoceraBezelEntry(Window* window, BatoceraBezel& entr
 	float h = mText->getSize().y() * 1.1f + mSubstring->getSize().y()/* + mDetails->getSize().y()*/;
 	float sw = WINDOW_WIDTH;
 
-	setColWidthPerc(0, 50.0f / sw, false);
+	setColWidthPerc(0, 42.0f / sw, false);
 	setColWidthPerc(1, 0.015f, false);
 	setColWidthPerc(3, 0.002f, false);
 

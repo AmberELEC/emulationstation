@@ -4,6 +4,7 @@
 #include "SystemData.h"
 #include "FileData.h"
 #include "SystemConf.h"
+#include "MameNames.h"
 #include <algorithm>
 
 struct LangData
@@ -34,7 +35,7 @@ void LangInfo::extractLang(std::string val)
 	{
 		{ { "usa", "us", "u" }, "en", "us" },
 
-		{ { "europe", "eu", "e", "ue" }, "", "eu" },
+		{ { "europe", "eu", "e", "ue", "euro" }, "", "eu" },
 
 		{ { "w", "wor", "world" }, "en", "wr" },
 		{ { "uk" }, "en", "eu" },
@@ -47,10 +48,9 @@ void LangInfo::extractLang(std::string val)
 		{ { "no" }, "no", "eu" },
 		{ { "sw", "sweden", "se" }, "sw", "eu" },
 		{ { "pt", "portugal" }, "pt", "eu" },
+		{ { "pl", "poland" }, "pl", "eu" },
 
 		{ { "en" }, "en", "" },
-
-		{ { "canada", "ca", "c", "fc" }, "fr", "wr" },
 
 		{ { "jp", "japan", "ja", "j" }, "jp", "jp" },
 
@@ -59,7 +59,18 @@ void LangInfo::extractLang(std::string val)
 		{ { "kr", "korea", "k" }, "kr", "kr" },
 		{ { "cn", "china", "hong", "kong", "ch", "hk", "as", "tw" }, "cn", "cn" },
 
+		{ { "canada", "ca", "c", "fc" }, "fr", "wr" },
+
 		{ { "in", "ìndia" }, "in", "in" },
+	};
+
+	static std::set<std::string> hardRegions =
+	{
+		"usa", "us",
+		"europe", "eu",
+		"brazil", "br",
+		"japan", "jp",
+		"kr", "korea"
 	};
 
 	for (auto s : Utils::String::splitAny(val, "_, "))
@@ -82,8 +93,11 @@ void LangInfo::extractLang(std::string val)
 					languages.insert(langData.lang);
 				}
 
-				if (!langData.region.empty())
+				if (!langData.region.empty() && !mHardRegion)
+				{
 					region = langData.region;
+					mHardRegion = hardRegions.find(s) != hardRegions.cend();
+				}
 			}
 		}
 	}
@@ -96,6 +110,13 @@ LangInfo LangInfo::parse(std::string rom, SystemData* system)
 		return info;
 
 	std::string fileName = Utils::String::toLower(Utils::FileSystem::getFileName(rom));
+
+	if (system && (system->hasPlatformId(PlatformIds::ARCADE) || system->hasPlatformId(PlatformIds::NEOGEO)) && fileName.find("j.zip") == std::string::npos)
+	{
+		std::string realName = Utils::String::toLower(MameNames::getInstance()->getRealName(Utils::FileSystem::getStem(rom)));
+		if (!realName.empty() && realName.find("(") != std::string::npos)
+			fileName = Utils::String::toLower(MameNames::getInstance()->getRealName(Utils::FileSystem::getStem(rom)));
+	}
 
 	for (auto s : Utils::String::extractStrings(fileName, "(", ")"))
 		info.extractLang(s);

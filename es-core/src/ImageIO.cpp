@@ -8,10 +8,15 @@
 #include <sstream>
 #include <fstream>
 #include <map>
+#include <unordered_map>
 #include <mutex>
 #include "renderers/Renderer.h"
+#include "Paths.h"
+#include "math/Vector4f.h"
 
-unsigned char* ImageIO::loadFromMemoryRGBA32(const unsigned char * data, const size_t size, size_t & width, size_t & height, MaxSizeInfo* maxSize, Vector2i* baseSize, Vector2i* packedSize)
+const MaxSizeInfo MaxSizeInfo::Empty;
+
+unsigned char* ImageIO::loadFromMemoryRGBA32(const unsigned char * data, const size_t size, size_t & width, size_t & height, MaxSizeInfo* maxSize, Vector2i* baseSize, Vector2i* packedSize, int subImageIndex)
 {
 	LOG(LogDebug) << "ImageIO::loadFromMemoryRGBA32";
 
@@ -30,9 +35,26 @@ unsigned char* ImageIO::loadFromMemoryRGBA32(const unsigned char * data, const s
 		//detect the filetype from data
 		FREE_IMAGE_FORMAT format = FreeImage_GetFileTypeFromMemory(fiMemory);
 		if (format != FIF_UNKNOWN && FreeImage_FIFSupportsReading(format))
-		{
-			//file type is supported. load image
-			FIBITMAP * fiBitmap = FreeImage_LoadFromMemory(format, fiMemory);
+		{			
+			// file type is supported. load image
+			FIMULTIBITMAP* fiMultiBitmap = nullptr;
+			FIBITMAP* fiBitmap = nullptr;
+
+			if (subImageIndex < 0)
+				fiBitmap = FreeImage_LoadFromMemory(format, fiMemory);
+			else 
+			{
+				fiMultiBitmap = FreeImage_LoadMultiBitmapFromMemory(format, fiMemory, GIF_PLAYBACK);
+				if (fiMultiBitmap == nullptr)
+					fiBitmap = FreeImage_LoadFromMemory(format, fiMemory);
+				else
+				{
+					fiBitmap = FreeImage_LockPage(fiMultiBitmap, subImageIndex);
+					if (fiBitmap == nullptr)
+						FreeImage_CloseMultiBitmap(fiMultiBitmap);				
+				}
+			}
+			
 			if (fiBitmap != nullptr)
 			{
 				//loaded. convert to 32bit if necessary
@@ -42,10 +64,19 @@ unsigned char* ImageIO::loadFromMemoryRGBA32(const unsigned char * data, const s
 					if (fiConverted != nullptr)
 					{
 						//free original bitmap data
-						FreeImage_Unload(fiBitmap);
+						if (fiMultiBitmap != nullptr)
+						{
+							FreeImage_UnlockPage(fiMultiBitmap, fiBitmap, false);
+							FreeImage_CloseMultiBitmap(fiMultiBitmap);
+							fiMultiBitmap = nullptr;
+						}
+						else
+							FreeImage_Unload(fiBitmap);
+
 						fiBitmap = fiConverted;
 					}
 				}
+
 				if (fiBitmap != nullptr)
 				{
 					width = FreeImage_GetWidth(fiBitmap);
@@ -54,9 +85,12 @@ unsigned char* ImageIO::loadFromMemoryRGBA32(const unsigned char * data, const s
 					if (baseSize != nullptr)
 						*baseSize = Vector2i(width, height);
 
-					if (maxSize != nullptr && maxSize->x() > 0 && maxSize->y() > 0 && (width > maxSize->x() || height > maxSize->y()))
+					size_t maxX = maxSize == nullptr ? 0 : (size_t) Math::round(maxSize->x());
+					size_t maxY = maxSize == nullptr ? 0 : (size_t) Math::round(maxSize->y());
+
+					if (maxSize != nullptr && maxX > 0 && maxY > 0 && (width > maxX || height > maxY))
 					{
-						Vector2i sz = adjustPictureSize(Vector2i(width, height), Vector2i(maxSize->x(), maxSize->y()), maxSize->externalZoom());
+						Vector2i sz = adjustPictureSize(Vector2i(width, height), Vector2i(maxX, maxY), maxSize->externalZoom());
 
 						if (sz.x() > Renderer::getScreenWidth() || sz.y() > Renderer::getScreenHeight())
 							sz = adjustPictureSize(sz, Vector2i(Renderer::getScreenWidth(), Renderer::getScreenHeight()), false);
@@ -66,7 +100,16 @@ unsigned char* ImageIO::loadFromMemoryRGBA32(const unsigned char * data, const s
 							LOG(LogDebug) << "ImageIO : rescaling image from " << std::string(std::to_string(width) + "x" + std::to_string(height)).c_str() << " to " << std::string(std::to_string(sz.x()) + "x" + std::to_string(sz.y())).c_str();
 
 							FIBITMAP* imageRescaled = FreeImage_Rescale(fiBitmap, sz.x(), sz.y(), FILTER_BOX);
-							FreeImage_Unload(fiBitmap);
+
+							if (fiMultiBitmap != nullptr)
+							{
+								FreeImage_UnlockPage(fiMultiBitmap, fiBitmap, false);
+								FreeImage_CloseMultiBitmap(fiMultiBitmap);
+								fiMultiBitmap = nullptr;
+							}
+							else
+								FreeImage_Unload(fiBitmap);
+
 							fiBitmap = imageRescaled;
 
 							width = FreeImage_GetWidth(fiBitmap);
@@ -92,7 +135,14 @@ unsigned char* ImageIO::loadFromMemoryRGBA32(const unsigned char * data, const s
 						}
 					}
 
-					FreeImage_Unload(fiBitmap);
+					if (fiMultiBitmap)
+					{
+						FreeImage_UnlockPage(fiMultiBitmap, fiBitmap, false);
+						FreeImage_CloseMultiBitmap(fiMultiBitmap);
+					}
+					else
+						FreeImage_Unload(fiBitmap);
+
 					FreeImage_CloseMemory(fiMemory);
 
 					return tempData;
@@ -127,6 +177,40 @@ void ImageIO::flipPixelsVert(unsigned char* imagePx, const size_t& width, const 
 			arr[x + (height * width) - ((y + 1) * width)] = temp;
 		}
 	}
+}
+
+Vector2f ImageIO::adjustPictureSizeF(Vector2f imageSize, Vector2f maxSize, bool externSize)
+{
+	return adjustPictureSizeF(imageSize.x(), imageSize.y(), maxSize.x(), maxSize.y(), externSize);
+}
+
+Vector2f ImageIO::adjustPictureSizeF(float cxDIB, float cyDIB, float iMaxX, float iMaxY, bool externSize)
+{
+	if (externSize)
+		return getPictureMinSize(Vector2f(cxDIB, cyDIB), Vector2f(iMaxX, iMaxY));
+
+	if (cxDIB == 0 || cyDIB == 0)
+		return Vector2f(cxDIB, cyDIB);
+
+	float xCoef = iMaxX / cxDIB;
+	float yCoef = iMaxY / cyDIB;
+
+	cyDIB = cyDIB * std::max(xCoef, yCoef);
+	cxDIB = cxDIB * std::max(xCoef, yCoef);
+
+	if (cxDIB > iMaxX)
+	{
+		cyDIB = cyDIB * iMaxX / cxDIB;
+		cxDIB = iMaxX;
+	}
+
+	if (cyDIB > iMaxY)
+	{
+		cxDIB = cxDIB * iMaxY / cyDIB;
+		cyDIB = iMaxY;
+	}
+
+	return Vector2f(cxDIB, cyDIB);
 }
 
 Vector2i ImageIO::adjustPictureSize(Vector2i imageSize, Vector2i maxSize, bool externSize)
@@ -212,12 +296,12 @@ struct CachedFileInfo
 	int y;	
 };
 
-static std::map<std::string, CachedFileInfo> sizeCache;
+static std::unordered_map<std::string, CachedFileInfo> sizeCache;
 static bool sizeCacheDirty = false;
 
 std::string getImageCacheFilename()
 {
-	return Utils::FileSystem::getEsConfigPath() + "/imagecache.db";
+	return Paths::getUserEmulationStationPath() + "/imagecache.db";
 }
 
 void ImageIO::clearImageCache()
@@ -237,11 +321,7 @@ void ImageIO::loadImageCache()
 
 	sizeCache.clear();
 
-#if WIN32
-	std::string relativeTo = Utils::FileSystem::getParent(Utils::FileSystem::getHomePath());
-#else
-	std::string relativeTo = "/userdata";	
-#endif
+	std::string relativeTo = Paths::getRootPath();
 
 	std::vector<std::string> splits;
 
@@ -283,10 +363,10 @@ static bool _isCachablePath(const std::string& path)
 {
 	return 
 		path.find("/themes/") == std::string::npos && 
-		path.find("/tmp/") != std::string::npos &&
-		path.find("/emulationstation.tmp/") != std::string::npos &&
+		path.find("/tmp/") == std::string::npos &&
+		path.find("/emulationstation.tmp/") == std::string::npos &&
 		path.find("/pdftmp/") == std::string::npos && 
-		path.find("/saves/") != std::string::npos;
+		path.find("/saves/") == std::string::npos;
 }
 
 void ImageIO::saveImageCache()
@@ -299,11 +379,7 @@ void ImageIO::saveImageCache()
 	if (f.fail())
 		return;
 
-#if WIN32
-	std::string relativeTo = Utils::FileSystem::getParent(Utils::FileSystem::getHomePath());
-#else
-	std::string relativeTo = "/userdata";
-#endif
+	std::string relativeTo = Paths::getRootPath();
 
 	for (auto it : sizeCache)
 	{
@@ -330,7 +406,7 @@ void ImageIO::saveImageCache()
 
 static std::mutex sizeCacheLock;
 
-void ImageIO::removeImageCache(const std::string fn)
+void ImageIO::removeImageCache(const std::string& fn)
 {
 	std::unique_lock<std::mutex> lock(sizeCacheLock);
 
@@ -339,7 +415,7 @@ void ImageIO::removeImageCache(const std::string fn)
 		sizeCache.erase(fn);
 }
 
-void ImageIO::updateImageCache(const std::string fn, int sz, int x, int y)
+void ImageIO::updateImageCache(const std::string& fn, int sz, int x, int y)
 {
 	std::unique_lock<std::mutex> lock(sizeCacheLock);
 
@@ -367,8 +443,89 @@ void ImageIO::updateImageCache(const std::string fn, int sz, int x, int y)
 	}
 }
 
+static bool extractSvgSize(const std::string& svgFilePath, float& width, float& height)
+{
+	width = -1;
+	height = -1;
 
-bool ImageIO::loadImageSize(const char *fn, unsigned int *x, unsigned int *y)
+	std::ifstream svgFile(svgFilePath);
+
+	if (!svgFile.is_open())
+		return false;
+
+	bool started = false;
+
+	std::string line;
+	while (std::getline(svgFile, line))
+	{
+		if (!started)
+			started = line.find("<svg") != std::string::npos;
+
+		if (!started)
+			continue;
+
+		// Find the width attribute within the <svg> element
+		size_t widthPos = line.find("width=\"");
+		if (widthPos != std::string::npos)
+		{
+			widthPos += 7;
+
+			size_t widthEnd = line.find("\"", widthPos);
+			if (widthEnd != std::string::npos)
+			{
+				std::string widthStr = line.substr(widthPos, widthEnd - widthPos);
+				width = Utils::String::toFloat(widthStr);
+			}
+		}
+
+		// Find the height attribute within the <svg> element
+		size_t heightPos = line.find("height=\"");
+		if (heightPos != std::string::npos)
+		{
+			heightPos += 8;
+
+			// Extract the height value		
+			size_t heightEnd = line.find("\"", heightPos);
+			if (heightEnd != std::string::npos)
+			{
+				std::string heightStr = line.substr(heightPos, heightEnd - heightPos);
+				height = Utils::String::toFloat(heightStr);
+			}
+		}
+
+		// Break the loop once width and height are found
+		if (width > 0 && height > 0)
+			break;
+
+		size_t viewBoxPos = line.find("viewBox=\"");
+		if (viewBoxPos != std::string::npos)
+		{
+			viewBoxPos += 9;
+
+			// Extract the viewBox value
+
+			size_t viewBoxEnd = line.find("\"", viewBoxPos);
+			if (viewBoxEnd != std::string::npos)
+			{
+				std::string viewBoxStr = line.substr(viewBoxPos, viewBoxEnd - viewBoxPos);
+
+				auto vec = Vector4f::parseString(viewBoxStr);
+				width = vec.z();
+				height = vec.w();
+				break;
+			}
+		}
+
+		if (line.find(">") != std::string::npos)
+			break;
+	}
+
+	svgFile.close();
+
+	return width > 0 && height > 0;
+}
+
+bool ImageIO::loadImageSize(const std::string& fn, unsigned int *x, unsigned int *y)
 {
 	{
 		std::unique_lock<std::mutex> lock(sizeCacheLock);
@@ -388,6 +545,31 @@ bool ImageIO::loadImageSize(const char *fn, unsigned int *x, unsigned int *y)
 	LOG(LogDebug) << "ImageIO::loadImageSize " << fn;
 
 	auto ext = Utils::String::toLower(Utils::FileSystem::getExtension(fn));
+	
+	if (ext == ".svg")
+	{
+		float width, height;
+		if (!extractSvgSize(fn, width, height))
+		{
+			updateImageCache(fn, -1, -1, -1);
+			return false;
+		}
+
+		if (width == (int)width && height == (int)height)
+		{
+			auto size = Utils::FileSystem::getFileSize(fn);
+
+			*x = width;
+			*y = height;
+			updateImageCache(fn, size, *x, *y);
+
+			return true;
+		}
+
+		updateImageCache(fn, -1, -1, -1);
+		return false;
+	}
+	
 	if (ext != ".jpg" && ext != ".png" && ext != ".jpeg" && ext != ".gif")
 	{
 		LOG(LogWarning) << "ImageIO::loadImageSize\tUnknown file type";
@@ -397,9 +579,9 @@ bool ImageIO::loadImageSize(const char *fn, unsigned int *x, unsigned int *y)
 	auto size = Utils::FileSystem::getFileSize(fn);
 
 #if WIN32
-	FILE *f = _fsopen(fn, "rb", _SH_DENYNO);
+	FILE* f = _wfopen(Utils::String::convertToWideString(fn).c_str(), L"rb");
 #else
-	FILE *f = fopen(fn, "rb");
+	FILE *f = fopen(fn.c_str(), "rb");
 #endif
 
 	if (f == 0)
@@ -493,4 +675,79 @@ bool ImageIO::loadImageSize(const char *fn, unsigned int *x, unsigned int *y)
 	updateImageCache(fn, -1, -1, -1);
 	LOG(LogWarning) << "ImageIO::loadImageSize\tUnable to extract size";
 	return false;
+}
+
+bool ImageIO::getMultiBitmapInformation(const std::string& path, int& totalFrames, int& frameTime)
+{	
+	totalFrames = 1;
+	frameTime = 0;
+
+	FREE_IMAGE_FORMAT fileFormat;
+
+#if WIN32
+	fileFormat = FreeImage_GetFileTypeU(Utils::String::convertToWideString(path).c_str());
+#else
+	fileFormat = FreeImage_GetFileType(path.c_str());
+#endif
+
+	if (fileFormat != FIF_GIF && fileFormat != FIF_PNG)
+		return false;
+
+	if (!FreeImage_FIFSupportsReading(fileFormat))
+		return false;
+
+	auto size = Utils::FileSystem::getFileSize(path);
+	if (size < 4)
+		return false;
+
+	unsigned char* data = new unsigned char[size]();
+	if (data == nullptr)
+		return false;
+
+#if WIN32
+	std::ifstream stream(Utils::String::convertToWideString(path), std::ios::binary);
+#else
+	std::ifstream stream(path, std::ios::binary);
+#endif
+
+	stream.read((char*)data, size);
+	stream.close();
+
+	bool result = false;
+
+	FIMEMORY* fiMemory = FreeImage_OpenMemory((BYTE *)data, (DWORD)size);
+	if (fiMemory != nullptr)
+	{
+		auto fiMultiBitmap = FreeImage_LoadMultiBitmapFromMemory(fileFormat, fiMemory);
+		if (fiMultiBitmap != nullptr)
+		{
+			auto fiBitmap = FreeImage_LockPage(fiMultiBitmap, 0);
+			if (fiBitmap != nullptr)
+			{
+				totalFrames = FreeImage_GetPageCount(fiMultiBitmap);
+				if (totalFrames > 1)
+				{
+					FITAG* tagFrameTime = nullptr;
+					FreeImage_GetMetadata(FIMD_ANIMATION, fiBitmap, "FrameTime", &tagFrameTime);
+					if (tagFrameTime != nullptr && FreeImage_GetTagCount(tagFrameTime))
+						frameTime = *static_cast<const uint32_t*>(FreeImage_GetTagValue(tagFrameTime));
+
+					if (frameTime == 0)
+						frameTime = 100;
+
+					result = true;
+				}
+
+				FreeImage_UnlockPage(fiMultiBitmap, fiBitmap, false);
+			}
+
+			FreeImage_CloseMultiBitmap(fiMultiBitmap, 0);
+		}
+
+		FreeImage_CloseMemory(fiMemory);
+	}
+
+	delete[] data;
+
+	return result;
 }

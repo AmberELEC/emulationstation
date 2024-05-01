@@ -17,13 +17,23 @@ static std::string* mDefaultGameMap = nullptr;
 static MetaDataType* mGameTypeMap = nullptr;
 static std::map<std::string, MetaDataId> mGameIdMap;
 
+static std::map<std::string, int> KnowScrapersIds =
+{
+	{ "ScreenScraper", 0 },
+	{ "TheGamesDB", 1 },
+	{ "HfsDB", 2 },
+	{ "ArcadeDB", 3 }
+};
+
 void MetaDataList::initMetadata()
 {
 	MetaDataDecl gameDecls[] = 
 	{
 		// key,             type,                   default,            statistic,  name in GuiMetaDataEd,  prompt in GuiMetaDataEd
 		{ Name,             "name",        MD_STRING,              "",                 false,      _("Name"),                 _("this game's name"),			true },
-	//	{ SortName,         "sortname",    MD_STRING,              "",                 false,      _("sortname"),             _("enter game sort name"),	true },
+#ifdef _ENABLEEMUELEC
+		{ SortName,         "sortname",    MD_STRING,              "",                 false,      _("sortname"),             _("this game's sort name"),	true },
+#endif
 		{ Desc,             "desc",        MD_MULTILINE_STRING,    "",                 false,      _("Description"),          _("this game's description"),		true },
 
 #if WIN32 && !_DEBUG
@@ -45,6 +55,7 @@ void MetaDataList::initMetadata()
 		{ Manual,			"manual",	   MD_PATH,                "",                 false,      _("Manual"),               _("enter path to manual"),     true },
 		{ Magazine,			"magazine",	   MD_PATH,                "",                 false,      _("Magazine"),             _("enter path to magazine"),     true },
 		{ Map,			    "map",	       MD_PATH,                "",                 false,      _("Map"),                  _("enter path to map"),		 true },
+		{ Bezel,            "bezel",       MD_PATH,                "",                 false,      _("Bezel (16:9)"),         _("enter path to bezel (16:9)"),	 true },
 
 		// Non scrappable /editable medias
 		{ Cartridge,        "cartridge",   MD_PATH,                "",                 true,       _("Cartridge"),            _("enter path to cartridge"),  true },
@@ -67,7 +78,7 @@ void MetaDataList::initMetadata()
 
 		{ ArcadeSystemName, "arcadesystemname",  MD_STRING,        "",                 false,      _("Arcade system"),        _("this game's arcade system"), false },
 
-		{ Players,          "players",     MD_INT,                 "",                false,       _("Players"),              _("this game's number of players"),	false },
+		{ Players,          "players",     MD_STRING,              "",                false,       _("Players"),              _("this game's number of players"),	false },
 		{ Favorite,         "favorite",    MD_BOOL,                "false",            false,      _("Favorite"),             _("enter favorite"),			false },
 		{ Hidden,           "hidden",      MD_BOOL,                "false",            false,      _("Hidden"),               _("enter hidden"),			true },
 		{ KidGame,          "kidgame",     MD_BOOL,                "false",            false,      _("Kidgame"),              _("enter kidgame"),			false },
@@ -136,18 +147,43 @@ MetaDataList::MetaDataList(MetaDataListType type) : mType(type), mWasChanged(fal
 
 }
 
-MetaDataList MetaDataList::createFromXML(MetaDataListType type, pugi::xml_node& node, SystemData* system)
+void MetaDataList::loadFromXML(MetaDataListType type, pugi::xml_node& node, SystemData* system)
 {
-	MetaDataList mdl(type);
-	mdl.mRelativeTo = system;
+	mType = type;
+	mRelativeTo = system;	
+
+	mUnKnownElements.clear();
+	mScrapeDates.clear();
+
 	std::string value;
-	std::string relativeTo = mdl.mRelativeTo->getStartPath();
+	std::string relativeTo = mRelativeTo->getStartPath();
 
 	bool preloadMedias = Settings::PreloadMedias();
+	if (preloadMedias && Settings::ParseGamelistOnly())
+		preloadMedias = false;
 
 	for (pugi::xml_node xelement : node.children())
 	{
 		std::string name = xelement.name();
+
+		if (name == "scrap")
+		{
+			if (xelement.attribute("name") && xelement.attribute("date"))
+			{
+				auto scraperId = KnowScrapersIds.find(xelement.attribute("name").value());
+				if (scraperId == KnowScrapersIds.cend())
+					continue;
+				
+				Utils::Time::DateTime dateTime(xelement.attribute("date").value());
+				if (!dateTime.isValid())
+					continue;
+								
+				mScrapeDates[scraperId->second] = dateTime;
+			}		
+								
+			continue;
+		}
+
 		auto it = mGameIdMap.find(name);
 		if (it == mGameIdMap.cend())
 		{
@@ -156,7 +192,7 @@ MetaDataList MetaDataList::createFromXML(MetaDataListType type, pugi::xml_node& 
 
 			value = xelement.text().get();
 			if (!value.empty())
-				mdl.mUnKnownElements.push_back(std::tuple<std::string, std::string, bool>(name, value, true));
+				mUnKnownElements.push_back(std::tuple<std::string, std::string, bool>(name, value, true));
 
 			continue;
 		}
@@ -169,7 +205,7 @@ MetaDataList MetaDataList::createFromXML(MetaDataListType type, pugi::xml_node& 
 
 		if (mdd.id == MetaDataId::Name)
 		{
-			mdl.mName = value;
+			mName = value;
 			continue;
 		}
 
@@ -187,10 +223,10 @@ MetaDataList MetaDataList::createFromXML(MetaDataListType type, pugi::xml_node& 
 			continue;
 		
 		// Players -> remove "1-"
-		if (type == GAME_METADATA && mdd.id == MetaDataId::Players && Utils::String::startsWith(value, "1-"))
-			value = Utils::String::replace(value, "1-", "");
+		// if (type == GAME_METADATA && mdd.id == MetaDataId::Players && Utils::String::startsWith(value, "1-"))
+		// 	value = Utils::String::replace(value, "1-", "");
 
-		mdl.set(mdd.id, value);
+		set(mdd.id, value);
 	}
 
 	for (pugi::xml_attribute xattr : node.attributes())
@@ -201,7 +237,7 @@ MetaDataList MetaDataList::createFromXML(MetaDataListType type, pugi::xml_node& 
 		{
 			value = xattr.value();
 			if (!value.empty())
-				mdl.mUnKnownElements.push_back(std::tuple<std::string, std::string, bool>(name, value, false));
+				mUnKnownElements.push_back(std::tuple<std::string, std::string, bool>(name, value, false));
 
 			continue;
 		}
@@ -219,23 +255,19 @@ MetaDataList MetaDataList::createFromXML(MetaDataListType type, pugi::xml_node& 
 			value = Utils::String::toLower(value);
 
 		// Players -> remove "1-"
-		if (type == GAME_METADATA && mdd.id == MetaDataId::Players && Utils::String::startsWith(value, "1-"))
-			value = Utils::String::replace(value, "1-", "");
+		// if (type == GAME_METADATA && mdd.id == MetaDataId::Players && Utils::String::startsWith(value, "1-"))
+		// 	value = Utils::String::replace(value, "1-", "");
 
 		if (mdd.id == MetaDataId::Name)
-			mdl.mName = value;
+			mName = value;
 		else
-			mdl.set(mdd.id, value);
+			set(mdd.id, value);
 	}
-
-	return mdl;
 }
 
 // Add migration for alternative formats & old tags
 void MetaDataList::migrate(FileData* file, pugi::xml_node& node)
 {
-	std::string ext = Utils::String::toLower(Utils::FileSystem::getExtension(file->getPath()));
-
 	if (get(MetaDataId::Crc32).empty())
 	{
 		pugi::xml_node xelement = node.child("hash");
@@ -244,7 +276,7 @@ void MetaDataList::migrate(FileData* file, pugi::xml_node& node)
 	}
 }
 
-void MetaDataList::appendToXML(pugi::xml_node& parent, bool ignoreDefaults, const std::string& relativeTo) const
+void MetaDataList::appendToXML(pugi::xml_node& parent, bool ignoreDefaults, const std::string& relativeTo, bool fullPaths) const
 {
 	const std::vector<MetaDataDecl>& mdd = getMDD();
 
@@ -271,9 +303,13 @@ void MetaDataList::appendToXML(pugi::xml_node& parent, bool ignoreDefaults, cons
 			// try and make paths relative if we can
 			std::string value = mapIter->second;
 			if (mddIter->type == MD_PATH)
-				value = Utils::FileSystem::createRelativePath(value, relativeTo, true);
-
-			
+			{
+				if (fullPaths && mRelativeTo != nullptr)
+					value = Utils::FileSystem::resolveRelativePath(value, mRelativeTo->getStartPath(), true);
+				else
+					value = Utils::FileSystem::createRelativePath(value, relativeTo, true);
+			}
+						
 			if (mddIter->isAttribute)
 				parent.append_attribute(mddIter->key.c_str()).set_value(value.c_str());
 			else
@@ -288,6 +324,30 @@ void MetaDataList::appendToXML(pugi::xml_node& parent, bool ignoreDefaults, cons
 			parent.append_child(std::get<0>(element).c_str()).text().set(std::get<1>(element).c_str());
 		else 
 			parent.append_attribute(std::get<0>(element).c_str()).set_value(std::get<1>(element).c_str());
+	}
+
+	if (mScrapeDates.size() > 0)
+	{
+		for (auto scrapeDate : mScrapeDates)
+		{
+			std::string name;
+
+			for (auto sids : KnowScrapersIds)
+			{
+				if (sids.second == scrapeDate.first)
+				{
+					name = sids.first;
+					break;
+				}
+			}
+
+			if (!name.empty())
+			{
+				auto scraper = parent.append_child("scrap");
+				scraper.append_attribute("name").set_value(name.c_str());
+				scraper.append_attribute("date").set_value(scrapeDate.second.getIsoString().c_str());
+			}
+		}
 	}
 }
 
@@ -304,11 +364,11 @@ void MetaDataList::set(MetaDataId id, const std::string& value)
 	}
 
 	// Players -> remove "1-"
-	if (mType == GAME_METADATA && id == 12 && Utils::String::startsWith(value, "1-")) // "players"
-	{
-		mMap[id] = Utils::String::replace(value, "1-", "");
-		return;
-	}
+	// if (mType == GAME_METADATA && id == 12 && Utils::String::startsWith(value, "1-")) // "players"
+	// {
+	// 	mMap[id] = Utils::String::replace(value, "1-", "");
+	// 	return;
+	// }
 
 	auto prev = mMap.find(id);
 	if (prev != mMap.cend() && prev->second == value)
@@ -345,6 +405,11 @@ void MetaDataList::set(const std::string& key, const std::string& value)
 		return;
 
 	set(getId(key), value);
+}
+
+const bool MetaDataList::exists(const std::string& key) const
+{
+	return mGameIdMap.find(key) != mGameIdMap.cend();
 }
 
 const std::string MetaDataList::get(const std::string& key, bool resolveRelativePaths) const
@@ -412,6 +477,8 @@ void MetaDataList::importScrappedMetadata(const MetaDataList& source)
 			type &= ~MetaDataImportType::Types::CARTRIDGE;		
 	}
 
+	bool scrapeDescription = Settings::getInstance()->getBool("ScrapeDescription");
+
 	for (auto mdd : getMDD())
 	{
 		if (mdd.isStatistic && mdd.id != MetaDataId::ScraperId)
@@ -419,6 +486,12 @@ void MetaDataList::importScrappedMetadata(const MetaDataList& source)
 
 		if (mdd.id == MetaDataId::KidGame) // Not scrapped yet
 			continue;
+
+		if (mdd.id == MetaDataId::Desc && !scrapeDescription)
+		{
+			if (!get(mdd.id).empty())
+				continue;
+		}
 
 		if (mdd.id == MetaDataId::Region || mdd.id == MetaDataId::Language) // Not scrapped
 			continue;
@@ -481,4 +554,27 @@ std::string MetaDataList::getRelativeRootPath()
 		return mRelativeTo->getStartPath();
 
 	return "";
+}
+
+void MetaDataList::setScrapeDate(const std::string& scraper)
+{
+	auto it = KnowScrapersIds.find(scraper);
+	if (it == KnowScrapersIds.cend())
+		return;
+
+	mScrapeDates[it->second] = Utils::Time::DateTime::now();
+	mWasChanged = true;
+}
+
+Utils::Time::DateTime* MetaDataList::getScrapeDate(const std::string& scraper)
+{
+	auto it = KnowScrapersIds.find(scraper);
+	if (it != KnowScrapersIds.cend())
+	{
+		auto itd = mScrapeDates.find(it->second);
+		if (itd != mScrapeDates.cend())
+			return &itd->second;
+	}
+
+	return nullptr;
 }

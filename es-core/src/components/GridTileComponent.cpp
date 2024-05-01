@@ -19,7 +19,7 @@
 
 #define VIDEODELAY	100
 
-GridTileComponent::GridTileComponent(Window* window) : GuiComponent(window), mBackground(window), mLabel(window), mVideo(nullptr), mVideoPlaying(false)
+GridTileComponent::GridTileComponent(Window* window) : GuiComponent(window), mBackground(window), mLabel(window), mVideo(nullptr), mVideoPlaying(false), mHasItemTemplate(false)
 {
 	mHasStandardMarquee = false;
 	mSelectedZoomPercent = 1.0f;
@@ -118,9 +118,12 @@ std::shared_ptr<TextureResource> GridTileComponent::getTexture(bool marquee)
 
 void GridTileComponent::resize()
 {
-	auto currentProperties = getCurrentProperties();
+	if (mHasItemTemplate)
+		return;
 
-	Vector2f size = currentProperties.Size;
+	auto& currentProperties = getCurrentProperties();
+
+	Vector2f& size = currentProperties.Size;
 	if (mSize != size)
 		setSize(size);
 
@@ -176,10 +179,16 @@ void GridTileComponent::resize()
 	// Recompute final image size if necessary
 	if (mImage != nullptr && currentProperties.Image.sizeMode == "maxSize")
 	{
-		auto origin = mImage->getOrigin();
-		auto pos = mImage->getPosition();
-		imageSize = mImage->getSize();
-		imageOffset = Vector2f(pos.x() - imageSize.x() * origin.x(), pos.y() - imageSize.y() * origin.y());
+		// If the overlay zindex < image zindex, then keep dimensions
+		if (mImageOverlay != nullptr && mImageOverlay->hasImage() && mImageOverlay->isVisible() && mImageOverlay->getZIndex() < mImage->getZIndex())
+			;
+		else
+		{
+			auto origin = mImage->getOrigin();
+			auto pos = mImage->getPosition();
+			imageSize = mImage->getSize();
+			imageOffset = Vector2f(pos.x() - imageSize.x() * origin.x(), pos.y() - imageSize.y() * origin.y());
+		}
 	}
 	
 	// Text	
@@ -302,18 +311,34 @@ void GridTileComponent::resize()
 void GridTileComponent::update(int deltaTime)
 {
 	GuiComponent::update(deltaTime);
+	
+	if (hasStoryBoard() && !isStoryBoardRunning())
+		deselectStoryboard(false);
 
-	if (mVideo != nullptr && mVideo->isPlaying() && mVideo->isFading())
+	for (auto comp : enumerateExtraChildrens())
+		if (comp->hasStoryBoard() && !comp->isStoryBoardRunning())
+			comp->deselectStoryboard(false);
+			
+	if (mVideo != nullptr && mVideo->isPlaying() && (mVideo->isFading() || !ALLOWANIMATIONS))
 		resize();
 }
 
 void GridTileComponent::renderBackground(const Transform4x4f& parentTrans)
 {
-	if (!isVisible())
+	if (mHasItemTemplate)
+		return;
+
+	if (!mVisible)
 		return;
 
 	Transform4x4f trans = parentTrans * getTransform();
 	mBackground.render(trans);
+
+	if (Settings::DebugMouse() && mIsMouseOver)
+	{
+		Renderer::setMatrix(trans);
+		Renderer::drawRect(0.0f, 0.0f, mSize.x(), mSize.y(), 0xFF000033, 0xFF000033);
+	}
 }
 
 bool GridTileComponent::hasMarquee()
@@ -323,52 +348,87 @@ bool GridTileComponent::hasMarquee()
 
 bool GridTileComponent::isMinSizeTile()
 {
-	auto currentProperties = getCurrentProperties(false);
+	auto& currentProperties = getCurrentProperties(false);
 	return (currentProperties.Image.sizeMode == "minSize");
 }
 
-void GridTileComponent::renderContent(const Transform4x4f& parentTrans)
+void GridTileComponent::renderContent(const Transform4x4f& parentTrans, bool renderBackground)
 {
-	if (!isVisible())
+	if (!mVisible)
 		return;
 
 	Transform4x4f trans = parentTrans * getTransform();
 
-	Vector2f clipPos(trans.translation().x(), trans.translation().y());
-	if (!Renderer::isVisibleOnScreen(clipPos.x(), clipPos.y(), mSize.x() * trans.r0().x(), mSize.y() * trans.r1().y()))
+	if (renderBackground)
+		mBackground.render(trans);
+
+	auto rect = Renderer::getScreenRect(trans, mSize);
+
+	if (mRotation == 0 && trans.r0().y() == 0 && !Renderer::isVisibleOnScreen(rect))
 		return;
 
-	auto currentProperties = getCurrentProperties(false);
+	if (mHasItemTemplate)
+	{
+		for (auto child : mChildren)
+			if (child->isVisible() && child->getExtraType() == ExtraType::EXTRACHILDREN)
+				child->render(trans);
 
-	float padding = currentProperties.Padding.x();
-	float topPadding = currentProperties.Padding.y();
-	float bottomPadding = topPadding;
+		return;
+	}
 
-	if (currentProperties.Label.Visible && !mLabelMerged)
-		bottomPadding = std::max((int)topPadding, (int)(mSize.y() * currentProperties.Label.size.y()));
+	auto& currentProperties = getCurrentProperties(false);
 
-	Vector2i pos((int)Math::round(trans.translation()[0] + padding), (int)Math::round(trans.translation()[1] + topPadding));
-	Vector2i size((int)Math::round(mSize.x()* trans.r0().x() - 2 * padding), (int)Math::round(mSize.y()* trans.r1().y() - topPadding - bottomPadding));
-	
-	bool isDefaultImage = mIsDefaultImage;
-	bool isMinSize = !isDefaultImage && currentProperties.Image.sizeMode == "minSize";
-
+	bool isMinSize = !mIsDefaultImage && currentProperties.Image.sizeMode == "minSize";
 	if (isMinSize)
-		Renderer::pushClipRect(pos, size);
+	{
+		float padding = currentProperties.Padding.x();
+		float topPadding = currentProperties.Padding.y();
+		float bottomPadding = topPadding;
+
+		if (currentProperties.Label.Visible && !mLabelMerged)
+			bottomPadding = std::max((int)topPadding, (int)(mSize.y() * currentProperties.Label.size.y()));
+
+		Transform4x4f tx = trans;
+		tx.translate(padding, topPadding);
+
+		int x = (int)Math::round(tx.translation()[0]);
+		int y = (int)Math::round(tx.translation()[1]);
+		int w = (int)Math::round((mSize.x() - 2 * padding) * tx.r0().x());
+		int h = (int)Math::round((mSize.y() - topPadding - bottomPadding) * tx.r1().y());
 		
+		Renderer::pushClipRect(x, y, w, h);
+	}
+
+	float refZindex = mImage != NULL ? mImage->getZIndex() : mVideo != nullptr ? mVideo->getZIndex() : 10.0f;
+
+	bool overlayDrawn = false;
+	if (mImageOverlay != nullptr && mImageOverlay->hasImage() && mImageOverlay->isVisible() && mImage != nullptr && mImageOverlay->getZIndex() < refZindex)
+	{
+		mImageOverlay->render(trans);
+		overlayDrawn = true;
+	}
+
+	for (auto child : mChildren)
+		if (child->isVisible() && child->getExtraType() == ExtraType::EXTRACHILDREN && child->getZIndex() < refZindex)
+			child->render(trans);
+
 	if (mImage != NULL)
-	{		
+	{
 		if (!isMinSize || !mSelected || mVideo == nullptr || !(mVideo->isPlaying() && !mVideo->isFading()))
 			mImage->render(trans);
 	}
 
 	if (mSelected && !mVideoPath.empty() && mVideo != nullptr)
 		mVideo->render(trans);
-	
+
 	if (!mLabelMerged && isMinSize)
 		Renderer::popClipRect();
-	
+
 	std::vector<GuiComponent*> zOrdered;
+
+	for (auto child : mChildren)
+		if (child->isVisible() && child->getExtraType() == ExtraType::EXTRACHILDREN && child->getZIndex() >= refZindex)
+			zOrdered.push_back(child);
 
 	if (mMarquee != nullptr && mMarquee->hasImage())
 		zOrdered.push_back(mMarquee);
@@ -381,25 +441,32 @@ void GridTileComponent::renderContent(const Transform4x4f& parentTrans)
 	if (mCheevos != nullptr && mCheevos->hasImage() && mCheevos->isVisible())
 		zOrdered.push_back(mCheevos);
 
-	if (mImageOverlay != nullptr && mImageOverlay->hasImage() && mImageOverlay->isVisible())
+	if (mImageOverlay != nullptr && mImageOverlay->hasImage() && mImageOverlay->isVisible() && !overlayDrawn)
 		zOrdered.push_back(mImageOverlay);
 
-	std::stable_sort(zOrdered.begin(), zOrdered.end(), [](GuiComponent* a, GuiComponent* b) { return b->getZIndex() > a->getZIndex(); });
-	
+	if (zOrdered.size() > 1)
+		std::stable_sort(zOrdered.begin(), zOrdered.end(), [](GuiComponent* a, GuiComponent* b) { return b->getZIndex() > a->getZIndex(); });
+
 	for (auto comp : zOrdered)
 		comp->render(trans);
-		
+
 	if (mLabelMerged && isMinSize)
 		Renderer::popClipRect();
 }
 
 void GridTileComponent::render(const Transform4x4f& parentTrans)
 {
-	if (!isVisible())
+	if (!mVisible)
 		return;
 
-	renderBackground(parentTrans);
-	renderContent(parentTrans);
+	if (Settings::DebugMouse() && mIsMouseOver)
+	{
+		Transform4x4f trans = parentTrans * getTransform();
+		Renderer::setMatrix(trans);
+		Renderer::drawRect(0.0f, 0.0f, mSize.x(), mSize.y(), 0xFF000033, 0xFF000033);
+	}
+
+	renderContent(parentTrans, true);
 }
 
 void GridTileComponent::createMarquee()
@@ -457,9 +524,11 @@ void GridTileComponent::createVideo()
 	if (mVideo != nullptr)
 		return;
 
-	mVideo = new VideoVlcComponent(mWindow, "");
+	auto vlc = new VideoVlcComponent(mWindow);
+	vlc->setEffect(VideoVlcFlags::SIZE);
 
 	// video
+	mVideo = vlc;
 	mVideo->setOrigin(0.5f, 0.5f);
 	mVideo->setStartDelay(VIDEODELAY);
 	mVideo->setDefaultZIndex(11);
@@ -561,6 +630,8 @@ bool GridImageProperties::applyTheme(const ThemeData::ThemeElement* elem)
 
 	if (elem && elem->has("roundCorners"))
 		roundCorners = elem->get<float>("roundCorners");
+
+	ThemeData::parseCustomShader(elem, &customShader);
 
 	return true;
 }
@@ -670,7 +741,42 @@ void GridTileComponent::applyTheme(const std::shared_ptr<ThemeData>& theme, cons
 
 	resetProperties();
 
-	const ThemeData::ThemeElement* grid = theme->getElement(view, "gamegrid", "imagegrid");
+	const ThemeData::ThemeElement* grid = theme->getElement(view, view == "system" ? "imagegrid" : "gamegrid", "imagegrid");
+	if (grid)
+	{
+		auto itemTemplate = std::find_if(grid->children.cbegin(), grid->children.cend(), [](const std::pair<std::string, ThemeData::ThemeElement> ss) { return ss.first == "itemTemplate"; });
+		if (itemTemplate != grid->children.cend())
+		{
+			mHasItemTemplate = true;
+			mScaleOrigin = Vector2f::Zero();
+
+			applyStoryboard(&itemTemplate->second);
+			loadThemedChildren(&itemTemplate->second);
+
+			mBackground.setVisible(false);
+
+			if (mImage != nullptr)
+			{
+				removeChild(mImage);
+				delete mImage;
+				mImage = nullptr;
+			}
+
+			if (mVideo != nullptr)
+			{
+				removeChild(mVideo);
+				delete mVideo;
+				mVideo = nullptr;
+			}
+
+			removeChild(&mBackground);
+			removeChild(&mLabel);
+
+			return;
+		}
+	}
+
+	// Old Non-Templated grid
 	if (grid && grid->has("showVideoAtDelay"))
 	{
 		createVideo();
@@ -693,6 +799,7 @@ void GridTileComponent::applyTheme(const std::shared_ptr<ThemeData>& theme, cons
 	{
 		applyThemeToProperties(elem, mDefaultProperties);
 		applyThemeToProperties(elem, mSelectedProperties);		
+		loadThemedChildren(elem);
 	}
 
 	// Apply theme to the selected gridtile
@@ -868,7 +975,8 @@ void GridTileComponent::applyTheme(const std::shared_ptr<ThemeData>& theme, cons
 	mVideoPlayingProperties = mSelectedProperties;
 
 	if (!mVideoPlayingProperties.Label.applyTheme(theme->getElement(view, "gridtile:videoplaying", "text")))
-		mVideoPlayingProperties.Label.applyTheme(theme->getElement(view, "gridtile.text:videoplaying", "text"));
+		if (!mVideoPlayingProperties.Label.applyTheme(theme->getElement(view, "gridtile.text:videoplaying", "text")))
+			mVideoPlayingProperties.Label = mSelectedProperties.Label;
 
 	mVideoPlayingProperties.Image.applyTheme(theme->getElement(view, "gridtile.image:videoplaying", "image"));
 	mVideoPlayingProperties.Marquee.applyTheme(theme->getElement(view, "gridtile.marquee:videoplaying", "image"));
@@ -897,6 +1005,9 @@ bool GridTileComponent::isSelected() const
 
 void GridTileComponent::setImage(const std::string& path, bool isDefaultImage)
 {
+	if (mImage == nullptr)
+		return;
+
 	if (path == ":/folder.svg" || path == ":/cartridge.svg")
 		mIsDefaultImage = true;
 	else
@@ -906,7 +1017,7 @@ void GridTileComponent::setImage(const std::string& path, bool isDefaultImage)
 		return;
 
 	mCurrentPath = path;
-	
+
 	if (mSelectedProperties.Size.x() > mSize.x())
 		mImage->setImage(path, false, MaxSizeInfo(mSelectedProperties.Size, mSelectedProperties.Image.sizeMode != "maxSize"), false);
 	else
@@ -953,6 +1064,8 @@ void GridTileComponent::setFavorite(bool favorite)
 
 void GridTileComponent::resetImages()
 {
+	updateBindings(nullptr);
+
 	setLabel("");
 	setImage("");
 	setMarquee("");
@@ -987,15 +1100,86 @@ void GridTileComponent::setVideo(const std::string& path, float defaultDelay)
 	resize();
 }
 
+void GridTileComponent::handleStoryBoard(bool activate)
+{
+	if (hasStoryBoard() && (isStoryBoardRunning("activate") || isStoryBoardRunning("deactivate")))
+		deselectStoryboard(false);
+
+	if (selectStoryboard(activate ? "activate" : "deactivate"))
+		startStoryboard();
+	else if (selectStoryboard())
+		startStoryboard();
+
+	for (auto comp : enumerateExtraChildrens())
+	{
+		if (comp->isStoryBoardRunning("activate") || comp->isStoryBoardRunning("deactivate"))
+			comp->deselectStoryboard(false);
+
+		if (comp->selectStoryboard(activate ? "activate" : "deactivate"))
+		{
+			comp->startStoryboard();
+			comp->update(0);
+		}
+		else if (comp->selectStoryboard())
+		{
+			if (!comp->isStoryBoardRunning())
+			{
+				comp->startStoryboard();
+				comp->update(0);
+			}
+		}
+		else if (!activate)
+		{
+			if (comp->isStoryBoardRunning("scroll"))
+				comp->deselectStoryboard(false);
+
+			if (comp->selectStoryboard("scroll"))
+			{
+				comp->startStoryboard();
+				comp->update(0);
+			}
+		}
+	}
+}
+
 void GridTileComponent::onShow()
 {
 	GuiComponent::onShow();	
+
+	if (mSelected)
+		handleStoryBoard(true);
+	else
+	{
+		if (selectStoryboard())
+			startStoryboard();
+
+		for (auto comp : enumerateExtraChildrens())
+		{
+			if (comp->selectStoryboard())
+				comp->startStoryboard();
+			else if (comp->selectStoryboard("scroll"))
+				comp->startStoryboard();
+		}
+	}
+
 	resize();
 }
 
 void GridTileComponent::onHide()
 {
-	GuiComponent::onHide();	
+	GuiComponent::onHide();		
+
+	if (mSelected)
+	{
+		if (hasStoryBoard() && isStoryBoardRunning())
+			deselectStoryboard(true);
+
+		for (auto comp : enumerateExtraChildrens())
+		{
+			if (comp->hasStoryBoard() && comp->isStoryBoardRunning())
+				comp->deselectStoryboard(true);
+		}
+	}
 }
 
 void GridTileComponent::startVideo()
@@ -1018,20 +1202,40 @@ void GridTileComponent::stopVideo()
 		mVideo->setVideo("");
 }
 
-void GridTileComponent::setSelected(bool selected, bool allowAnimation, Vector3f* pPosition, bool force)
+void GridTileComponent::setSelected(bool selected, bool allowAnimation, Vector3f* pPosition, bool force, bool startsVideo)
 {
 	if (!isShowing() || !ALLOWANIMATIONS)
 		allowAnimation = false;
 
 	if (mSelected == selected && !force)
 	{
-		if (mSelected)
+		if (mHasItemTemplate && !mSelected)
+		{
+			if (selectStoryboard("scroll"))
+				startStoryboard();
+
+			for (auto comp : enumerateExtraChildrens())
+			{
+				if (comp->isStoryBoardRunning("scroll"))
+					comp->deselectStoryboard(false);
+
+				if (comp->selectStoryboard("scroll"))
+					comp->startStoryboard();
+			}
+		}
+		else if (mSelected && startsVideo)
 			startVideo();
 
 		return;
 	}
 
+	if (mSelected != selected)
+		handleStoryBoard(selected);
+
 	mSelected = selected;
+
+	if (mHasItemTemplate)
+		return;
 
 	if (!mSelected)
 	{
@@ -1047,7 +1251,9 @@ void GridTileComponent::setSelected(bool selected, bool allowAnimation, Vector3f
 
 			this->setSelectedZoom(1);
 			mAnimPosition = Vector3f(0, 0, 0);
-			startVideo();
+
+			if (startsVideo)
+				startVideo();
 
 			resize();
 		}
@@ -1067,10 +1273,11 @@ void GridTileComponent::setSelected(bool selected, bool allowAnimation, Vector3f
 			};
 
 			cancelAnimation(3);
-			setAnimation(new LambdaAnimation(func, 250), 0, [this] {
+			setAnimation(new LambdaAnimation(func, 250), 0, [this, startsVideo] {
 				this->setSelectedZoom(1);
 				mAnimPosition = Vector3f(0, 0, 0);
-				startVideo();
+				if (startsVideo)
+					startVideo();
 			}, false, 3);
 		}
 	}
@@ -1181,6 +1388,8 @@ void GridImageProperties::mixProperties(GridImageProperties& def, GridImagePrope
 	colorEnd = mixColors(def.colorEnd, sel.colorEnd, percent);
 	reflexion = mixVectors(def.reflexion, sel.reflexion, percent);
 	roundCorners = mixFloat(def.roundCorners, sel.roundCorners, percent);
+
+	customShader = percent >= 0.02f ? sel.customShader : def.customShader;
 }
 
 void GridTextProperties::mixProperties(GridTextProperties& def, GridTextProperties& sel, float percent)
@@ -1200,9 +1409,9 @@ void GridTextProperties::mixProperties(GridTextProperties& def, GridTextProperti
 	padding = mixVectors(def.padding, sel.padding, percent);
 }
 
-GridTileProperties GridTileComponent::getCurrentProperties(bool mixValues)
+GridTileProperties& GridTileComponent::getCurrentProperties(bool mixValues)
 {
-	GridTileProperties prop = mSelected ? mSelectedProperties : mDefaultProperties;
+	GridTileProperties& prop = mSelected ? mSelectedProperties : mDefaultProperties;
 
 	if (mSelectedZoomPercent == 0.0f || mSelectedZoomPercent == 1.0f)
 		if (!mSelected || (mVideo != nullptr && !mVideo->isPlaying()))
@@ -1210,13 +1419,15 @@ GridTileProperties GridTileComponent::getCurrentProperties(bool mixValues)
 
 	if (mixValues)
 	{
+		mMixedProperties = prop;
+
 		GridTileProperties* from = &mDefaultProperties;
 		GridTileProperties* to = &mSelectedProperties;
 		float pc = mSelectedZoomPercent;
 		
 		if (mSelected && mVideo != nullptr && mVideo->isPlaying())
 		{
-			if (!mVideo->isFading())
+			if (!mVideo->isFading() || !ALLOWANIMATIONS)
 				return mVideoPlayingProperties;
 
 			from = &mSelectedProperties;
@@ -1226,16 +1437,18 @@ GridTileProperties GridTileComponent::getCurrentProperties(bool mixValues)
 			pc = Math::lerp(0, 1, t*t*t + 1);
 		}
 
-		prop.Size = mixVectors(from->Size, to->Size, pc);
-		prop.Padding = mixVectors(from->Padding, to->Padding, pc);
+		mMixedProperties.Size = mixVectors(from->Size, to->Size, pc);
+		mMixedProperties.Padding = mixVectors(from->Padding, to->Padding, pc);
 
-		prop.Label.mixProperties(from->Label, to->Label, pc);
-		prop.Image.mixProperties(from->Image, to->Image, pc);
-		prop.Marquee.mixProperties(from->Marquee, to->Marquee, pc);
+		mMixedProperties.Label.mixProperties(from->Label, to->Label, pc);
+		mMixedProperties.Image.mixProperties(from->Image, to->Image, pc);
+		mMixedProperties.Marquee.mixProperties(from->Marquee, to->Marquee, pc);
 				
-		prop.Favorite.mixProperties(from->Favorite, to->Favorite, pc);
-		prop.Cheevos.mixProperties(from->Cheevos, to->Cheevos, pc);
-		prop.ImageOverlay.mixProperties(from->ImageOverlay, to->ImageOverlay, pc);
+		mMixedProperties.Favorite.mixProperties(from->Favorite, to->Favorite, pc);
+		mMixedProperties.Cheevos.mixProperties(from->Cheevos, to->Cheevos, pc);
+		mMixedProperties.ImageOverlay.mixProperties(from->ImageOverlay, to->ImageOverlay, pc);
+		
+		return mMixedProperties;
 	}
 	else if (mSelected && mVideo != nullptr && mVideo->isPlaying() && !mVideo->isFading())
 		return mVideoPlayingProperties;
@@ -1303,4 +1516,45 @@ void GridTileComponent::forceMarquee(const std::string& path)
 Vector3f GridTileComponent::getLaunchTarget()
 {
 	return Vector3f(getCenter().x(), getCenter().y(), 0);
+}
+
+void GridTileComponent::updateBindings(IBindable* bindable)
+{
+	if (bindable != nullptr)
+	{
+		std::vector<IBindable*> bindables;
+
+		IBindable* currentParent = bindable;
+
+		auto childs = enumerateExtraChildrens();
+		for (auto comp : childs)
+		{
+			auto id = comp->getTag();
+			if (id.empty() || id == comp->getThemeTypeName())
+				continue;
+
+			IBindable* bindable = new ComponentBinding(comp, currentParent);
+			bindables.push_back(bindable);
+
+			currentParent = bindable;
+		}
+
+		GridTemplateBinding localBinding(this, Utils::String::trim(mLabel.getText()), currentParent);
+		GuiComponent::updateBindings(&localBinding);
+
+		for (auto bindable : bindables)
+			delete bindable;
+	}
+	else
+		GuiComponent::updateBindings(bindable);
+}
+
+bool GridTileComponent::hasFavoriteMedia() 
+{ 	
+	for (auto comp : enumerateExtraChildrens())
+		for (auto xp : comp->getBindingExpressions())
+			if (xp.second == "{game:favorite}")
+				return true;
+
+	return mFavorite != nullptr; 
 }

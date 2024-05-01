@@ -9,7 +9,7 @@
 #include "FileSorts.h"
 #include "Log.h"
 #include "MameNames.h"
-#include "platform.h"
+#include "utils/Platform.h"
 #include "Scripting.h"
 #include "SystemData.h"
 #include "VolumeControl.h"
@@ -29,10 +29,43 @@
 #include "SaveStateRepository.h"
 #include "Genres.h"
 #include "TextToSpeech.h"
+#include "LocaleES.h"
+#include "guis/GuiMsgBox.h"
+#include "Paths.h"
+#include "resources/TextureData.h"
+
+using namespace Utils::Platform;
+
+static std::map<std::string, std::function<BindableProperty(FileData*)>> properties =
+{
+	{ "name",				[](FileData* file) { return file->getName(); } },
+	{ "rom",				[](FileData* file) { return BindableProperty(Utils::FileSystem::getFileName(file->getPath()), BindablePropertyType::String); } },
+	{ "stem",				[](FileData* file) { return BindableProperty(Utils::FileSystem::getStem(file->getPath()), BindablePropertyType::String); } },
+	{ "path",				[](FileData* file) { return BindableProperty(file->getPath(), BindablePropertyType::Path); } },
+	{ "image",				[](FileData* file) { return BindableProperty(file->getImagePath(), BindablePropertyType::Path); } },
+	{ "thumbnail",			[](FileData* file) { return BindableProperty(file->getThumbnailPath(false), BindablePropertyType::Path); } },
+	{ "video",				[](FileData* file) { return BindableProperty(file->getVideoPath(), BindablePropertyType::Path); } },
+	{ "marquee",			[](FileData* file) { return BindableProperty(file->getMarqueePath(), BindablePropertyType::Path); } },
+	{ "favorite",			[](FileData* file) { return file->getFavorite(); } },
+	{ "hidden",				[](FileData* file) { return file->getHidden(); } },
+	{ "kidGame",			[](FileData* file) { return file->getKidGame(); } },
+	{ "gunGame",			[](FileData* file) { return file->isLightGunGame(); } },
+	{ "wheelGame",			[](FileData* file) { return file->isWheelGame(); } },
+	{ "cheevos",			[](FileData* file) { return file->hasCheevos(); } },
+	{ "genre",			    [](FileData* file) { return file->getGenre(); } },
+	{ "hasKeyboardMapping", [](FileData* file) { return file->hasKeyboardMapping(); } },	
+	{ "systemName",			[](FileData* file) { return file->getSourceFileData()->getSystem()->getFullName(); } },
+};
+
+FileData* FileData::mRunningGame = nullptr;
 
 FileData::FileData(FileType type, const std::string& path, SystemData* system)
 	: mPath(path), mType(type), mSystem(system), mParent(nullptr), mDisplayName(nullptr), mMetadata(type == GAME ? GAME_METADATA : FOLDER_METADATA) // metadata is REALLY set in the constructor!
 {
+#ifdef _ENABLEEMUELEC
+    mSortName = nullptr;
+#endif
+
 	// metadata needs at least a name field (since that's what getName() will return)
 	if (mMetadata.get(MetaDataId::Name).empty() && !mPath.empty())
 		mMetadata.set(MetaDataId::Name, getDisplayName());
@@ -103,11 +136,16 @@ FileData::~FileData()
 	if (mDisplayName)
 		delete mDisplayName;
 
-	if(mParent)
+#ifdef _ENABLEEMUELEC
+    if (mSortName)
+        delete mSortName;
+#endif
+
+	if (mParent)
 		mParent->removeChild(this);
 
-	if(mType == GAME)
-		mSystem->removeFromIndex(this);	
+	if (mType == GAME)
+		mSystem->removeFromIndex(this);
 }
 
 std::string& FileData::getDisplayName()
@@ -115,7 +153,7 @@ std::string& FileData::getDisplayName()
 	if (mDisplayName == nullptr)
 	{
 		std::string stem = Utils::FileSystem::getStem(getPath());
-		if (mSystem && mSystem->hasPlatformId(PlatformIds::ARCADE) || mSystem->hasPlatformId(PlatformIds::NEOGEO))
+		if (mSystem && (mSystem->hasPlatformId(PlatformIds::ARCADE) || mSystem->hasPlatformId(PlatformIds::NEOGEO)))
 			stem = MameNames::getInstance()->getRealName(stem);
 
 		mDisplayName = new std::string(stem);
@@ -129,50 +167,54 @@ std::string FileData::getCleanName()
 	return Utils::String::removeParenthesis(getDisplayName());
 }
 
-const std::string FileData::getThumbnailPath()
+std::string FileData::findLocalArt(const std::string& type, std::vector<std::string> exts)
+{
+	if (Settings::getInstance()->getBool("LocalArt"))
+	{
+		for (auto ext : exts)
+		{
+			std::string path = getSystemEnvData()->mStartPath + "/images/" + getDisplayName() + (type.empty() ? "" :  "-" + type) + ext;
+			if (Utils::FileSystem::exists(path))
+				return path;
+
+			if (type == "video")
+			{
+				path = getSystemEnvData()->mStartPath + "/videos/" + getDisplayName() + "-" + type + ext;
+				if (Utils::FileSystem::exists(path))
+					return path;
+
+				path = getSystemEnvData()->mStartPath + "/videos/" + getDisplayName() + ext;
+				if (Utils::FileSystem::exists(path))
+					return path;
+			}
+		}
+	}
+
+	return "";
+}
+
+const std::string FileData::getThumbnailPath(bool fallbackWithImage)
 {
 	std::string thumbnail = getMetadata(MetaDataId::Thumbnail);
 
 	// no thumbnail, try image
-	if(thumbnail.empty())
+	if (thumbnail.empty())
 	{
-		// no image, try to use local image
-		if(thumbnail.empty() && Settings::getInstance()->getBool("LocalArt"))
-		{
-			const char* extList[2] = { ".png", ".jpg" };
-			for(int i = 0; i < 2; i++)
-			{
-				if(thumbnail.empty())
-				{
-					std::string path = getSystemEnvData()->mStartPath + "/images/" + getDisplayName() + "-thumb" + extList[i];
-					if (Utils::FileSystem::exists(path))
-					{
-						setMetadata(MetaDataId::Thumbnail, path);
-						thumbnail = path;
-					}
-				}
-			}
-		}
-
-		if (thumbnail.empty())
-			thumbnail = getMetadata(MetaDataId::Image);
+		thumbnail = findLocalArt("thumb");
+		if (!thumbnail.empty())
+			setMetadata(MetaDataId::Thumbnail, thumbnail);
 
 		// no image, try to use local image
-		if (thumbnail.empty() && Settings::getInstance()->getBool("LocalArt"))
+		if (fallbackWithImage)
 		{
-			const char* extList[2] = { ".png", ".jpg" };
-			for (int i = 0; i < 2; i++)
-			{
-				if (thumbnail.empty())
-				{
-					std::string path = getSystemEnvData()->mStartPath + "/images/" + getDisplayName() + "-image" + extList[i];					
-					if (!Utils::FileSystem::exists(path))
-						path = getSystemEnvData()->mStartPath + "/images/" + getDisplayName() + extList[i];
+			if (thumbnail.empty())
+				thumbnail = getMetadata(MetaDataId::Image);
 
-					if (Utils::FileSystem::exists(path))
-						thumbnail = path;
-				}
-			}
+			if (thumbnail.empty())
+				thumbnail = findLocalArt("image");
+
+			if (thumbnail.empty())
+				thumbnail = findLocalArt();
 		}
 
 		if (thumbnail.empty() && getType() == GAME && getSourceFileData()->getSystem()->hasPlatformId(PlatformIds::IMAGEVIEWER))
@@ -184,10 +226,8 @@ const std::string FileData::getThumbnailPath()
 				thumbnail = getPath();
 
 				auto ext = Utils::String::toLower(Utils::FileSystem::getExtension(thumbnail));
-				if (ext == ".pdf" && ResourceManager::getInstance()->fileExists(":/pdf.jpg"))
+				if (TextureData::PdfHandler == nullptr && ext == ".pdf" && ResourceManager::getInstance()->fileExists(":/pdf.jpg"))
 					return ":/pdf.jpg";
-				else if ((ext == ".mp4" || ext == ".avi" || ext == ".mkv" || ext == ".webm") && ResourceManager::getInstance()->fileExists(":/vid.jpg"))
-					return ":/vid.jpg";
 			}
 		}
 
@@ -196,17 +236,17 @@ const std::string FileData::getThumbnailPath()
 	return thumbnail;
 }
 
-const bool FileData::getFavorite()
+const bool FileData::getFavorite() const
 {
 	return getMetadata(MetaDataId::Favorite) == "true";
 }
 
-const bool FileData::getHidden()
+const bool FileData::getHidden() const
 {
 	return getMetadata(MetaDataId::Hidden) == "true";
 }
 
-const bool FileData::getKidGame()
+const bool FileData::getKidGame() const
 {
 	auto data = getMetadata(MetaDataId::KidGame);
 	return data != "false" && !data.empty();
@@ -216,6 +256,38 @@ const bool FileData::hasCheevos()
 {
 	if (Utils::String::toInteger(getMetadata(MetaDataId::CheevosId)) > 0)
 		return getSourceFileData()->getSystem()->isCheevosSupported();
+
+	return false;
+}
+
+bool FileData::hasAnyMedia()
+{
+	if (Utils::FileSystem::exists(getImagePath()) || Utils::FileSystem::exists(getThumbnailPath(false)) || Utils::FileSystem::exists(getVideoPath()))
+		return true;
+
+	for (auto mdd : mMetadata.getMDD())
+	{
+		if (mdd.type != MetaDataType::MD_PATH)
+			continue;
+
+		std::string path = mMetadata.get(mdd.key);
+		if (path.empty())
+			continue;
+
+		if (mdd.id == MetaDataId::Manual || mdd.id == MetaDataId::Magazine)
+		{
+			if (Utils::FileSystem::exists(path))
+				return true;
+		}
+		else if (mdd.id != MetaDataId::Image && mdd.id != MetaDataId::Thumbnail)
+		{
+			if (Utils::FileSystem::isImage(path))
+				continue;
+
+			if (Utils::FileSystem::exists(path))
+				return true;
+		}
+	}
 
 	return false;
 }
@@ -233,9 +305,10 @@ std::vector<std::string> FileData::getFileMedias()
 			continue;
 
 		std::string path = mMetadata.get(mdd.key);
+		if (path.empty())
+			continue;
 
-		auto ext = Utils::String::toLower(Utils::FileSystem::getExtension(path));
-		if (ext != ".jpg" && ext != ".png" && ext != ".jpeg" && ext != ".gif")
+		if (!Utils::FileSystem::isImage(path))
 			continue;
 		
 		if (Utils::FileSystem::exists(path))
@@ -258,29 +331,49 @@ const std::string& FileData::getName()
 	return mMetadata.getName();
 }
 
+#ifdef _ENABLEEMUELEC
+
+const std::string& FileData::getSortName()
+{
+    if (mSortName == nullptr)
+    {
+        mSortName = new std::string( getMetadata(MetaDataId::SortName));
+    }
+    return *mSortName;
+}
+
+const std::string FileData::getSortOrName()
+{
+	std::string s( getSortName());
+  if (!s.empty())
+    return s;
+  return getName();
+}
+
+#endif
+
 const std::string FileData::getVideoPath()
 {
 	std::string video = getMetadata(MetaDataId::Video);
 	
 	// no video, try to use local video
-	if(video.empty() && Settings::getInstance()->getBool("LocalArt"))
+	if (video.empty())
 	{
-		std::string path = getSystemEnvData()->mStartPath + "/images/" + getDisplayName() + "-video.mp4";
-		if (Utils::FileSystem::exists(path))
-		{
-			setMetadata(MetaDataId::Video, path);
-			video = path;
-		}
+		video = findLocalArt("video", { ".mp4" });
+		if (!video.empty())
+			setMetadata(MetaDataId::Video, video);
 	}
-
+	
 	if (video.empty() && getSourceFileData()->getSystem()->hasPlatformId(PlatformIds::IMAGEVIEWER))
 	{
 		if (getType() == FOLDER && ((FolderData*)this)->mChildren.size())
 			return ((FolderData*)this)->mChildren[0]->getVideoPath();
 		else if (getType() == GAME)
 		{
-			auto ext = Utils::String::toLower(Utils::FileSystem::getExtension(getPath()));
-			if (ext == ".mp4" || ext == ".avi" || ext == ".mkv" || ext == "webm")
+			if (Utils::FileSystem::isVideo(getPath()))
+				return getPath();
+
+			if (Utils::FileSystem::isAudio(getPath()))
 				return getPath();
 		}
 	}
@@ -293,23 +386,13 @@ const std::string FileData::getMarqueePath()
 	std::string marquee = getMetadata(MetaDataId::Marquee);
 
 	// no marquee, try to use local marquee
-	if (marquee.empty() && Settings::getInstance()->getBool("LocalArt"))
+	if (marquee.empty())
 	{
-		const char* extList[2] = { ".png", ".jpg" };
-		for(int i = 0; i < 2; i++)
-		{
-			if(marquee.empty())
-			{
-				std::string path = getSystemEnvData()->mStartPath + "/images/" + getDisplayName() + "-marquee" + extList[i];
-				if (Utils::FileSystem::exists(path))
-				{
-					setMetadata(MetaDataId::Marquee, path);
-					marquee = path;
-				}
-			}
-		}
+		marquee = findLocalArt("marquee");
+		if (!marquee.empty())
+			setMetadata(MetaDataId::Marquee, marquee);
 	}
-
+	
 	return marquee;
 }
 
@@ -318,27 +401,20 @@ const std::string FileData::getImagePath()
 	std::string image = getMetadata(MetaDataId::Image);
 
 	// no image, try to use local image
-	if(image.empty())
-	{		
-		if (Settings::getInstance()->getBool("LocalArt"))
-		{
-			const char* extList[2] = { ".png", ".jpg" };
-			for (int i = 0; i < 2; i++)
-			{
-				if (image.empty())
-				{
-					std::string path = getSystemEnvData()->mStartPath + "/images/" + getDisplayName() + "-image" + extList[i];
-					if (!Utils::FileSystem::exists(path))
-						path = getSystemEnvData()->mStartPath + "/images/" + getDisplayName() + extList[i];
+	if (image.empty())
+	{
+		auto romExt = Utils::String::toLower(Utils::FileSystem::getExtension(getPath()));
+		if (romExt == ".png" || (getSystemName() == "pico8" && romExt == ".p8"))
+			return getPath();
 
-					if (Utils::FileSystem::exists(path))
-					{
-						setMetadata(MetaDataId::Image, path);
-						image = path;
-					}
-				}
-			}
-		}
+		if (image.empty())
+			image = findLocalArt("image");
+
+		if (image.empty())
+			image = findLocalArt();
+
+		if (!image.empty())
+			setMetadata(MetaDataId::Image, image);
 
 		if (image.empty() && getSourceFileData()->getSystem()->hasPlatformId(PlatformIds::IMAGEVIEWER))
 		{
@@ -349,10 +425,11 @@ const std::string FileData::getImagePath()
 				image = getPath();
 
 				auto ext = Utils::String::toLower(Utils::FileSystem::getExtension(image));
-				if (ext == ".pdf" && ResourceManager::getInstance()->fileExists(":/pdf.jpg"))
+				if (TextureData::PdfHandler == nullptr && ext == ".pdf" && ResourceManager::getInstance()->fileExists(":/pdf.jpg"))
 					return ":/pdf.jpg";
-				else if ((ext == ".mp4" || ext == ".avi" || ext == ".mkv" || ext == ".webm") && ResourceManager::getInstance()->fileExists(":/vid.jpg"))
-					return ":/vid.jpg";
+
+				if (Utils::FileSystem::isAudio(image) && ResourceManager::getInstance()->fileExists(":/mp3.jpg"))
+					return ":/mp3.jpg";
 			}
 		}
 	}
@@ -360,7 +437,8 @@ const std::string FileData::getImagePath()
 	return image;
 }
 
-std::string FileData::getKey() {
+std::string FileData::getKey()
+{
 	return getFileName();
 }
 
@@ -369,7 +447,7 @@ const bool FileData::isArcadeAsset()
 	if (mSystem && (mSystem->hasPlatformId(PlatformIds::ARCADE) || mSystem->hasPlatformId(PlatformIds::NEOGEO)))
 	{	
 		const std::string stem = Utils::FileSystem::getStem(getPath());
-		return MameNames::getInstance()->isBios(stem) || MameNames::getInstance()->isDevice(stem);		
+		return MameNames::getInstance()->isBiosOrDevice(stem);		
 	}
 
 	return false;
@@ -385,16 +463,28 @@ const bool FileData::isVerticalArcadeGame()
 
 const bool FileData::isLightGunGame()
 {
-	if (mSystem && mSystem->hasPlatformId(PlatformIds::ARCADE))
-		return MameNames::getInstance()->isLightgun(Utils::FileSystem::getStem(getPath()));
+	return MameNames::getInstance()->isLightgun(Utils::FileSystem::getStem(getPath()), mSystem->getName(), mSystem && mSystem->hasPlatformId(PlatformIds::ARCADE));
+	//return Genres::genreExists(&getMetadata(), GENRE_LIGHTGUN);
+}
 
-	return Genres::genreExists(&getMetadata(), GENRE_LIGHTGUN);
+const bool FileData::isWheelGame()
+{
+	return MameNames::getInstance()->isWheel(Utils::FileSystem::getStem(getPath()), mSystem->getName(), mSystem && mSystem->hasPlatformId(PlatformIds::ARCADE));
+	//return Genres::genreExists(&getMetadata(), GENRE_WHEEL);
 }
 
 FileData* FileData::getSourceFileData()
 {
 	return this;
 }
+
+static std::string formatCommandLineArgument(const std::string& name)
+{
+	if (name.find(" ") != std::string::npos)
+		return "\"" + Utils::String::replace(name, "\"", "\\\"") + "\"";
+
+	return Utils::String::replace(name, "\"", "\\\"");
+};
 
 std::string FileData::getlaunchCommand(LaunchGameOptions& options, bool includeControllers)
 {
@@ -406,8 +496,18 @@ std::string FileData::getlaunchCommand(LaunchGameOptions& options, bool includeC
 	if (system == nullptr)
 		return "";
 
-	// batocera / must really;-) be done before window->deinit while it closes joysticks
-	const std::string controllersConfig = InputManager::getInstance()->configureEmulators();
+	// must really;-) be done before window->deinit while it closes joysticks
+	std::string controllersConfig = InputManager::getInstance()->configureEmulators();
+
+#if WIN32
+	if (gameToUpdate->isLightGunGame())
+#else
+	if (InputManager::getInstance()->getGuns().size() && gameToUpdate->isLightGunGame())
+#endif
+		controllersConfig = controllersConfig + "-lightgun ";
+
+        if (gameToUpdate->isWheelGame())
+		controllersConfig = controllersConfig + "-wheel ";
 
 	std::string systemName = system->getName();
 	std::string emulator = getEmulator();
@@ -469,17 +569,34 @@ std::string FileData::getlaunchCommand(LaunchGameOptions& options, bool includeC
 	const std::string rom = Utils::FileSystem::getEscapedPath(getPath());
 	const std::string basename = Utils::FileSystem::getStem(getPath());
 	const std::string rom_raw = Utils::FileSystem::getPreferredPath(getPath());
-
-	command = Utils::String::replace(command, "%SYSTEM%", systemName); // batocera
+	
+	command = Utils::String::replace(command, "%SYSTEM%", systemName);
 	command = Utils::String::replace(command, "%ROM%", rom);
 	command = Utils::String::replace(command, "%BASENAME%", basename);
 	command = Utils::String::replace(command, "%ROM_RAW%", rom_raw);
 	command = Utils::String::replace(command, "%EMULATOR%", emulator);
 	command = Utils::String::replace(command, "%CORE%", core);
-	command = Utils::String::replace(command, "%HOME%", Utils::FileSystem::getHomePath());
+	command = Utils::String::replace(command, "%HOME%", Paths::getHomePath());
+	command = Utils::String::replace(command, "%GAMENAME%", formatCommandLineArgument(gameToUpdate->getName()));
+	command = Utils::String::replace(command, "%SYSTEMNAME%", formatCommandLineArgument(system->getFullName()));
 
+	// Export Game info XML is requested
+#ifdef WIN32
+	std::string fileInfo = Utils::FileSystem::combine(Utils::FileSystem::getTempPath(), "game.xml");
+#else
+	std::string fileInfo = "/tmp/game.xml";
+#endif
+
+	if (command.find("%GAMEINFOXML%") != std::string::npos && saveToXml(gameToUpdate, fileInfo, true))
+		command = Utils::String::replace(command, "%GAMEINFOXML%", Utils::FileSystem::getEscapedPath(fileInfo));
+	else
+	{
+		command = Utils::String::replace(command, "%GAMEINFOXML%", "");
+		Utils::FileSystem::removeFile(fileInfo);
+	}
+	
 	if (includeControllers)
-		command = Utils::String::replace(command, "%CONTROLLERSCONFIG%", controllersConfig); // batocera
+		command = Utils::String::replace(command, "%CONTROLLERSCONFIG%", controllersConfig);
 
 	if (options.netPlayMode != DISABLED && (forceCore || gameToUpdate->isNetplaySupported()) && command.find("%NETPLAY%") == std::string::npos)
 		command = command + " %NETPLAY%"; // Add command line parameter if the netplay option is defined at <core netplay="true"> level
@@ -492,13 +609,15 @@ std::string FileData::getlaunchCommand(LaunchGameOptions& options, bool includeC
 		if (!options.netplayClientPassword.empty())
 			pass = " -netplaypass " + options.netplayClientPassword;
 
+		// TODO : Add options.mitm_session when it's available
+
 #if WIN32
 		if (Utils::String::toLower(command).find("retroarch.exe") != std::string::npos)
 			command = Utils::String::replace(command, "%NETPLAY%", "--connect " + options.ip + " --port " + std::to_string(options.port) + " --nick " + SystemConf::getInstance()->get("global.netplay.nickname"));
 		else
 #endif
 #ifdef _ENABLEEMUELEC
-			command = Utils::String::replace(command, "%NETPLAY%", "--connect " + options.ip + " --port " + std::to_string(options.port) + " --nick " + SystemConf::getInstance()->get("global.netplay.nickname"));
+		command = Utils::String::replace(command, "%NETPLAY%", "--netplaymode " + mode + " --connect " + options.ip + " --port " + std::to_string(options.port) + " --nick " + SystemConf::getInstance()->get("global.netplay.nickname") + " --pass" + pass);
 #else
 			command = Utils::String::replace(command, "%NETPLAY%", "-netplaymode " + mode + " -netplayport " + std::to_string(options.port) + " -netplayip " + options.ip + pass);
 #endif
@@ -524,9 +643,56 @@ std::string FileData::getlaunchCommand(LaunchGameOptions& options, bool includeC
 		command = command + " -monitor " + std::to_string(monitorId);
 
 	if (SaveStateRepository::isEnabled(this))
-		command = options.saveStateInfo.setupSaveState(this, command);
+	{
+		if (options.saveStateInfo == nullptr)
+		{
+			if (getCurrentGameSetting("autosave") == "1")
+				options.saveStateInfo = system->getSaveStateRepository()->getGameAutoSave(this);
+			else
+				options.saveStateInfo = SaveStateRepository::getEmptySaveState();
+		}
+
+		command = options.saveStateInfo->setupSaveState(this, command);		
+	}
 
 	return command;
+}
+
+std::string FileData::getMessageFromExitCode(int exitCode)
+{
+	switch (exitCode)
+	{
+	case 200:
+		return _("THE EMULATOR EXITED UNEXPECTEDLY");
+	case 201:
+		return _("BAD COMMAND LINE ARGUMENTS");
+	case 202:
+		return _("INVALID CONFIGURATION");
+	case 203:
+		return _("UNKNOWN EMULATOR");
+	case 204:
+		return _("EMULATOR IS MISSING");
+	case 205:
+		return _("CORE IS MISSING");
+	case 299:
+		{
+	#if WIN32
+			std::string messageFile = Utils::FileSystem::combine(Utils::FileSystem::getTempPath(), "launch_error.log");
+	#else
+			std::string messageFile = "/tmp/launch_error.log";
+	#endif
+			if (Utils::FileSystem::exists(messageFile))
+			{
+				auto message = Utils::FileSystem::readAllText(messageFile);
+				Utils::FileSystem::removeFile(messageFile);
+
+				if (!message.empty())
+					return message;
+			}
+		}
+	}
+
+	return _("UKNOWN ERROR") + " : " + std::to_string(exitCode);
 }
 
 bool FileData::launchGame(Window* window, LaunchGameOptions options)
@@ -545,7 +711,7 @@ bool FileData::launchGame(Window* window, LaunchGameOptions options)
 	if (command.empty())
 		return false;
 
-	AudioManager::getInstance()->deinit(); // batocera
+	AudioManager::getInstance()->deinit();
 	VolumeControl::getInstance()->deinit();
 
 	bool hideWindow = Settings::getInstance()->getBool("HideWindow");
@@ -554,7 +720,7 @@ bool FileData::launchGame(Window* window, LaunchGameOptions options)
 	const std::string rom = Utils::FileSystem::getEscapedPath(getPath());
 	const std::string basename = Utils::FileSystem::getStem(getPath());
 
-	Scripting::fireEvent("game-start", rom, basename);
+	Scripting::fireEvent("game-start", rom, basename, getName());
 
 	time_t tstart = time(NULL);
 
@@ -562,13 +728,22 @@ bool FileData::launchGame(Window* window, LaunchGameOptions options)
 
 	auto p2kConv = convertP2kFile();
 
-	int exitCode = runSystemCommand(command, getDisplayName(), hideWindow ? NULL : window);
+	mRunningGame = gameToUpdate;
+
+	ProcessStartInfo process(command);
+	process.window = hideWindow ? NULL : window;
+	
+	int exitCode = process.run();
 	if (exitCode != 0)
 		LOG(LogWarning) << "...launch terminated with nonzero exit code " << exitCode << "!";
 
+	mRunningGame = nullptr;
+
 	if (SaveStateRepository::isEnabled(this))
 	{
-		options.saveStateInfo.onGameEnded(this);
+		if (options.saveStateInfo != nullptr)
+			options.saveStateInfo->onGameEnded(this);
+
 		getSourceFileData()->getSystem()->getSaveStateRepository()->refresh();
 	}
 
@@ -598,7 +773,7 @@ bool FileData::launchGame(Window* window, LaunchGameOptions options)
 		int timesPlayed = gameToUpdate->getMetadata().getInt(MetaDataId::PlayCount) + 1;
 		gameToUpdate->setMetadata(MetaDataId::PlayCount, std::to_string(static_cast<long long>(timesPlayed)));
 
-		// Batocera 5.25: how long have you played that game? (more than 10 seconds, otherwise
+		// How long have you played that game? (more than 10 seconds, otherwise
 		// you might have experienced a loading problem)
 		time_t tend = time(NULL);
 		long elapsedSeconds = difftime(tend, tstart);
@@ -621,7 +796,10 @@ bool FileData::launchGame(Window* window, LaunchGameOptions options)
 		AudioManager::getInstance()->changePlaylist(system->getTheme(), true);
 	else
 		AudioManager::getInstance()->playRandomMusic();
-
+#ifndef _ENABLEEMUELEC // EmuELEC has its own error checking
+	if (exitCode >= 200 && exitCode <= 300)
+		window->pushGui(new GuiMsgBox(window, _("AN ERROR OCCURRED") + ":\r\n" + getMessageFromExitCode(exitCode), _("OK"), nullptr, GuiMsgBoxIcon::ICON_ERROR));
+#endif
 	return exitCode == 0;
 }
 
@@ -855,9 +1033,8 @@ const std::vector<FileData*> FolderData::getChildrenListToDisplay()
 
 	std::vector<std::string> hiddenExts;
 	if (mSystem->isGameSystem() && !mSystem->isCollection())
-		for (auto ext : Utils::String::split(Settings::getInstance()->getString(mSystem->getName() + ".HiddenExt"), ';'))	
-			hiddenExts.push_back("." + Utils::String::toLower(ext));
-	
+		hiddenExts = Utils::String::split(Utils::String::toLower(Settings::getInstance()->getString(mSystem->getName() + ".HiddenExt")), ';');
+
 	FileFilterIndex* idx = sys->getIndex(false);
 	if (idx != nullptr && !idx->isFiltered())
 		idx = nullptr;
@@ -885,7 +1062,7 @@ const std::vector<FileData*> FolderData::getChildrenListToDisplay()
 
 		if (hiddenExts.size() > 0 && (*it)->getType() == GAME)
 		{
-			std::string extlow = Utils::String::toLower(Utils::FileSystem::getExtension((*it)->getFileName()));
+			std::string extlow = Utils::String::toLower(Utils::FileSystem::getExtension((*it)->getFileName(), false));
 			if (std::find(hiddenExts.cbegin(), hiddenExts.cend(), extlow) != hiddenExts.cend())
 				continue;
 		}
@@ -955,10 +1132,19 @@ const std::vector<FileData*> FolderData::getChildrenListToDisplay()
 	}
 	else
 	{
-		std::sort(ret.begin(), ret.end(), sort.comparisonFunction);
+		bool foldersFirst = Settings::ShowFoldersFirst();
+		bool favoritesFirst = getSystem()->getShowFavoritesFirst();
 
-		if (!sort.ascending)
-			std::reverse(ret.begin(), ret.end());
+		std::sort(ret.begin(), ret.end(), [sort, foldersFirst, favoritesFirst](const FileData* file1, const FileData* file2) -> bool
+			{
+				if (favoritesFirst && file1->getFavorite() != file2->getFavorite())
+					return file1->getFavorite();
+
+				if (foldersFirst && file1->getType() != file2->getType())
+					return (file1->getType() == FOLDER);
+
+				return sort.comparisonFunction(file1, file2) == sort.ascending;
+			});
 	}
 
 	return ret;
@@ -1030,17 +1216,15 @@ FileData* FolderData::findUniqueGameForFolder()
 	return nullptr;
 }
 
-std::vector<FileData*> FolderData::getFlatGameList(bool displayedOnly, SystemData* system) const 
-{
-	return getFilesRecursive(GAME, displayedOnly, system);
-}
 
-std::vector<FileData*> FolderData::getFilesRecursive(unsigned int typeMask, bool displayedOnly, SystemData* system, bool includeVirtualStorage) const
-{
-	std::vector<FileData*> out;
 
-	auto isVirtualFolder = [](FileData* file) 
-	{ 
+void FolderData::getFilesRecursiveWithContext(std::vector<FileData*>& out, unsigned int typeMask, GetFileContext* filter, bool displayedOnly, SystemData* system, bool includeVirtualStorage) const
+{
+	if (filter == nullptr)
+		return;
+
+	auto isVirtualFolder = [](FileData* file)
+	{
 		if (file->getType() == GAME)
 			return false;
 
@@ -1048,21 +1232,8 @@ std::vector<FileData*> FolderData::getFilesRecursive(unsigned int typeMask, bool
 		return fld->isVirtualStorage();
 	};
 
-	bool showHiddenFiles = Settings::ShowHiddenFiles() && !UIModeController::getInstance()->isUIModeKiosk();
-
-	auto shv = Settings::getInstance()->getString(getSystem()->getName() + ".ShowHiddenFiles");
-	if (shv == "1") showHiddenFiles = true;
-	else if (shv == "0") showHiddenFiles = false;
-
 	SystemData* pSystem = (system != nullptr ? system : mSystem);
-
-	std::vector<std::string> hiddenExts;
-	if (pSystem->isGameSystem() && !pSystem->isCollection())
-		for (auto ext : Utils::String::split(Settings::getInstance()->getString(pSystem->getName() + ".HiddenExt"), ';'))
-			hiddenExts.push_back("." + Utils::String::toLower(ext));
-
-	bool filterKidGame = UIModeController::getInstance()->isUIModeKid();
-
+	
 	FileFilterIndex* idx = pSystem->getIndex(false);
 
 	for (auto it : mChildren)
@@ -1073,16 +1244,16 @@ std::vector<FileData*> FolderData::getFilesRecursive(unsigned int typeMask, bool
 			{
 				if (displayedOnly)
 				{
-					if (!showHiddenFiles && it->getHidden())
+					if (!filter->showHiddenFiles && it->getHidden())
 						continue;
 
-					if (filterKidGame && it->getKidGame())
+					if (filter->filterKidGame && it->getKidGame())
 						continue;
 
-					if (hiddenExts.size() > 0 && it->getType() == GAME)
+					if (typeMask == GAME && filter->hiddenExtensions.size() > 0)
 					{
-						std::string extlow = Utils::String::toLower(Utils::FileSystem::getExtension(it->getFileName()));
-						if (std::find(hiddenExts.cbegin(), hiddenExts.cend(), extlow) != hiddenExts.cend())
+						std::string extlow = Utils::String::toLower(Utils::FileSystem::getExtension(it->getFileName(), false));
+						if (filter->hiddenExtensions.find(extlow) != filter->hiddenExtensions.cend())
 							continue;
 					}
 				}
@@ -1094,8 +1265,8 @@ std::vector<FileData*> FolderData::getFilesRecursive(unsigned int typeMask, bool
 
 		if (it->getType() != FOLDER)
 			continue;
-				
-		FolderData* folder = (FolderData*)it;		
+
+		FolderData* folder = (FolderData*)it;
 		if (folder->getChildren().size() > 0)
 		{
 			if (includeVirtualStorage || !isVirtualFolder(folder))
@@ -1103,14 +1274,41 @@ std::vector<FileData*> FolderData::getFilesRecursive(unsigned int typeMask, bool
 				if (folder->isVirtualStorage() && folder->getSourceFileData()->getSystem()->isGroupChildSystem() && folder->getSourceFileData()->getSystem()->getName() == "windows_installers")
 					out.push_back(it);
 				else
-				{
-					std::vector<FileData*> subchildren = folder->getFilesRecursive(typeMask, displayedOnly, system, includeVirtualStorage);
-					out.insert(out.cend(), subchildren.cbegin(), subchildren.cend());
-				}
+					folder->getFilesRecursiveWithContext(out, typeMask, filter, displayedOnly, system, includeVirtualStorage);
 			}
 		}
 	}
+}
 
+std::vector<FileData*> FolderData::getFlatGameList(bool displayedOnly, SystemData* system) const
+{
+	return getFilesRecursive(GAME, displayedOnly, system);
+}
+
+std::vector<FileData*> FolderData::getFilesRecursive(unsigned int typeMask, bool displayedOnly, SystemData* system, bool includeVirtualStorage) const
+{
+	SystemData* pSystem = (system != nullptr ? system : mSystem);
+	
+	GetFileContext ctx;
+	ctx.showHiddenFiles = Settings::ShowHiddenFiles() && !UIModeController::getInstance()->isUIModeKiosk();
+
+	auto shv = Settings::getInstance()->getString(getSystem()->getName() + ".ShowHiddenFiles");
+	if (shv == "1")
+		ctx.showHiddenFiles = true;
+	else if (shv == "0")
+		ctx.showHiddenFiles = false;
+
+	if (pSystem->isGameSystem() && !pSystem->isCollection())
+	{
+		for (auto ext : Utils::String::split(Utils::String::toLower(Settings::getInstance()->getString(pSystem->getName() + ".HiddenExt")), ';'))
+			if (ctx.hiddenExtensions.find(ext) == ctx.hiddenExtensions.cend())
+				ctx.hiddenExtensions.insert(ext);
+	}
+
+	ctx.filterKidGame = UIModeController::getInstance()->isUIModeKid();
+
+	std::vector<FileData*> out;
+	getFilesRecursiveWithContext(out, typeMask, &ctx, displayedOnly, system, includeVirtualStorage);
 	return out;
 }
 
@@ -1187,7 +1385,7 @@ const std::string FileData::getCore(bool resolveDefault)
 #if WIN32 && !_DEBUG
 	std::string core = getMetadata(MetaDataId::Core);
 #else
-	std::string core = SystemConf::getInstance()->get(getConfigurationName() + ".core"); 
+	std::string core = SystemConf::getInstance()->get(getConfigurationName() + ".core");	
 #endif
 
 	if (core == "auto")
@@ -1295,7 +1493,7 @@ bool FileData::isNetplaySupported()
 	std::string emulName = getEmulator();
 	std::string coreName = getCore();
 
-	if (!SystemData::es_features_loaded)
+	if (!CustomFeatures::FeaturesLoaded)
 	{
 		std::string command = system->getLaunchCommand(emulName, coreName);
 		if (command.find("%NETPLAY%") != std::string::npos)
@@ -1590,11 +1788,308 @@ std::string FileData::getCurrentGameSetting(const std::string& settingName)
 	return SystemConf::getInstance()->get("global." + settingName);
 }
 
-void FileData::speak()
+void FileData::setSelectedGame()
 {
 	TextToSpeech::getInstance()->say(getName(), false);
 
+	Scripting::fireEvent("game-selected", getSourceFileData()->getSystem()->getName(), getPath(), getName());
+
 	std::string desc = getMetadata(MetaDataId::Desc);
 	if (!desc.empty())
-		TextToSpeech::getInstance()->say(desc, true);
+		TextToSpeech::getInstance()->say(desc, true);	
+}
+
+std::string FileData::getGenre()
+{
+	std::string genre = Genres::genreStringFromIds(Utils::String::split(getMetadata(MetaDataId::GenreIds), ',', true));
+	if (genre.empty())
+		genre = getMetadata(MetaDataId::Genre);
+
+	return genre;
+}
+
+BindableProperty FileData::getProperty(const std::string& name)
+{
+	auto it = properties.find(name);
+	if (it != properties.cend())
+		return it->second(this);
+
+	if (name == "nameShort")
+	{
+		auto name = getName();
+
+		for (int i = 0; i < name.size(); i++)
+			if (name[i] == '(' || name[i] == '[')
+				return name.substr(0, i);
+
+		return name;
+	}
+
+	if (name == "nameExtra")
+	{
+		auto name = getName();
+
+		for (int i = 0; i < name.size(); i++)
+			if (name[i] == '(' || name[i] == '[')
+				return name.substr(i);
+
+		return "";
+	}	
+
+	if (name == "collection")
+	{
+		if (getSystem()->isCollection() || getSystem()->isGroupChildSystem())
+		{
+			FolderData* parent = getParent();
+
+			if (getType() == FOLDER)
+			{				
+				if (parent != nullptr && (parent->getSystem()->isCollection() || getSystem()->isGroupChildSystem() || getSystem()->isGroupSystem()))
+					return BindableProperty(parent->getSystem());
+			}
+
+			if (getSystem()->isGroupChildSystem() && parent != nullptr)
+			{
+				auto group = getSystem()->getParentGroupSystem();
+				if (group != nullptr)
+				{
+					std::string showFoldersMode = group->getFolderViewMode();
+					if (showFoldersMode == "never")
+						return BindableProperty(getBindableParent());
+					else if (showFoldersMode == "having multiple games" && parent && parent->findUniqueGameForFolder() != nullptr)
+						return BindableProperty(getBindableParent());
+				}
+			}
+
+			if (getSystem()->isCollection() || getSystem()->isGroupChildSystem() || getSystem()->isGroupSystem())
+				return BindableProperty(getSystem());
+		}
+			
+		return BindableProperty::Null; // getProperty("system");
+	}
+
+	if (name == "system")
+	{
+		auto sys = getSourceFileData()->getSystem();
+		if (mPath == ".." && sys->isGroupChildSystem())
+		{
+			SystemData* group = sys->getParentGroupSystem();
+			if (group != nullptr)
+				sys = group;
+		}
+
+		return BindableProperty(sys);
+	}
+
+	if (name == "directory")
+	{				
+		if (!getSystem()->isCollection() && getSystem()->isGroupChildSystem())
+		{
+			SystemData* group = getSystem()->getParentGroupSystem();
+			if (group != nullptr)
+				return BindableProperty::EmptyString;
+		}
+
+		std::string showFoldersMode = getSystem()->getFolderViewMode();
+		if (showFoldersMode == "never")
+			return BindableProperty::EmptyString;
+		
+		auto parent = getParent();
+		if (parent != nullptr)
+		{
+			if (showFoldersMode == "having multiple games")
+			{
+				auto fd = parent->findUniqueGameForFolder();
+				if (fd != nullptr) 
+					return BindableProperty::EmptyString;
+			}
+
+			if (getSystem()->isCollection() && parent == getSystem()->getRootFolder())
+				return BindableProperty::EmptyString;
+
+			if (!parent->isVirtualFolderDisplay())
+				return parent->getBreadCrumbPath();
+		}
+
+		return BindableProperty::EmptyString;
+	}
+
+	if (name == "type")
+	{
+		switch (getType())
+		{
+		case FOLDER: return BindableProperty("folder", BindablePropertyType::String);
+		case PLACEHOLDER: return BindableProperty("placeholder", BindablePropertyType::String);
+		default: return BindableProperty("game", BindablePropertyType::String);
+		}
+	}
+
+	if (name == "stars")
+	{
+		#define RATINGSTAR _U("\uF005")
+
+		int stars = (int)Math::round(Math::clamp(0.0f, 1.0f, Utils::String::toFloat(getMetadata(MetaDataId::Rating))) * 5.0);
+
+		std::string str;
+		for (int i = 0; i < stars; i++)
+			str += RATINGSTAR;
+
+		return str;
+	}
+
+	if (name == "folder" || name == "isFolder")
+		return getType() == FOLDER; 
+
+	if (name == "virtualfolder")
+		return getType() == FOLDER && (getPath() == ".." || ((FolderData*)this)->isVirtualFolderDisplay());
+
+	if (name == "placeHolder" || name == "isPlaceHolder" || name == "placeholder")
+		return getType() == PLACEHOLDER;
+
+	if (name == "playerCount" || name == "playercount")
+	{
+		std::string value = getMetadata().get("players");
+		auto split = value.rfind("+");
+		if (split != std::string::npos)
+			return value.substr(0, split);
+
+		split = value.rfind("-");
+		if (split != std::string::npos)
+			return value.substr(split + 1);
+
+		return (int) Math::clamp(Utils::String::toInteger(value), 1, 9);
+	}
+
+	if (name == "hasManual" || name == "hasmanual")
+	{
+		if (Settings::getInstance()->getBool("PreloadMedias"))
+			return !getMetadata(MetaDataId::Manual).empty() || !getMetadata(MetaDataId::Magazine).empty(); // ? _("YES") : _("NO");
+		
+		return Utils::FileSystem::exists(getMetadata(MetaDataId::Manual)) || Utils::FileSystem::exists(getMetadata(MetaDataId::Magazine)); // ? _("YES") : _("NO");
+	}
+
+	if (name == "hasSaveState" || name == "hassavestate" || name == "savestate")
+	{
+		bool hasSaveState = SaveStateRepository::isEnabled(this) && getSourceFileData()->getSystem()->getSaveStateRepository()->hasSaveStates(this);
+		return hasSaveState;
+	}
+
+	if (name == "releaseyear" || name == "releaseYear")
+	{
+		std::string releaseDateMeta = getMetadata(MetaDataId::ReleaseDate);
+		if (releaseDateMeta.empty())
+			return releaseDateMeta;
+
+		Utils::Time::DateTime date = releaseDateMeta;
+		if (!date.isValid())
+			return std::string();
+
+		return Utils::Time::timeToString(date.getTime(), "%Y");
+	}
+
+	MetaDataList& md = getMetadata();
+
+	if (!md.exists(name))
+		return BindableProperty::Null;
+
+	std::string finalValue = md.get(name);
+
+	auto type = md.getType(name);
+
+	switch (type)
+	{
+	case MetaDataType::MD_PATH:				
+		return BindableProperty(finalValue, BindablePropertyType::Path);
+	case MetaDataType::MD_INT:
+		return Utils::String::toInteger(finalValue);
+	case MetaDataType::MD_RATING:
+		return Utils::String::toFloat(finalValue);
+	case MetaDataType::MD_BOOL:
+		return finalValue == "1" || finalValue == "true";
+	case MetaDataType::MD_DATE:
+	case MetaDataType::MD_TIME:
+		return finalValue.empty() ? "" : Utils::Time::timeToString(Utils::Time::DateTime(finalValue).getTime(), Utils::Time::getSystemDateFormat());
+	}
+
+	return finalValue;
+}
+
+std::pair<int, int> FileData::parsePlayersRange()
+{
+	std::string players = getMetadata(MetaDataId::Players);
+	if (players.empty())
+		return std::pair<int, int>(-1,-1);
+
+	auto key = players;
+
+	int min = 1;
+
+	auto split = key.rfind("+");
+	if (split != std::string::npos)
+		key = Utils::String::replace(key, "+", "-99999");
+
+	split = key.rfind("-");
+	if (split != std::string::npos)
+	{
+		min = Utils::String::toInteger(key.substr(0, split));
+		key = key.substr(split + 1);
+	}
+
+	int max = Utils::String::toInteger(key);
+
+	return std::pair<int, int>(min, max);
+}
+
+IBindable* FileData::getBindableParent()
+{ 
+	SystemData* sys = getSystem();
+
+	SystemData* group = sys->getParentGroupSystem();
+
+	if (group != nullptr && sys->isGroupChildSystem())
+		return group;
+
+	if (group != nullptr && group != sys)
+	{
+		std::string showFoldersMode = group->getFolderViewMode();
+		if (showFoldersMode == "never")
+			return group;
+
+		if (showFoldersMode == "having multiple games")
+		{
+			for (auto child : group->getRootFolder()->getChildren())
+			{
+				if (child->getType() == FOLDER && ((FolderData*)child)->getChildren().size() == 1)
+					if (((FolderData*)child)->getChildren()[0] == this)
+						return group;
+			}
+		}
+	}
+
+	FolderData* parent = getParent();	
+	
+	if (mPath == "..")
+	{
+		if (sys->isCollection())
+		{
+			parent = sys->getRootFolder()->getParent();
+			if (parent != nullptr)
+				return parent->getSystem();
+		}
+
+		if (group != nullptr && sys->isGroupChildSystem())
+			return group;		
+	}
+	
+	while (parent != nullptr)
+	{
+		sys = parent->getSystem();
+
+	//	if (sys->isCollection())
+	//		return sys;
+
+		parent = parent->getParent();
+	}
+
+	return sys;
 }

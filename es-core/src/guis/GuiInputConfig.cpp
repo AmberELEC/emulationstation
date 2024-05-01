@@ -8,28 +8,43 @@
 #include "Log.h"
 #include "Window.h"
 
-#define fake_gettext_up _("UP")
-#define fake_gettext_down _("DOWN")
-#define fake_gettext_left _("LEFT")
-#define fake_gettext_right _("RIGHT")
-#define fake_gettext_start _("START")
-#define fake_gettext_select _("SELECT")
-#define fake_gettext_left_a_up _("LEFT ANALOG UP")
-#define fake_gettext_left_a_down _("LEFT ANALOG DOWN")
-#define fake_gettext_left_a_left _("LEFT ANALOG LEFT")
-#define fake_gettext_left_a_right _("LEFT ANALOG RIGHT")
-#define fake_gettext_right_a_up _("RIGHT ANALOG UP")
-#define fake_gettext_right_a_down _("RIGHT ANALOG DOWN")
-#define fake_gettext_right_a_left _("RIGHT ANALOG LEFT")
-#define fake_gettext_right_a_right _("RIGHT ANALOG RIGHT")
-#define fake_gettext_hotkey _("HOTKEY")
+#define fake_gettext_north pgettext("joystick", "NORTH")
+#define fake_gettext_south pgettext("joystick", "SOUTH")
+#define fake_gettext_east  pgettext("joystick", "EAST")
+#define fake_gettext_west  pgettext("joystick", "WEST")
+
+#define fake_gettext_start  pgettext("joystick", "START")
+#define fake_gettext_select pgettext("joystick", "SELECT")
+
+#define fake_gettext_up    pgettext("joystick", "D-PAD UP")
+#define fake_gettext_down  pgettext("joystick", "D-PAD DOWN")
+#define fake_gettext_left  pgettext("joystick", "D-PAD LEFT")
+#define fake_gettext_right pgettext("joystick", "D-PAD RIGHT")
+
+#define fake_gettext_left_a_up     pgettext("joystick", "LEFT ANALOG UP")
+#define fake_gettext_left_a_down   pgettext("joystick", "LEFT ANALOG DOWN")
+#define fake_gettext_left_a_left   pgettext("joystick", "LEFT ANALOG LEFT")
+#define fake_gettext_left_a_right  pgettext("joystick", "LEFT ANALOG RIGHT")
+#define fake_gettext_right_a_up    pgettext("joystick", "RIGHT ANALOG UP")
+#define fake_gettext_right_a_down  pgettext("joystick", "RIGHT ANALOG DOWN")
+#define fake_gettext_right_a_left  pgettext("joystick", "RIGHT ANALOG LEFT")
+#define fake_gettext_right_a_right pgettext("joystick", "RIGHT ANALOG RIGHT")
+
+#define fake_gettext_pageup   pgettext("joystick", "LEFT SHOULDER")
+#define fake_gettext_pagedown pgettext("joystick", "RIGHT SHOULDER")
+#define fake_gettext_l2       pgettext("joystick", "LEFT TRIGGER")
+#define fake_gettext_r2       pgettext("joystick", "RIGHT TRIGGER")
+#define fake_gettext_l3       pgettext("joystick", "LEFT STICK PRESS")
+#define fake_gettext_r3       pgettext("joystick", "RIGHT STICK PRESS")
+
+#define fake_gettext_hotkey        pgettext("joystick", "HOTKEY")
 
 //MasterVolUp and MasterVolDown are also hooked up, but do not appear on this screen.
 //If you want, you can manually add them to es_input.cfg.
 
 #define HOLD_TO_SKIP_MS 1000
 
-void GuiInputConfig::initInputConfigStructure()
+void GuiInputConfig::initInputConfigStructure(InputConfig* target)
 {
 	GUI_INPUT_CONFIG_LIST =
 	{
@@ -61,19 +76,67 @@ void GuiInputConfig::initInputConfigStructure()
 	{ "RightAnalogLeft",  true,  "RIGHT ANALOG LEFT",  ":/help/analog_left.svg" },
 	{ "RightAnalogRight", true,  "RIGHT ANALOG RIGHT", ":/help/analog_right.svg" }
 	};
+#else
+	GUI_INPUT_CONFIG_LIST =
+	{
+		{ "b",               false, "SOUTH",			  ":/help/buttons_south.svg" },
+		{ "a",               false, "EAST",			      ":/help/buttons_east.svg" },
+		{ "x",               true,  "NORTH",              ":/help/buttons_north.svg" },
+		{ "y",               true,  "WEST",               ":/help/buttons_west.svg" },
+
+		{ "start",           true,  "START",              ":/help/button_start.svg" },
+		{ "select",          true,  "SELECT",             ":/help/button_select.svg" },
+
+		{ "up",              false, "D-PAD UP",           ":/help/dpad_up.svg" },
+		{ "down",            false, "D-PAD DOWN",         ":/help/dpad_down.svg" },
+		{ "left",            false, "D-PAD LEFT",         ":/help/dpad_left.svg" },
+		{ "right",           false, "D-PAD RIGHT",        ":/help/dpad_right.svg" },
+
+		{ "pageup",          true,  "LEFT SHOULDER",      ":/help/button_l.svg" },
+		{ "pagedown",        true,  "RIGHT SHOULDER",     ":/help/button_r.svg" },
+
+		{ "joystick1up",     true,  "LEFT ANALOG UP",     ":/help/analog_up.svg" },
+		{ "joystick1left",   true,  "LEFT ANALOG LEFT",   ":/help/analog_left.svg" },
+		{ "joystick2up",     true,  "RIGHT ANALOG UP",    ":/help/analog_up.svg" },
+		{ "joystick2left",   true,  "RIGHT ANALOG LEFT",  ":/help/analog_left.svg" },
+
+		{ "l2",              true,  "LEFT TRIGGER",       ":/help/button_lt.svg" },
+		{ "r2",              true,  "RIGHT TRIGGER",      ":/help/button_rt.svg" },
+		{ "l3",              true,  "LEFT STICK PRESS",   ":/help/analog_thumb.svg" },
+		{ "r3",              true,  "RIGHT STICK PRESS",  ":/help/analog_thumb.svg" },
+
+		{ "hotkey",          true,  "HOTKEY",             ":/help/button_hotkey.svg" }
+	};
+#endif
+	
+#ifdef INVERTEDINPUTCONFIG
+	GUI_INPUT_CONFIG_LIST[0].name = "a";
+	GUI_INPUT_CONFIG_LIST[1].name = "b";
+#endif
+
+	if (target->getDeviceId() >= 0)
+	{
+		GUI_INPUT_CONFIG_LIST[1].skippable = (target->getDeviceNbButtons() <= 1) || (target->getDeviceNbButtons() == 5 && target->getDeviceNbAxes() == 0 && target->getDeviceNbHats() == 0);
+
+		GUI_INPUT_CONFIG_LIST[6].skippable = 
+		GUI_INPUT_CONFIG_LIST[7].skippable = 
+		GUI_INPUT_CONFIG_LIST[8].skippable = 
+		GUI_INPUT_CONFIG_LIST[9].skippable = target->getDeviceNbHats() == 0;
+	}
 }
 
 GuiInputConfig::GuiInputConfig(Window* window, InputConfig* target, bool reconfigureAll, const std::function<void()>& okCallback) : GuiComponent(window), 
 	mBackground(window, ":/frame.png"), mGrid(window, Vector2i(1, 7)), 
 	mTargetConfig(target), mHoldingInput(false), mBusyAnim(window)
 {
-	initInputConfigStructure();
+	initInputConfigStructure(target);
 
 	auto theme = ThemeData::getMenuTheme();
 	mBackground.setImagePath(theme->Background.path);
 	mBackground.setEdgeColor(theme->Background.color);
 	mBackground.setCenterColor(theme->Background.centerColor);
 	mBackground.setCornerSize(theme->Background.cornerSize);
+	mBackground.setPostProcessShader(theme->Background.menuShader);
 
 	mGrid.setSeparatorColor(theme->Text.separatorColor);
 
@@ -91,21 +154,21 @@ GuiInputConfig::GuiInputConfig(Window* window, InputConfig* target, bool reconfi
 	// 0 is a spacer row
 	mGrid.setEntry(std::make_shared<GuiComponent>(mWindow), Vector2i(0, 0), false);
 
-	mTitle = std::make_shared<TextComponent>(mWindow, _("CONFIGURING"), theme->Title.font, theme->Title.color, ALIGN_CENTER); // batocera
+	mTitle = std::make_shared<TextComponent>(mWindow, _("CONFIGURING"), theme->Title.font, theme->Title.color, ALIGN_CENTER); 
 	mGrid.setEntry(mTitle, Vector2i(0, 1), false, true);
 
 	char strbuf[256];
 	if(target->getDeviceId() == DEVICE_KEYBOARD)
-	  strncpy(strbuf, _("KEYBOARD").c_str(), 256); // batocera
+	  strncpy(strbuf, _("KEYBOARD").c_str(), 256); 
 	else if(target->getDeviceId() == DEVICE_CEC)
-	  strncpy(strbuf, _("CEC").c_str(), 256); // batocera
+	  strncpy(strbuf, _("CEC").c_str(), 256); 
 	else {
-	  snprintf(strbuf, 256, _("GAMEPAD %i").c_str(), target->getDeviceId() + 1); // batocera
+	  snprintf(strbuf, 256, _("GAMEPAD %i").c_str(), target->getDeviceId() + 1); 
 	}
-	mSubtitle1 = std::make_shared<TextComponent>(mWindow, Utils::String::toUpper(strbuf), theme->Text.font, theme->Title.color, ALIGN_CENTER); // batocera
+	mSubtitle1 = std::make_shared<TextComponent>(mWindow, Utils::String::toUpper(strbuf), theme->Text.font, theme->Title.color, ALIGN_CENTER); 
 	mGrid.setEntry(mSubtitle1, Vector2i(0, 2), false, true);
 
-	mSubtitle2 = std::make_shared<TextComponent>(mWindow, _("HOLD ANY BUTTON TO SKIP"), theme->TextSmall.font, theme->TextSmall.color, ALIGN_CENTER); // batocera
+	mSubtitle2 = std::make_shared<TextComponent>(mWindow, _("HOLD ANY BUTTON TO SKIP"), theme->TextSmall.font, theme->TextSmall.color, ALIGN_CENTER); 
 	mGrid.setEntry(mSubtitle2, Vector2i(0, 3), false, true);
 
 	// 4 is a spacer row
@@ -118,6 +181,7 @@ GuiInputConfig::GuiInputConfig(Window* window, InputConfig* target, bool reconfi
 		
 		// icon
 		auto icon = std::make_shared<ImageComponent>(mWindow);
+		icon->setIsLinear(true);
 		icon->setImage(GUI_INPUT_CONFIG_LIST[i].icon);
 		icon->setColorShift(theme->Text.color);
 		icon->setResize(0, Font::get(FONT_SIZE_MEDIUM)->getLetterHeight() * 1.25f);
@@ -128,10 +192,10 @@ GuiInputConfig::GuiInputConfig(Window* window, InputConfig* target, bool reconfi
 		spacer->setSize(16, 0);
 		row.addElement(spacer, false);
 
-		auto text = std::make_shared<TextComponent>(mWindow, _(Utils::String::toUpper(GUI_INPUT_CONFIG_LIST[i].dispName).c_str()), theme->Text.font, theme->Text.color);
+		auto text = std::make_shared<TextComponent>(mWindow, pgettext("joystick", Utils::String::toUpper(GUI_INPUT_CONFIG_LIST[i].dispName).c_str()), theme->Text.font, theme->Text.color);
 		row.addElement(text, true);
 
-		auto mapping = std::make_shared<TextComponent>(mWindow, _("-NOT DEFINED-"), theme->Text.font, theme->TextSmall.color, ALIGN_RIGHT); // batocera
+		auto mapping = std::make_shared<TextComponent>(mWindow, _("-NOT DEFINED-"), theme->Text.font, theme->TextSmall.color, ALIGN_RIGHT); 
 		setNotDefined(mapping); // overrides text and color set above
 		row.addElement(mapping, true);
 		mMappings.push_back(mapping);
@@ -157,6 +221,8 @@ GuiInputConfig::GuiInputConfig(Window* window, InputConfig* target, bool reconfi
 				return false;
 			}
 
+			if (mHoldingInput)
+				mAllInputs.push_back(input);
 
 			// filter for input quirks specific to Sony DualShock 3
 			if(filterTrigger(input, config))
@@ -175,6 +241,9 @@ GuiInputConfig::GuiInputConfig(Window* window, InputConfig* target, bool reconfi
 				mHeldTime = 0;
 				mHeldInputId = i;
 
+				mAllInputs.clear();
+				mAllInputs.push_back(input);
+
 				return true;
 			}else{
 				// input up
@@ -184,9 +253,21 @@ GuiInputConfig::GuiInputConfig(Window* window, InputConfig* target, bool reconfi
 
 				mHoldingInput = false;
 
+				if (mHeldInput.type == InputType::TYPE_BUTTON)
+				{
+					auto altAxis = mAllInputs.where([&](auto x) { return x.device == mHeldInput.device && x.type == InputType::TYPE_AXIS; });
+					if (altAxis.size() >= 2)
+					{
+						auto groups = altAxis.groupBy([](auto x) { return x.id; });
+						if (groups.size() == 1)
+							mHeldInput = altAxis[0];
+					}
+				}
+
 				if(assign(mHeldInput, i))
 					rowDone(); // if successful, move cursor/stop configuring - if not, we'll just try again
 
+				mAllInputs.clear();
 				return true;
 			}
 		};
@@ -212,22 +293,34 @@ GuiInputConfig::GuiInputConfig(Window* window, InputConfig* target, bool reconfi
 			okCallback();
 		delete this; 
 	};
-	buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("OK"), "ok", [this, okFunction] { // batocera
+	buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("OK"), "ok", [this, okFunction] { 
 		// check if the hotkey enable button is set. if not prompt the user to use select or nothing.
 		Input input;
-		if (!mTargetConfig->getInputByName("HotKeyEnable", &input)) { // AmberELEC
+#ifdef _ENABLEEMUELEC
+		if (!mTargetConfig->getInputByName("HotKeyEnable", &input)) { // batocera
+#else
+		if (!mTargetConfig->getInputByName("hotkey", &input)) { 
+#endif
 			mWindow->pushGui(new GuiMsgBox(mWindow,
-				_("NO HOTKEY BUTTON HAS BEEN ASSIGNED. THIS IS REQUIRED FOR EXITING GAMES WITH A CONTROLLER. DO YOU WANT TO USE THE SELECT BUTTON AS YOUR HOTKEY?"),  // batocera
-				_("SET SELECT AS HOTKEY"), [this, okFunction] { // batocera
+				_("NO HOTKEY BUTTON HAS BEEN ASSIGNED. THIS IS REQUIRED FOR EXITING GAMES WITH A CONTROLLER. DO YOU WANT TO USE THE SELECT BUTTON AS YOUR HOTKEY?"),  
+				_("SET SELECT AS HOTKEY"), [this, okFunction] { 
 					Input input;
 					mTargetConfig->getInputByName("Select", &input);
-					mTargetConfig->mapInput("HotKeyEnable", input); // AmberELEC
+#ifdef _ENABLEEMUELEC
+					mTargetConfig->mapInput("HotKeyEnable", input); // emuelec
+#else
+					mTargetConfig->mapInput("hotkey", input); 
+#endif
 					okFunction();
 					},
-				_("DO NOT ASSIGN HOTKEY"), [this, okFunction] { // batocera
+				_("DO NOT ASSIGN HOTKEY"), [this, okFunction] { 
 					// for a disabled hotkey enable button, set to a key with id 0,
 					// so the input configuration script can be backwards compatible.
-                    mTargetConfig->mapInput("HotKeyEnable", Input(DEVICE_KEYBOARD, TYPE_KEY, 0, 1, true)); // AmberELEC
+#ifdef _ENABLEEMUELEC
+                    mTargetConfig->mapInput("HotKeyEnable", Input(DEVICE_KEYBOARD, TYPE_KEY, 0, 1, true)); // emuelec
+#else
+					mTargetConfig->mapInput("hotkey", Input(DEVICE_KEYBOARD, TYPE_KEY, 0, 1, true)); 
+#endif
 					okFunction();
 				}
 			));
@@ -235,10 +328,13 @@ GuiInputConfig::GuiInputConfig(Window* window, InputConfig* target, bool reconfi
 			okFunction();
 		}
 	}));
+
+	buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("CANCEL"), "cancel", [this] { delete this; }));
+
 	mButtonGrid = makeButtonGrid(mWindow, buttons);
 	mGrid.setEntry(mButtonGrid, Vector2i(0, 6), true, false);
 
-	if (Renderer::isSmallScreen())
+	if (Renderer::ScreenSettings::fullScreenMenus())
 		setSize(Renderer::getScreenWidth(), Renderer::getScreenHeight());
 	else
 		setSize(Renderer::getScreenWidth() * 0.6f, Renderer::getScreenHeight() * 0.75f);
@@ -248,6 +344,8 @@ GuiInputConfig::GuiInputConfig(Window* window, InputConfig* target, bool reconfi
 
 void GuiInputConfig::onSizeChanged()
 {
+	GuiComponent::onSizeChanged();
+
 	mBackground.fitTo(mSize, Vector3f::Zero(), Vector2f(-32, -32));
 
 	// update grid
@@ -261,12 +359,11 @@ void GuiInputConfig::onSizeChanged()
 
 	int cnt = (1.0 - h) / (mList->getRowHeight(0) / mSize.y());
 
-	mGrid.setRowHeightPerc(1, mTitle->getFont()->getHeight() / mSize.y()); // *0.75f
-	mGrid.setRowHeightPerc(2, mSubtitle1->getFont()->getHeight() / mSize.y());
-	mGrid.setRowHeightPerc(3, mSubtitle2->getFont()->getHeight() / mSize.y());
-	//mGrid.setRowHeightPerc(4, 0.03f);
-	mGrid.setRowHeightPerc(5, (mList->getRowHeight(0) * cnt + 2) / mSize.y());
-	mGrid.setRowHeightPerc(6, mButtonGrid->getSize().y() / mSize.y());
+	mGrid.setRowHeight(1, mTitle->getFont()->getHeight());
+	mGrid.setRowHeight(2, mSubtitle1->getFont()->getHeight());
+	mGrid.setRowHeight(3, mSubtitle2->getFont()->getHeight());
+	mGrid.setRowHeight(5, (mList->getRowHeight(0) * cnt + 2));
+	mGrid.setRowHeight(6, mButtonGrid->getSize().y());
 
 	mBusyAnim.setSize(mSize);
 }
@@ -291,7 +388,7 @@ void GuiInputConfig::update(int deltaTime)
 				// crossed the second boundary, update text
 				const auto& text = mMappings.at(mHeldInputId);
 				char strbuf[256];
-				snprintf(strbuf, 256, ngettext("HOLD FOR %iS TO SKIP", "HOLD FOR %iS TO SKIP", HOLD_TO_SKIP_MS/1000 - curSec), HOLD_TO_SKIP_MS/1000 - curSec); // batocera
+				snprintf(strbuf, 256, ngettext("HOLD FOR %iS TO SKIP", "HOLD FOR %iS TO SKIP", HOLD_TO_SKIP_MS/1000 - curSec), HOLD_TO_SKIP_MS/1000 - curSec); 
 				text->setText(strbuf);
 				text->setColor(ThemeData::getMenuTheme()->Text.color);
 			}
@@ -323,13 +420,13 @@ void GuiInputConfig::rowDone()
 
 void GuiInputConfig::setPress(const std::shared_ptr<TextComponent>& text)
 {
-  text->setText(_("PRESS ANYTHING")); // batocera
+  text->setText(_("PRESS ANYTHING")); 
 	text->setColor(0x656565FF);
 }
 
 void GuiInputConfig::setNotDefined(const std::shared_ptr<TextComponent>& text)
 {
-  text->setText(_("-NOT DEFINED-")); // batocera
+  text->setText(_("-NOT DEFINED-")); 
 	text->setColor(0x999999FF);
 }
 
@@ -341,7 +438,7 @@ void GuiInputConfig::setAssignedTo(const std::shared_ptr<TextComponent>& text, I
 
 void GuiInputConfig::error(const std::shared_ptr<TextComponent>& text, const std::string& /*msg*/)
 {
-  text->setText(_("ALREADY TAKEN")); // batocera
+  text->setText(_("ALREADY TAKEN")); 
 	text->setColor(0x656565FF);
 }
 
@@ -353,7 +450,11 @@ bool GuiInputConfig::assign(Input input, int inputId)
 	// (if it's the same as what it was before, allow it)
 	if (mTargetConfig->getMappedTo(input).size() > 0 && 
 		!mTargetConfig->isMappedTo(GUI_INPUT_CONFIG_LIST[inputId].name, input) && 
-        GUI_INPUT_CONFIG_LIST[inputId].name != "HotKeyEnable") // AmberELEC
+#ifdef _ENABLEEMUELEC		
+        GUI_INPUT_CONFIG_LIST[inputId].name != "HotKeyEnable") // emuelec
+#else
+		GUI_INPUT_CONFIG_LIST[inputId].name != "hotkey") 
+#endif
 	{
 		error(mMappings.at(inputId), "Already mapped!");
 		return false;

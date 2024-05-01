@@ -14,6 +14,7 @@
 #include "views/UIModeController.h"
 #include "FileFilterIndex.h"
 #include "Log.h"
+#include "Scripting.h"
 #include "Settings.h"
 #include "SystemData.h"
 #include "Window.h"
@@ -28,6 +29,7 @@
 #include "utils/ThreadPool.h"
 #include <SDL_timer.h>
 #include "TextToSpeech.h"
+#include "VolumeControl.h"
 
 ViewController* ViewController::sInstance = nullptr;
 
@@ -49,7 +51,7 @@ void ViewController::init(Window* window)
 	if (sInstance != nullptr)
 		delete sInstance;
 
-	sInstance = new ViewController(window);
+	sInstance = new ViewController(window);	
 }
 
 void ViewController::saveState()
@@ -190,6 +192,8 @@ void ViewController::goToSystemView(SystemData* system, bool forceImmediate)
 
 	mState.viewing = SYSTEM_SELECT;
 	mState.system = dest;
+
+	Scripting::fireEvent("system-selected", dest->getName());
 
 	systemList->goToSystem(dest, false);
 
@@ -425,6 +429,18 @@ void ViewController::onFileChanged(FileData* file, FileChangeType change)
 	auto it = mGameListViews.find(sourceSystem);
 	if (it != mGameListViews.cend())
 		it->second->onFileChanged(file, change);
+	else
+	{
+		// System is in a group ?
+		for (auto gameListView : mGameListViews)
+		{
+			if (gameListView.first->isGroupSystem() && gameListView.first->getRootFolder()->FindByPath(key))
+			{
+				gameListView.second->onFileChanged(file, change);
+				break;
+			}
+		}
+	}
 
 	for (auto collection : CollectionSystemManager::get()->getAutoCollectionSystems())
 	{		
@@ -510,13 +526,13 @@ void ViewController::launch(FileData* game, LaunchGameOptions options, Vector3f 
 	{
 		auto ext = Utils::String::toLower(Utils::FileSystem::getExtension(game->getPath()));
 
-		if (ext == ".mp4" || ext == ".avi" || ext == ".mkv" || ext == ".webm")
+		if (Utils::FileSystem::isVideo(game->getPath()))
 			GuiVideoViewer::playVideo(mWindow, game->getPath());
 		else if (ext == ".pdf")
 			GuiImageViewer::showPdf(mWindow, game->getPath());
 		else if (ext == ".cbz")
 			GuiImageViewer::showCbz(mWindow, game->getPath());
-		else
+		else if (!Utils::FileSystem::isAudio(game->getPath()))
 		{
 			auto gameImage = game->getImagePath();
 			if (Utils::FileSystem::exists(gameImage))
@@ -815,6 +831,19 @@ std::shared_ptr<SystemView> ViewController::getSystemListView()
 	return mSystemListView;
 }
 
+void ViewController::changeVolume(int increment)
+{
+	int newVal = VolumeControl::getInstance()->getVolume() + increment;
+	if (newVal > 100)
+		newVal = 100;
+	if (newVal < 0)
+		newVal = 0;
+
+	VolumeControl::getInstance()->setVolume(newVal);
+#if !WIN32
+	SystemConf::getInstance()->set("audio.volume", std::to_string(VolumeControl::getInstance()->getVolume()));
+#endif
+}
 
 bool ViewController::input(InputConfig* config, Input input)
 {
@@ -831,7 +860,7 @@ bool ViewController::input(InputConfig* config, Input input)
 	if (config->getDeviceId() == DEVICE_KEYBOARD && input.value && input.id == SDLK_F5)
 	{
 		mWindow->render();
-
+		
 		FileSorts::reset();
 		ResourceManager::getInstance()->unloadAll();
 		ResourceManager::getInstance()->reloadAll();
@@ -851,18 +880,34 @@ bool ViewController::input(InputConfig* config, Input input)
 	  }
 
 	// open menu
-	if(config->isMappedTo("start", input) && input.value != 0) // batocera
+	if(config->isMappedTo("start", input) && input.value != 0)
 	{
 		// open menu
 		mWindow->pushGui(new GuiMenu(mWindow));
 		return true;
 	}
 
-	// AmberELEC next song
-	if(config->isMappedTo("leftthumb", input) && input.value != 0) // AmberELEC
-	{
-		// next song
+#ifdef _ENABLEEMUELEC
+	// Emuelec next song
+	if (((mState.viewing != GAME_LIST && config->isMappedTo("leftthumb", input)) || config->isMappedTo("rightthumb", input)) && input.value != 0)
+#else
+	// Next song
+	if (((mState.viewing != GAME_LIST && config->isMappedTo("l3", input)) || config->isMappedTo("r3", input)) && input.value != 0)
+#endif    
+	{		
 		AudioManager::getInstance()->playRandomMusic(false);
+		return true;
+	}
+
+	if (config->isMappedTo("joystick2up", input) && input.value != 0)
+	{
+		changeVolume(5);
+		return true;
+	}
+
+	if (config->isMappedTo("joystick2up", input, true) && input.value != 0)
+	{
+		changeVolume(-5);
 		return true;
 	}
 
@@ -877,6 +922,8 @@ bool ViewController::input(InputConfig* config, Input input)
 
 void ViewController::update(int deltaTime)
 {
+	mSize = Vector2f(Renderer::getScreenWidth(), Renderer::getScreenHeight());
+
 	if (mCurrentView)
 		mCurrentView->update(deltaTime);
 
@@ -884,17 +931,13 @@ void ViewController::update(int deltaTime)
 
 	if (mDeferPlayViewTransitionTo != nullptr)
 	{
-		auto destView = mDeferPlayViewTransitionTo;
-		mDeferPlayViewTransitionTo.reset();
-		
-		mWindow->postToUiThread([this, destView]() 
-		{ 
-			if (mCurrentView)
-				mCurrentView->onHide();
+		if (mCurrentView)
+			mCurrentView->onHide();
 
-			mCurrentView = destView;
-			playViewTransition(false); 
-		});
+		mCurrentView = mDeferPlayViewTransitionTo;
+		mDeferPlayViewTransitionTo = nullptr;
+
+		playViewTransition(false); 
 	}
 }
 
@@ -907,10 +950,6 @@ void ViewController::render(const Transform4x4f& parentTrans)
 	// camera position, position + size
 	Vector3f viewStart = transInverse.translation();
 	Vector3f viewEnd = transInverse * Vector3f((float)Renderer::getScreenWidth(), (float)Renderer::getScreenHeight(), 0);
-
-	// Keep track of UI mode changes.
-	UIModeController::getInstance()->monitorUIMode();
-
 
 	if (!isAnimationPlaying(0) && mCurrentView != nullptr)
 	{
@@ -935,7 +974,7 @@ void ViewController::render(const Transform4x4f& parentTrans)
 	}
 
 	if(mWindow->peekGui() == this)
-		mWindow->renderHelpPromptsEarly();
+		mWindow->renderHelpPromptsEarly(parentTrans);
 
 	// fade out
 	if (mFadeOpacity)
@@ -1052,7 +1091,12 @@ void ViewController::reloadGameListView(IGameListView* view)
 	
 	// Redisplay the current view
 	if (mCurrentView)
-		mCurrentView->onShow();
+	{
+		if (isCurrent)
+			mCurrentView->onShow();
+
+		updateHelpPrompts();
+	}
 }
 
 SystemData* ViewController::getSelectedSystem()
@@ -1074,6 +1118,9 @@ ViewController::ViewMode ViewController::getViewMode()
 
 void ViewController::reloadAll(Window* window, bool reloadTheme)
 {
+	if (reloadTheme)
+		Renderer::resetCache();
+
 	Utils::FileSystem::FileSystemCacheActivator fsc;
 
 	if (mCurrentView != nullptr)
@@ -1110,6 +1157,10 @@ void ViewController::reloadAll(Window* window, bool reloadTheme)
 	
 	if (reloadTheme && cursorMap.size() > 0)
 	{
+		mCurrentView.reset();
+		mSystemListView.reset();
+		TextureResource::cleanupTextureResourceCache();
+
 		int processedSystem = 0;
 		int systemCount = cursorMap.size();
 
@@ -1222,8 +1273,9 @@ std::vector<HelpPrompt> ViewController::getHelpPrompts()
 		return prompts;
 
 	prompts = mCurrentView->getHelpPrompts();
-	if(!UIModeController::getInstance()->isUIModeKid())
-	  prompts.push_back(HelpPrompt("start", _("MENU"))); // batocera
+
+	if (!UIModeController::getInstance()->isUIModeKid())
+		prompts.push_back(HelpPrompt("start", _("MENU"), [&] { mWindow->pushGui(new GuiMenu(mWindow)); }));
 
 	return prompts;
 }
@@ -1324,4 +1376,26 @@ void ViewController::setActiveView(std::shared_ptr<GuiComponent> view)
 	mCurrentView = view;
 	mCurrentView->onShow();
 	mCurrentView->topWindow(true);
+}
+
+
+bool ViewController::hitTest(int x, int y, Transform4x4f& parentTransform, std::vector<GuiComponent*>* pResult)
+{
+	bool ret = false;
+
+	Transform4x4f trans = mCamera * parentTransform;
+
+//  Skip ViewController rect
+
+	for (int i = 0; i < getChildCount(); i++)
+	{
+		auto child = getChild(i);
+		if (mCurrentView == nullptr || child != mCurrentView.get())
+			ret |= getChild(i)->hitTest(x, y, trans, pResult);
+	}
+
+	if (mCurrentView != nullptr)
+		mCurrentView->hitTest(x, y, trans, pResult);
+
+	return ret;
 }

@@ -863,9 +863,6 @@ msgstr ""
 msgid "BLUETOOTH"
 msgstr ""
 
-msgid "ENABLE BLUETOOTH"
-msgstr ""
-
 msgid "PAIR BLUETOOTH PADS AUTOMATICALLY"
 msgstr ""
 
@@ -873,9 +870,6 @@ msgid "PAIR A BLUETOOTH DEVICE MANUALLY"
 msgstr ""
 
 msgid "DISPLAY OPTIONS"
-msgstr ""
-
-msgid "SHOW CONTROLLER NOTIFICATIONS"
 msgstr ""
 
 msgid "SHOW CONTROLLER ACTIVITY"
@@ -1741,81 +1735,6 @@ msgstr ""
 msgid "SERVICES"
 msgstr ""
 
-msgid "DMD"
-msgstr ""
-
-msgid "SERVER"
-msgstr ""
-
-msgid "DMDSERVER (for real dmd)"
-msgstr ""
-
-msgid "SIMULATOR (for web dmd)"
-msgstr ""
-
-msgid "dmd server"
-msgstr ""
-
-msgid "FORMAT"
-msgstr ""
-
-msgid "dmd matrix size"
-msgstr ""
-
-msgid "MATRIX"
-msgstr ""
-
-msgid "rgb dmd order"
-msgstr ""
-
-msgid "BRIGHTNESS"
-msgstr ""
-
-msgid "DMDSERVER stopped"
-msgstr ""
-
-msgid "DMDSERVER restarted"
-msgstr ""
-
-msgid "DMDSERVER started"
-msgstr ""
-
-msgid "MULTISCREENS"
-msgstr ""
-
-msgid "BACKGLASS / INFORMATION SCREEN"
-msgstr ""
-
-msgid "VIDEO OUTPUT"
-msgstr ""
-
-msgid "VIDEO MODE"
-msgstr ""
-
-msgid "Sets the display's resolution."
-msgstr ""
-
-msgid "ROTATION"
-msgstr ""
-
-msgid "0 DEGREES"
-msgstr ""
-
-msgid "90 DEGREES"
-msgstr ""
-
-msgid "180 DEGREES"
-msgstr ""
-
-msgid "270 DEGREES"
-msgstr ""
-
-msgid "SCREEN ROTATION"
-msgstr ""
-
-msgid "DMD SCREEN"
-msgstr ""
-
 msgid "FRONTEND DEVELOPER OPTIONS"
 msgstr ""
 
@@ -1835,6 +1754,9 @@ msgid "VSYNC"
 msgstr ""
 
 msgid "OVERSCAN"
+msgstr ""
+
+msgid "VIDEO MODE"
 msgstr ""
 
 msgid "Sets the display's resolution for emulationstation."
@@ -1999,12 +1921,6 @@ msgstr ""
 msgid "GUN MOVE TOLERENCE"
 msgstr ""
 
-msgid "ENABLE PS3 CONTROLLER SUPPORT"
-msgstr ""
-
-msgid "Might have negative impact on security."
-msgstr ""
-
 msgid "ENABLE HID JOYSTICK DRIVERS"
 msgstr ""
 
@@ -2128,6 +2044,12 @@ msgstr ""
 msgid "HARDWARE"
 msgstr ""
 
+msgid "BRIGHTNESS"
+msgstr ""
+
+msgid "VIDEO OUTPUT"
+msgstr ""
+
 msgid "AUDIO OUTPUT"
 msgstr ""
 
@@ -2135,6 +2057,21 @@ msgid "AUDIO PROFILE"
 msgstr ""
 
 msgid "Available options can change depending on current audio output."
+msgstr ""
+
+msgid "SCREEN ROTATION"
+msgstr ""
+
+msgid "0 DEGREES"
+msgstr ""
+
+msgid "90 DEGREES"
+msgstr ""
+
+msgid "180 DEGREES"
+msgstr ""
+
+msgid "270 DEGREES"
 msgstr ""
 
 msgid "BOOT SPLASH"
@@ -3264,19 +3201,19 @@ msgstr ""
 msgid "ALREADY TAKEN"
 msgstr ""
 
-msgid "WELCOME"
+msgid "DANGER ZONE!"
 msgstr ""
 
-#, c-format
-msgid "%i GAMEPAD DETECTED"
-msgid_plural "%i GAMEPADS DETECTED"
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "NO GAMEPADS DETECTED"
+msgid "You are about to set EmuELEC resolution to"
 msgstr ""
 
-msgid "HOLD A BUTTON ON YOUR DEVICE TO CONFIGURE IT."
+msgid "Emulationstation will restart"
+msgstr ""
+
+msgid "AUDIO DEVICE"
+msgstr ""
+
+msgid "ENABLE SSH"
 msgstr ""
 
 msgid "PRESS ESC TO CANCEL."
@@ -3286,39 +3223,48 @@ msgid "PRESS ESC OR A HOTKEY TO CANCEL."
 msgstr ""
 
 msgid "DISCARD CHANGES"
+
+
+msgid "START AT BOOT"
 msgstr ""
 
-msgid "up/down"
+msgid "ENABLE RA BEZELS"
 msgstr ""
 
-msgid "accept"
+msgid "ENABLE RA SPLASH"
 msgstr ""
 
-msgid "SELECT ALL"
+msgid "ALWAYS SHOW BOOT VIDEO"
 msgstr ""
 
-msgid "select all"
+msgid ""
+"WARNING THIS WILL RESTART EMULATIONSTATION!\n\n"
+"AFTER THE SCRIPT IS DONE REMEMBER TO COPY THE FILE /storage/downloads/ee_backup_config.zip TO SOME PLACE SAFE OR IT WILL BE DELETED ON NEXT REBOOT!\n\n"
+"BACKUP CURRENT CONFIG AND RESTART?"
 msgstr ""
 
-msgid "SELECT NONE"
+msgid "BACKUP EMUELEC CONFIGS"
 msgstr ""
 
-msgid "select none"
+msgid ""
+"WARNING: SYSTEM WILL RESET SCRIPTS AND BINARIES !\n"
+"UPDATE, DOWNLOADS, THEMES, BLUETOOTH PAIRINGS AND ROMS FOLDER WILL NOT BE AFFECTED.\n\n"
+"RESET SCRIPTS AND BINARIES TO DEFAULT AND RESTART?"
 msgstr ""
 
-#, c-format
-msgid "%i SELECTED"
-msgid_plural "%i SELECTED"
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "CHANGE"
+msgid "RESET EMUELEC SCRIPTS AND BINARIES TO DEFAULT"
 msgstr ""
 
-msgid "MOVE CURSOR"
+msgid ""
+"WARNING: ALL CONFIGURATIONS WILL BE RESET AND NO BACKUP WILL BE CREATED!\n\n"
+"IF YOU WANT TO KEEP YOUR SETTINGS MAKE A BACKUP AND SAVE IT ON AN EXTERNAL DRIVE BEFORE RUNING THIS OPTION!\n\n"
+"RESET SYSTEM TO DEFAULT CONFIG AND RESTART?"
 msgstr ""
 
-msgid "EDIT"
+msgid "RESET SYSTEM TO DEFAULT CONFIG"
+msgstr ""
+
+msgid "You are about to set EmuELEC Language to:"
 msgstr ""
 
 msgid "ENABLED"
@@ -3355,11 +3301,14 @@ msgid_plural "%d days ago"
 msgstr[0] ""
 msgstr[1] ""
 
-#, c-format
-msgid "%d hour ago"
-msgid_plural "%d hours ago"
-msgstr[0] ""
-msgstr[1] ""
+msgid "RESTART EMULATIONSTATION"
+msgstr ""
+
+msgid "REALLY RESTART EMULATIONSTATION?"
+msgstr ""
+
+msgid "REALLY START RETROARCH?"
+msgstr ""
 
 #, c-format
 msgid "%d minute ago"
@@ -3373,8 +3322,17 @@ msgid_plural "%d seconds ago"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "START RETROARCH"
+msgstr ""
+
+msgid "REALLY REBOOT FROM NAND?"
+msgstr ""
+
 msgid "SCREEN READER ENABLED"
 msgstr ""
 
 msgid "SCREEN READER DISABLED"
+msgstr ""
+
+msgid "REBOOT FROM NAND"
 msgstr ""

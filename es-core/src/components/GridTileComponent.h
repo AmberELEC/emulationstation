@@ -7,6 +7,7 @@
 #include "TextComponent.h"
 #include "ThemeData.h"
 #include "resources/TextureResource.h"
+#include "renderers/Renderer.h"
 
 class VideoComponent;
 
@@ -49,6 +50,7 @@ public:
 		image->setColorShiftEnd(colorEnd);
 		image->setMirroring(reflexion);
 		image->setRoundCorners(roundCorners);
+		image->setCustomShader(customShader);
 	}
 
 	bool Loaded;
@@ -63,6 +65,8 @@ public:
 	unsigned int colorEnd;
 
 	std::string  sizeMode;
+
+	Renderer::ShaderInfo customShader;
 
 	float roundCorners;
 };
@@ -198,6 +202,8 @@ public:
 	GridTileComponent(Window* window);
 	~GridTileComponent();
 
+	std::string getThemeTypeName() override { return "gridtile"; }
+
 	void render(const Transform4x4f& parentTrans) override;
 
 	virtual void applyTheme(const std::shared_ptr<ThemeData>& theme, const std::string& view, const std::string& element, unsigned int properties);
@@ -218,14 +224,14 @@ public:
 	
 	void setFavorite(bool favorite);
 	void setCheevos(bool favorite);
-	bool hasFavoriteMedia() { return mFavorite != nullptr; }
+	bool hasFavoriteMedia();
 
-	void setSelected(bool selected, bool allowAnimation = true, Vector3f* pPosition = NULL, bool force = false);	
+	void setSelected(bool selected, bool allowAnimation = true, Vector3f* pPosition = NULL, bool force = false, bool startsVideo = true);
 
 	void forceSize(Vector2f size, float selectedZoom = 1.0);
 
 	void renderBackground(const Transform4x4f& parentTrans);
-	void renderContent(const Transform4x4f& parentTrans);
+	void renderContent(const Transform4x4f& parentTrans, bool renderBackground = false);
 
 	bool shouldSplitRendering() { return isAnimationPlaying(3); };
 
@@ -247,21 +253,26 @@ public:
 
 	Vector3f getLaunchTarget();
 
+	void	startVideo();
+
+	void	updateBindings(IBindable* bindable) override;
+	bool    hasItemTemplate() { return mHasItemTemplate; }
+
 private:
+	void	handleStoryBoard(bool activate);
 	void	resetProperties();
 	void	createVideo();
 	void	createMarquee();
 	void	createFavorite();
 	void	createCheevos();
 	void	createImageOverlay();
-	void	startVideo();
 	void	stopVideo();
 
 	void resize();
 
 	static void applyThemeToProperties(const ThemeData::ThemeElement* elem, GridTileProperties& properties);
 
-	GridTileProperties getCurrentProperties(bool mixValues = true);
+	GridTileProperties& getCurrentProperties(bool mixValues = true);
 
 	TextComponent mLabel;
 
@@ -272,6 +283,7 @@ private:
 
 	GridTileProperties mDefaultProperties;
 	GridTileProperties mSelectedProperties;
+	GridTileProperties mMixedProperties;
 	GridTileProperties mVideoPlayingProperties;
 
 	std::string mCurrentMarquee;
@@ -296,6 +308,7 @@ private:
 
 	bool mVideoPlaying;	
 	bool mHasStandardMarquee;
+	bool mHasItemTemplate;
 };
 
 #endif // ES_CORE_COMPONENTS_GRID_TILE_COMPONENT_H

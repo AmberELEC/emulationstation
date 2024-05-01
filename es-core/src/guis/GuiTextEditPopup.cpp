@@ -16,6 +16,7 @@ GuiTextEditPopup::GuiTextEditPopup(Window* window, const std::string& title, con
 	mBackground.setEdgeColor(theme->Background.color);
 	mBackground.setCenterColor(theme->Background.centerColor);
 	mBackground.setCornerSize(theme->Background.cornerSize);
+	mBackground.setPostProcessShader(theme->Background.menuShader);
 
 	addChild(&mBackground);
 	addChild(&mGrid);
@@ -31,7 +32,7 @@ GuiTextEditPopup::GuiTextEditPopup(Window* window, const std::string& title, con
 	std::vector< std::shared_ptr<ButtonComponent> > buttons;
 	buttons.push_back(std::make_shared<ButtonComponent>(mWindow, acceptBtnText, acceptBtnText, [this, okCallback] { okCallback(mText->getValue()); delete this; }));
 	buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("RESET"), _("RESET"), [this, okCallback] { okCallback(""); delete this; }));
-	buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("CANCEL"), _("DISCARD CHANGES"), [this] { delete this; })); // batocera
+	buttons.push_back(std::make_shared<ButtonComponent>(mWindow, _("CANCEL"), _("DISCARD CHANGES"), [this] { delete this; })); 
 
 	mButtonGrid = makeButtonGrid(mWindow, buttons);
 
@@ -50,6 +51,8 @@ GuiTextEditPopup::GuiTextEditPopup(Window* window, const std::string& title, con
 
 void GuiTextEditPopup::onSizeChanged()
 {
+	GuiComponent::onSizeChanged();
+
 	mBackground.fitTo(mSize, Vector3f::Zero(), Vector2f(-32, -32));
 
 	mText->setSize(mSize.x() - 40, mText->getSize().y());

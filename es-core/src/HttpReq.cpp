@@ -7,6 +7,7 @@
 #include <thread>
 
 #include <SDL.h>
+#include "Paths.h"
 
 #ifdef WIN32
 #include <time.h>
@@ -51,7 +52,7 @@ bool HttpReq::isUrl(const std::string& str)
 }
 
 #ifdef WIN32
-LONG _regGetDWORD(HKEY hKey, const std::string &strPath, const std::string &strValueName)
+static LONG _regGetDWORD(HKEY hKey, const std::string &strPath, const std::string &strValueName)
 {
 	HKEY hSubKey;
 	LONG nRet = ::RegOpenKeyEx(hKey, strPath.c_str(), 0L, KEY_QUERY_VALUE, &hSubKey);
@@ -70,7 +71,7 @@ LONG _regGetDWORD(HKEY hKey, const std::string &strPath, const std::string &strV
 	return 0;
 }
 
-std::string _regGetString(HKEY hKey, const std::string &strPath, const std::string &strValueName)
+static std::string _regGetString(HKEY hKey, const std::string &strPath, const std::string &strValueName)
 {
 	std::string ret;
 
@@ -91,6 +92,21 @@ std::string _regGetString(HKEY hKey, const std::string &strPath, const std::stri
 	return ret;
 }
 #endif
+
+static std::string getCookiesContainerPath(bool createDirectory = true)
+{	
+	std::string cookiesPath = Utils::FileSystem::getGenericPath(Paths::getUserEmulationStationPath() + std::string("/tmp"));
+	if (createDirectory)
+		Utils::FileSystem::createDirectory(cookiesPath);
+
+	return Utils::FileSystem::getGenericPath(Utils::FileSystem::combine(cookiesPath, "cookies.txt"));
+}
+
+void HttpReq::resetCookies()
+{
+	auto path = getCookiesContainerPath(false);
+	Utils::FileSystem::removeFile(path);
+}
 
 HttpReq::HttpReq(const std::string& url, const std::string& outputFilename) 
 	: mStatus(REQ_IN_PROGRESS), mHandle(NULL), mFile(NULL)
@@ -117,7 +133,7 @@ void HttpReq::performRequest(const std::string& url, HttpReqOptions* options)
 
 	mFilePath = outputFilename;
 	mPosition = -1;
-	mPercent = -1;
+	mPercent = -1;	
 	mHandle = curl_easy_init();
 
 	if(mHandle == NULL)
@@ -223,6 +239,17 @@ void HttpReq::performRequest(const std::string& url, HttpReqOptions* options)
 		}
 	}
 
+	if (options == nullptr || options->useCookieManager)
+	{
+		std::string cookiesFile = getCookiesContainerPath(); 
+
+		curl_easy_setopt(mHandle, CURLOPT_COOKIEFILE, cookiesFile.c_str());
+		curl_easy_setopt(mHandle, CURLOPT_COOKIEJAR, cookiesFile.c_str());
+	}
+
+	curl_easy_setopt(mHandle, CURLOPT_HEADERFUNCTION, &HttpReq::header_callback);
+	curl_easy_setopt(mHandle, CURLOPT_HEADERDATA, this);
+
 #ifdef WIN32
 	// Setup system proxy on Windows if required
 	if (_regGetDWORD(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", "ProxyEnable"))
@@ -244,7 +271,6 @@ void HttpReq::performRequest(const std::string& url, HttpReqOptions* options)
 
 			if (!proxyServer.empty())
 			{
-				CURLcode ret;
 				curl_easy_setopt(mHandle, CURLOPT_PROXY, proxyServer.c_str());
 				curl_easy_setopt(mHandle, CURLOPT_PROXYTYPE, CURLPROXY_HTTP);
 			}
@@ -363,23 +389,40 @@ HttpReq::Status HttpReq::status()
 				else if (msg->data.result == CURLE_OK)
 				{
 					int http_status_code;
-					curl_easy_getinfo(msg->easy_handle, CURLINFO_RESPONSE_CODE, &http_status_code);
-
-					char *ct = NULL;
-					if (!curl_easy_getinfo(msg->easy_handle, CURLINFO_CONTENT_TYPE, &ct) && ct)
-						req->mResponseContentType = ct;
+					curl_easy_getinfo(msg->easy_handle, CURLINFO_RESPONSE_CODE, &http_status_code);					
 
 					if (http_status_code < 200 || http_status_code > 299)
 					{
 						std::string err;
 
-						if (http_status_code >= 400 && http_status_code <= 500)
+						if (http_status_code >= 400 && http_status_code <= 503)
 						{
 							if (req->mFilePath.empty())
-								err = req->getContent();
+							{
+								auto content = req->getContent();
+								if (!content.empty() && content.find("<body") != std::string::npos)
+								{
+									// Parse response HTML & extract body
+									auto body = Utils::String::extractString(content, "<body", "</body>", true);
+									body = Utils::String::replace(body, "\r", "");
+									body = Utils::String::replace(body, "\n", "");
+									body = Utils::String::replace(body, "</p>", "\r\n");
+									body = Utils::String::replace(body, "<br>", "\r\n");
+									body = Utils::String::replace(body, "<hr>", "\r\n");
+									body = Utils::String::removeHtmlTags(body);
 
-							req->mStatus = (Status)http_status_code;
-						}
+									if (!body.empty())
+										err = "HTTP status " + std::to_string(http_status_code) + "\r\n" + body;
+								}
+								else
+									err = content;
+							}
+
+							if (http_status_code > 500)
+								req->mStatus = REQ_IO_ERROR;
+							else
+								req->mStatus = (Status)http_status_code;
+						}						
 						else
 							req->mStatus = REQ_IO_ERROR;
 
@@ -393,6 +436,23 @@ HttpReq::Status HttpReq::status()
 						if (!req->mFilePath.empty())
 						{
 							bool renamed = Utils::FileSystem::renameFile(req->mTempStreamPath.c_str(), req->mFilePath.c_str());
+#if WIN32
+							if (renamed)
+							{
+								auto wfn = Utils::String::convertToWideString(req->mFilePath);
+								HANDLE hFile = CreateFileW(wfn.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+								if (hFile != INVALID_HANDLE_VALUE)
+								{
+									SYSTEMTIME st;
+									GetSystemTime(&st);              // Gets the current system time
+									FILETIME ft;
+									SystemTimeToFileTime(&st, &ft);  // Converts the current system time to file time format
+
+									SetFileTime(hFile, &ft, &ft, &ft);
+									CloseHandle(hFile);
+								}
+							}
+#endif
 							if (!renamed)
 							{
 								// Strange behaviour on Windows : sometimes std::rename fails if it's done too early after closing stream
@@ -466,6 +526,32 @@ std::string HttpReq::getErrorMsg()
 	return mErrorMsg;
 }
 
+std::string HttpReq::getResponseHeader(const std::string& header)
+{
+	auto it = mResponseHeaders.find(header);
+	if (it != mResponseHeaders.cend())
+		return it->second;
+		
+	return "";
+}
+
+size_t HttpReq::header_callback(char *buffer, size_t size, size_t nitems, void *userdata)
+{
+	HttpReq* request = ((HttpReq*)userdata);
+
+	std::string data = Utils::String::trim(buffer);
+	if (!data.empty() && !Utils::String::startsWith(data, "HTTP/"))
+	{
+		auto splitPost = data.find(":");
+		if (splitPost != std::string::npos)
+			request->mResponseHeaders[Utils::String::trim(data.substr(0, splitPost))] = Utils::String::trim(data.substr(splitPost + 1));
+		else
+			request->mResponseHeaders[data] = "";
+	}
+
+	return nitems * size;
+}
+
 //used as a curl callback
 //size = size of an element, nmemb = number of elements
 //return value is number of elements successfully read
@@ -484,7 +570,7 @@ size_t HttpReq::write_content(void* buff, size_t size, size_t nmemb, void* req_p
 		return 0;
 
 	size_t rs = size * nmemb;
-	fwrite(buff, 1, rs, file) != rs;	
+	fwrite(buff, 1, rs, file);
 	if (ferror(file))
 	{
 		request->closeStream();			
@@ -494,15 +580,15 @@ size_t HttpReq::write_content(void* buff, size_t size, size_t nmemb, void* req_p
 		return 0;
 	}
 
-	double cl;
-	if (!curl_easy_getinfo(request->mHandle, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &cl))
-	{		
+	curl_off_t cl = 0;
+	if (!curl_easy_getinfo(request->mHandle, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T, &cl))
+	{
 		request->mPosition += rs;
 
 		if (cl <= 0)
 			request->mPercent = -1;
 		else
-			request->mPercent = (int) (request->mPosition * 100.0 / cl);
+			request->mPercent = (int)(request->mPosition * 100LL / cl);
 	}
 
 	return nmemb;

@@ -38,9 +38,12 @@ const std::map<PlatformId, std::string> gamesdb_new_platformid_map{
 	{ ATARI_LYNX, "4924" },
 	{ ATARI_ST, "4937" },
 	{ ATARI_XE, "30" },
+	{ BBC_MICRO, "5013"},
 	{ COLECOVISION, "31" },	
 	{ COMMODORE_64, "40" },
 	{ COMMODORE_VIC20, "4945" },
+	{ COMMODORE_PET, "5008" },
+	{ COMMODORE_PLUS4, "5007" },
 	{ INTELLIVISION, "32" },
 	{ MAC_OS, "37" },
 	{ XBOX, "14" },
@@ -69,6 +72,7 @@ const std::map<PlatformId, std::string> gamesdb_new_platformid_map{
 	{ SEGA_GENESIS, "18" },
 	{ SEGA_MASTER_SYSTEM, "35" },
 	{ SEGA_MEGA_DRIVE, "36" },
+	{ SEGA_PICO, "4958" },
 	{ SEGA_SATURN, "17" },
 	{ SEGA_SG1000, "4949" },
 	{ PLAYSTATION, "10" },
@@ -116,6 +120,8 @@ const std::map<PlatformId, std::string> gamesdb_new_platformid_map{
 	{ CASIO_PV1000, "4964" },
 	{ ENTEX_ADVENTURE_VISION, "4974" },
 	{ SONIC, "36,21" }, // Sega Mega Drive & Sega CD
+	{ GP32, "5015"},
+	{ VTECH_SOCRATES, "4998" },
 
 	// 1 = PC
 	{ PC, "1" },
@@ -130,9 +136,24 @@ const std::map<PlatformId, std::string> gamesdb_new_platformid_map{
 	{ DAPHNE, "23" },
 	{ AMERICANLASERGAMES, "23" },
 	{ ACTIONMAX, "4976" },
+	{ TEKNOPARROT, "23" },
 
 	{ SUPER_NINTENDO_MSU1, "6" },
+	{ LCD_GAMES, "4951" },
 
+	{ FUJITSU_FM7, "4978" },
+	{ CASIO_PV1000, "4964" },
+	{ TIGER_GAMECOM, "4940" },
+	{ ENTEX_ADVENTURE_VISION, "4974" },
+	{ EMERSON_ARCADIA_2001, "4963" },
+	{ VTECH_CREATIVISION, "5005" },
+	{ VTECH_VSMILE, "4988" },
+	{ GAMATE, "5004" },
+	{ CREATONIC_MEGA_DUCK, "4948" },
+	{ TOMY_TUTOR, "4960" },
+	{ APF_MP_1000, "4969" },
+	{ TANDY_VIS, "4982" }
+		
 	/* Non existing systems
 	{ AMIGACDTV, "129" },
 	{ CAVESTORY, "135" },
@@ -153,6 +174,19 @@ const std::map<PlatformId, std::string> gamesdb_new_platformid_map{
 	*/
 };
 
+const std::set<Scraper::ScraperMediaSource>& TheGamesDBScraper::getSupportedMedias()
+{
+	static std::set<ScraperMediaSource> mdds = {
+		ScraperMediaSource::Screenshot,
+		ScraperMediaSource::Box2d,
+		ScraperMediaSource::Wheel,
+		ScraperMediaSource::FanArt,
+		ScraperMediaSource::TitleShot
+	};
+
+	return mdds;
+}
+
 bool TheGamesDBScraper::isSupportedPlatform(SystemData* system)
 {
 	std::string platformQueryParam;
@@ -161,26 +195,6 @@ bool TheGamesDBScraper::isSupportedPlatform(SystemData* system)
 	for (auto platform : platforms)
 		if (gamesdb_new_platformid_map.find(platform) != gamesdb_new_platformid_map.cend())
 			return true;
-
-	return false;
-}
-
-bool TheGamesDBScraper::hasMissingMedia(FileData* file)
-{
-	if (!Settings::getInstance()->getString("ScrapperImageSrc").empty() && !Utils::FileSystem::exists(file->getMetadata(MetaDataId::Image)))
-		return true;
-
-	if (!Settings::getInstance()->getString("ScrapperThumbSrc").empty() && !Utils::FileSystem::exists(file->getMetadata(MetaDataId::Thumbnail)))
-		return true;
-
-	if (!Settings::getInstance()->getString("ScrapperLogoSrc").empty() && !Utils::FileSystem::exists(file->getMetadata(MetaDataId::Marquee)))
-		return true;
-
-	if (Settings::getInstance()->getBool("ScrapeFanart") && !Utils::FileSystem::exists(file->getMetadata(MetaDataId::FanArt)))
-		return true;
-
-	if (Settings::getInstance()->getBool("ScrapeTitleShot") && !Utils::FileSystem::exists(file->getMetadata(MetaDataId::TitleShot)))
-		return true;
 
 	return false;
 }
@@ -408,7 +422,7 @@ namespace
 		std::string baseImageUrlThumb = getStringOrThrow(boxart["base_url"], "thumb");
 		std::string baseImageUrlLarge = getStringOrThrow(boxart["base_url"], "large");
 
-		ScraperSearchResult result;
+		ScraperSearchResult result("TheGamesDB");
 
 		result.mdl.set(MetaDataId::Name, getStringOrThrow(game, "game_title"));
 

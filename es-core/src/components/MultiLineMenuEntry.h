@@ -13,6 +13,11 @@ public:
 
 	void setColor(unsigned int color) override;
 	void onSizeChanged() override;
+	void onFocusGained() override;
+	void onFocusLost() override;
+	
+	std::string getDescription();
+	void setDescription(const std::string& description);
 
 protected:
 	bool mMultiLine;

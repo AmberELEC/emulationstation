@@ -15,6 +15,7 @@
 #include "Log.h"
 #include "Window.h"
 #include "LocaleES.h"
+#include "components/MultiLineMenuEntry.h"
 
 ScraperSearchComponent::ScraperSearchComponent(Window* window, SearchType type) : GuiComponent(window),
 	mGrid(window, Vector2i(5, 5)), mBusyAnim(window),
@@ -93,6 +94,8 @@ ScraperSearchComponent::~ScraperSearchComponent()
 
 void ScraperSearchComponent::onSizeChanged()
 {
+	GuiComponent::onSizeChanged();
+
 	mGrid.setSize(mSize);
 
 	if (mSize.x() == 0 || mSize.y() == 0)
@@ -251,7 +254,8 @@ void ScraperSearchComponent::search(const ScraperSearchParams& params)
 			ScraperSearch* ss = new ScraperSearch();
 			ss->name = scraperName;
 			ss->params = params;
-			ss->searchHandle = scraper->search(params);
+			ss->params.isManualScrape = true;
+			ss->searchHandle = scraper->search(ss->params);
 			mScrapEngines.push_back(ss);
 		}
 	}
@@ -341,9 +345,16 @@ void ScraperSearchComponent::onSearchDone()
 				if (result.urls.find(MetaDataId::Manual) != result.urls.cend())
 					icons += _U(" \uF02D");
 
+				if (result.urls.find(MetaDataId::Map) != result.urls.cend())
+					icons += _U(" \uF0AC");
+
+				if (result.urls.find(MetaDataId::Bezel) != result.urls.cend())
+					icons += _U(" \uF07E");
+
 				row.elements.clear();
-				row.addElement(std::make_shared<TextComponent>(mWindow, Utils::String::toUpper(result.mdl.get(MetaDataId::Name)) + " " + icons, font, color), true);
+				row.addElement(std::make_shared<TextComponent>(mWindow, Utils::String::toUpper(result.mdl.get(MetaDataId::Name)) + " " + icons, font, color), true);					
 				row.makeAcceptInputHandler([this, result] { returnResult(result); });
+
 				mResultList->addRow(row, false, true, std::to_string(i));
 
 				i++;

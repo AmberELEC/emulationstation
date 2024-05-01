@@ -15,27 +15,15 @@
 #include "FileFilterIndex.h"
 #include "KeyboardMapping.h"
 #include "math/Vector2f.h"
+#include "CustomFeatures.h"
+#include "utils/VectorEx.h"
+#include "BindingManager.h"
 
 class FileData;
 class FolderData;
 class ThemeData;
 class Window;
 class SaveStateRepository;
-
-struct CustomFeatureChoice
-{
-	std::string name;
-	std::string value;
-};
-
-struct CustomFeature
-{
-	std::string name;
-	std::string value;
-	std::string description;
-	std::string submenu;
-	std::vector<CustomFeatureChoice> choices;
-};
 
 struct GameCountInfo
 {
@@ -45,97 +33,9 @@ struct GameCountInfo
 	int favoriteCount;
 	int hiddenCount;
 	int gamesPlayed;
+	long playTime;
 	std::string mostPlayed;
 	std::string lastPlayedDate;
-};
-
-class EmulatorFeatures
-{
-public:
-	enum Features
-	{
-		none = 0,
-		ratio = 1,
-		rewind = 2,
-		smooth = 4,
-		shaders = 8,
-		pixel_perfect = 16,
-		decoration = 32,
-		latency_reduction = 64,
-		game_translation = 128,
-		autosave = 256,
-		netplay = 512,
-		fullboot = 1024,
-		emulated_wiimotes = 2048,
-		screen_layout = 4096,
-		internal_resolution = 8192,
-		videomode = 16384,
-		colorization = 32768,
-		padTokeyboard = 65536,
-		cheevos = 131072,
-		autocontrollers = 262144,
-#ifdef _ENABLEEMUELEC
-		vertical = 524288,
-		nativevideo = 1048576,
-#endif
-
-		all = 0x0FFFFFFF
-	};
-
-	static Features parseFeatures(const std::string features);
-};
-
-struct SystemFeature
-{
-	SystemFeature()
-	{
-		features = EmulatorFeatures::Features::none;
-	}
-
-	std::string name;
-	EmulatorFeatures::Features features;
-	std::vector<CustomFeature> customFeatures;
-};
-
-struct CoreData
-{
-	CoreData() 
-	{ 
-		netplay = false; 
-		isDefault = false;
-		features = EmulatorFeatures::Features::none;
-	}
-
-	std::string name;
-	bool netplay;
-	bool isDefault;
-	
-	std::string customCommandLine;
-	std::vector<CustomFeature> customFeatures;
-	std::vector<std::string> incompatibleExtensions;
-
-	EmulatorFeatures::Features features;
-
-	std::vector<SystemFeature> systemFeatures;
-};
-
-struct EmulatorData
-{
-	EmulatorData()
-	{
-		features = EmulatorFeatures::Features::none;
-	}
-
-	std::string name;	
-	std::vector<CoreData> cores;
-
-	std::string customCommandLine;
-	std::vector<CustomFeature> customFeatures;
-	std::vector<std::string> incompatibleExtensions;
-
-	EmulatorFeatures::Features features;
-
-	std::vector<SystemFeature> systemFeatures;
 };
 
 struct SystemMetadata
@@ -162,17 +62,31 @@ struct SystemEnvironmentData
 	}
 };
 
-class SystemData : public IKeyboardMapContainer
+class SystemData;
+
+class BindableRandom : public IBindable
 {
 public:
-    SystemData(const SystemMetadata& type, SystemEnvironmentData* envData, std::vector<EmulatorData>* pEmulators, bool CollectionSystem = false, bool groupedSystem = false, bool withTheme = true, bool loadThemeOnlyIfElements = false); // batocera
+	BindableRandom(SystemData* system);
+
+	BindableProperty getProperty(const std::string& name) override;
+
+	std::string getBindableTypeName() override { return "random"; }
+	IBindable* getBindableParent() override { return nullptr; };
+
+private:
+	SystemData* mSystem;
+	std::string mRandom;
+};
+
+class SystemData : public IKeyboardMapContainer, public IBindable
+{
+public:
+    SystemData(const SystemMetadata& type, SystemEnvironmentData* envData, std::vector<EmulatorData>* pEmulators, bool CollectionSystem = false, bool groupedSystem = false, bool withTheme = true, bool loadThemeOnlyIfElements = false);
 	~SystemData();
 
 	static SystemData* getSystem(const std::string name);
 	static SystemData* getFirstVisibleSystem();
-
-	static std::map<std::string, EmulatorData> es_features;
-	static bool es_features_loaded;
 
 	inline FolderData* getRootFolder() const { return mRootFolder; };
 	inline const std::string& getName() const { return mMetadata.name; }
@@ -196,20 +110,15 @@ public:
 	GameCountInfo* getGameCountInfo();
 	void updateDisplayedGameCount();
 
-	static bool isManufacturerSupported();
+	static bool IsManufacturerSupported;
 	static bool hasDirtySystems();
 	static void deleteSystems();
-	static bool loadConfig(Window* window = nullptr); //Load the system config file at getConfigPath(). Returns true if no errors were encountered. An example will be written if the file doesn't exist.
-	static void writeExampleConfig(const std::string& path);
-	static std::string getConfigPath(bool forWrite); // if forWrite, will only return ~/.emulationstation/es_systems.cfg, never /etc/emulationstation/es_systems.cfg
-
-	static bool loadEsFeaturesFile();
+	static bool loadConfig(Window* window = nullptr); //Load the system config file at getConfigPath(). Returns true if no errors were encountered. An example will be written if the file doesn't exist.	
+	static std::string getConfigPath();
 	
 	bool loadFeatures();
 
-	static std::vector<CustomFeature> loadCustomFeatures(pugi::xml_node node);
-
-	static std::vector<SystemData*> sSystemVector;
+	static VectorEx<SystemData*> sSystemVector;
 
 	inline std::vector<SystemData*>::const_iterator getIterator() const { return std::find(sSystemVector.cbegin(), sSystemVector.cend(), this); };
 	inline std::vector<SystemData*>::const_reverse_iterator getRevIterator() const { return std::find(sSystemVector.crbegin(), sSystemVector.crend(), this); };
@@ -220,7 +129,8 @@ public:
 	bool isGroupChildSystem();
 
 	bool isVisible();
-	
+	bool isHidden() { return mHidden; } // This flag is different from !isVisible because it only returns the user setting
+
 	SystemData* getNext() const;
 	SystemData* getPrev() const;
 	static SystemData* getRandomSystem();
@@ -288,7 +198,7 @@ public:
 
 	bool isCurrentFeatureSupported(EmulatorFeatures::Features feature);
 	bool isFeatureSupported(std::string emulatorName, std::string coreName, EmulatorFeatures::Features feature);
-	std::vector<CustomFeature> getCustomFeatures(std::string emulatorName, std::string coreName);
+	CustomFeatures getCustomFeatures(std::string emulatorName, std::string coreName);
 	std::string		getCompatibleCoreNames(EmulatorFeatures::Features feature);
 
 	bool hasFeatures();
@@ -304,8 +214,6 @@ public:
 
 	bool shouldExtractHashesFromArchives();
 
-	static std::vector<CustomFeature> mGlobalFeatures;
-
 	bool getShowFilenames();
 	bool getShowParentFolder();
 	bool getShowFavoritesFirst();
@@ -318,6 +226,10 @@ public:
 	static void resetSettings();
 
 	SaveStateRepository* getSaveStateRepository();
+
+	// IBindable
+	BindableProperty getProperty(const std::string& name) override;
+	std::string getBindableTypeName() override { return "system"; }
 
 private:
 	std::string getKeyboardMappingFilePath();
@@ -336,14 +248,6 @@ private:
 	SystemEnvironmentData* mEnvData;
 	std::shared_ptr<ThemeData> mTheme;
 
-	/*
-	std::string mName;
-	std::string mFullName;
-	std::string mThemeFolder;
-	std::string mManufacturer;
-	std::string mReleaseYear;
-	std::string mHardwareType;
-	*/
 	void populateFolder(FolderData* folder, std::unordered_map<std::string, FileData*>& fileMap);
 	void indexAllGameFilters(const FolderData* folder);
 	void setIsGameSystemStatus();
@@ -355,6 +259,7 @@ private:
 	FileFilterIndex* mFilterIndex;
 
 	FolderData* mRootFolder;
+	BindableRandom* mBindableRandom;
 
 	std::vector<EmulatorData> mEmulators;
 	

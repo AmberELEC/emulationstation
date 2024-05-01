@@ -17,7 +17,7 @@ set(ES_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/ThreadedScraper.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ThreadedHasher.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ThreadedBluetooth.h
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Playlists.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/SystemRandomPlaylist.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/LangParser.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/KeyboardMapping.h	
 	${CMAKE_CURRENT_SOURCE_DIR}/src/services/HttpServerThread.h
@@ -26,13 +26,13 @@ set(ES_HEADERS
 	${CMAKE_CURRENT_SOURCE_DIR}/src/RetroAchievements.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/SaveState.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/SaveStateRepository.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/SaveStateConfigFile.h    
+	${CMAKE_CURRENT_SOURCE_DIR}/src/CustomFeatures.h
+# EmuELEC
+	${CMAKE_CURRENT_SOURCE_DIR}/src/CloudSaves.h
 
-    # GuiComponents
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/components/AsyncReqComponent.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/components/RatingComponent.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/components/ScraperSearchComponent.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/components/TextListComponent.h
-	${CMAKE_CURRENT_SOURCE_DIR}/src/components/CarouselComponent.h
+    # GuiComponents    
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/components/ScraperSearchComponent.h    
 
     # Guis    
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiMetaDataEd.h
@@ -43,7 +43,8 @@ set(ES_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiDecorationOptions.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiMenu.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiSettings.h    
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiScraperStart.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiScraperStart.h	
+	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiScraperSettings.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiHashStart.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiGamelistFilter.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiCollectionSystemsOptions.h
@@ -60,12 +61,17 @@ set(ES_HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiThemeInstaller.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiBezelInstaller.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiNetPlay.h # batocera
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiRetroAchievements.h # batocera
-	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiBluetooth.h # batocera	
+	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiNetPlaySettings.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiRetroAchievements.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiRetroAchievementsSettings.h	
+	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiSystemInformation.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiBluetoothForget.h
+	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiBluetoothPair.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiWifi.h # batocera
 	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiImageViewer.h # batocera
 	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiBatoceraStore.h # batocera	
 	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiBios.h # batocera	
+	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiControllersSettings.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiKeyMappingEditor.h
 	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiKeyboardLayout.h	
 	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiGameAchievements.h		
@@ -100,7 +106,7 @@ set(ES_HEADERS
 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ApiSystem.h # batocera
     ${CMAKE_CURRENT_SOURCE_DIR}/src/LibretroRatio.h # batocera
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Win32ApiSystem.h # batocera
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Win32ApiSystem.h # batocera
 )
 
 set(ES_SOURCES
@@ -120,7 +126,7 @@ set(ES_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scrapers/ThreadedScraper.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ThreadedHasher.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ThreadedBluetooth.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/Playlists.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/SystemRandomPlaylist.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/LangParser.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/KeyboardMapping.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/services/HttpServerThread.cpp	
@@ -128,12 +134,13 @@ set(ES_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/RetroAchievements.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/SaveState.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/SaveStateRepository.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/SaveStateConfigFile.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/CustomFeatures.cpp	
+# EmuELEC	
+	${CMAKE_CURRENT_SOURCE_DIR}/src/CloudSaves.cpp
 
-    # GuiComponents
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/components/AsyncReqComponent.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/components/RatingComponent.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/components/ScraperSearchComponent.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/components/CarouselComponent.cpp
+    # GuiComponents    
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/components/ScraperSearchComponent.cpp	
 
     # Guis    
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiMetaDataEd.cpp
@@ -144,7 +151,8 @@ set(ES_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiDecorationOptions.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiMenu.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiSettings.cpp    
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiScraperStart.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiScraperStart.cpp	
+	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiScraperSettings.cpp	
 	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiHashStart.cpp	
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiGamelistFilter.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiCollectionSystemsOptions.cpp
@@ -157,12 +165,17 @@ set(ES_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiThemeInstaller.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiBezelInstaller.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiNetPlay.cpp # batocera
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiRetroAchievements.cpp # batocera
-	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiBluetooth.cpp # batocera	
+	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiNetPlaySettings.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiRetroAchievements.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiRetroAchievementsSettings.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiSystemInformation.cpp	
+	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiBluetoothForget.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiBluetoothPair.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiWifi.cpp # batocera
 	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiImageViewer.cpp # batocera
 	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiBatoceraStore.cpp # batocera	
 	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiBios.cpp # batocera	
+	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiControllersSettings.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiKeyMappingEditor.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiKeyboardLayout.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/guis/GuiGameAchievements.cpp
@@ -188,7 +201,7 @@ set(ES_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/views/gamelist/DetailedContainer.cpp	
 	${CMAKE_CURRENT_SOURCE_DIR}/src/views/gamelist/GameNameFormatter.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/views/SystemView.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/views/ViewController.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/views/ViewController.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/views/UIModeController.cpp
 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ApiSystem.cpp # batocera

@@ -15,12 +15,13 @@ public:
 	bool input(InputConfig* config, Input input) override;
 	void render(const Transform4x4f& parentTrans) override;
 	void onSizeChanged() override;
+	void onOpacityChanged();
 
 	bool getState() const;
 	void setState(bool state);
 	std::string getValue() const;
 	void setValue(const std::string& statestring) override;
-	bool changed(); // batocera
+	bool changed(); 
 
 	virtual std::vector<HelpPrompt> getHelpPrompts() override;
 
@@ -35,9 +36,9 @@ private:
 
 	ImageComponent mImage;
 	bool mState;
-	bool mInitialState; // batocera
+	bool mInitialState; 
 
-	std::function<void()> mOnChangedCallback; // batocera
+	std::function<void()> mOnChangedCallback; 
 };
 
 #endif // ES_CORE_COMPONENTS_SWITCH_COMPONENT_H

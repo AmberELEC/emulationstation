@@ -28,6 +28,19 @@ namespace glext
 	PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv = nullptr;
 	PFNGLCREATESHADERPROC glCreateShader = nullptr;
 	PFNGLACTIVETEXTUREPROC glActiveTexture_ = nullptr;
+	PFNGLUNIFORM1FPROC glUniform1f = nullptr;
+	PFNGLUNIFORM2FPROC glUniform2f = nullptr;
+	PFNGLUNIFORM4FPROC glUniform4f = nullptr;	
+	PFNGLDELETEPROGRAMPROC glDeleteProgram = nullptr;
+	PFNGLDELETESHADERPROC glDeleteShader = nullptr;
+
+	PFNGLFRAMEBUFFERTEXTURE2DPROC glFramebufferTexture2D = nullptr;
+	PFNGLBINDFRAMEBUFFEREXTPROC glBindFramebuffer = nullptr;
+	PFNGLBLITFRAMEBUFFERPROC glBlitFramebuffer = nullptr;
+	PFNGLGENFRAMEBUFFERSPROC glGenFramebuffers = nullptr;
+	PFNGLDELETEFRAMEBUFFERSPROC glDeleteFramebuffers = nullptr;
+
+	PFNGLGETACTIVEUNIFORMPROC glGetActiveUniform = nullptr;
 
 	void* _glProcAddress(const char *proc)
 	{
@@ -87,6 +100,19 @@ namespace glext
 		glDisableVertexAttribArray = (PFNGLDISABLEVERTEXATTRIBARRAYPROC)_glProcAddress("glDisableVertexAttribArray");
 		glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)_glProcAddress("glUniformMatrix4fv");
 		glActiveTexture_ = (PFNGLACTIVETEXTUREPROC)_glProcAddress("glActiveTexture");
+		glUniform1f = (PFNGLUNIFORM1FPROC)_glProcAddress("glUniform1f");
+		glUniform2f = (PFNGLUNIFORM2FPROC)_glProcAddress("glUniform2f");		
+		glUniform4f = (PFNGLUNIFORM4FPROC)_glProcAddress("glUniform4f");				
+		glDeleteProgram = (PFNGLDELETEPROGRAMPROC)_glProcAddress("glDeleteProgram");
+		glDeleteShader = (PFNGLDELETESHADERPROC)_glProcAddress("glDeleteShader");
+
+		glFramebufferTexture2D = (PFNGLFRAMEBUFFERTEXTURE2DPROC)_glProcAddress("glFramebufferTexture2D");
+		glBindFramebuffer = (PFNGLBINDFRAMEBUFFEREXTPROC)_glProcAddress("glBindFramebuffer");
+		glBlitFramebuffer = (PFNGLBLITFRAMEBUFFERPROC)_glProcAddress("glBlitFramebuffer");
+		glGenFramebuffers = (PFNGLGENFRAMEBUFFERSPROC)_glProcAddress("glGenFramebuffers");
+		glDeleteFramebuffers = (PFNGLDELETEFRAMEBUFFERSPROC)_glProcAddress("glDeleteFramebuffers");		
+
+		glGetActiveUniform = (PFNGLGETACTIVEUNIFORMPROC)_glProcAddress("glGetActiveUniform");
 
 		return 
 			glCreateShader != nullptr && glCompileShader != nullptr && glCreateProgram != nullptr && glGenBuffers != nullptr && 
@@ -94,19 +120,21 @@ namespace glext
 			glLinkProgram != nullptr && glGetProgramiv != nullptr && glGetProgramInfoLog != nullptr && glUseProgram != nullptr &&
 			glUniform1i != nullptr && glGetUniformLocation != nullptr && glGetAttribLocation != nullptr && glBufferData != nullptr &&
 			glVertexAttribPointer != nullptr && glBufferData != nullptr && glBufferSubData != nullptr && glVertexAttribPointer != nullptr && glEnableVertexAttribArray != nullptr &&
-			glDisableVertexAttribArray != nullptr && glUniformMatrix4fv != nullptr && glActiveTexture_ != nullptr;
+			glDisableVertexAttribArray != nullptr && glUniformMatrix4fv != nullptr && glActiveTexture_ != nullptr && glUniform1f != nullptr && glUniform2f != nullptr && glDeleteShader != nullptr && glDeleteProgram != nullptr;
 	}
 }
 #endif
 
-#if defined(_DEBUG)
 #include "Log.h"
 
-void _GLCheckError(const char* _funcName)
+bool _GLCheckError(const char* _funcName)
 {
 	const GLenum errorCode = glGetError();
-
 	if (errorCode != GL_NO_ERROR)
+	{
 		LOG(LogError) << "GL error: " << _funcName << " failed with error code: " << errorCode;
+		return false;
+	}
+
+	return true;
 }
-#endif

@@ -391,7 +391,7 @@ msgstr "PLACAR"
 msgid "Compete in high-score and best time leaderboards (requires hardcore)."
 msgstr ""
 "Competir em tabelas de classificação de pontuação alta e melhor tempo "
-"(requer modo hardcore ativo)."
+"(requer modo restrito esteja ativo)."
 
 msgid "VERBOSE MODE"
 msgstr "MODO DETALHADO"
@@ -872,9 +872,6 @@ msgstr "DEFINIÇÕES RATO/PISTOLA DO STEAMDECK"
 msgid "BLUETOOTH"
 msgstr "BLUETOOTH"
 
-msgid "ENABLE BLUETOOTH"
-msgstr "LIGAR BLUETOOTH"
-
 msgid "PAIR BLUETOOTH PADS AUTOMATICALLY"
 msgstr "EMPARELHAR COMANDOS BLUETOOTH AUTOMATICAMENTE"
 
@@ -883,9 +880,6 @@ msgstr "EMPARELHAR UM DISPOSITIVO BLUETOOTH MANUALMENTE"
 
 msgid "DISPLAY OPTIONS"
 msgstr "OPÇÕES DE EXIBIÇÃO"
-
-msgid "SHOW CONTROLLER NOTIFICATIONS"
-msgstr "MOSTRAR NOTIFICAÇÕES DO COMANDO"
 
 msgid "SHOW CONTROLLER ACTIVITY"
 msgstr "MOSTRAR ATIVIDADE DO COMANDO"
@@ -1760,81 +1754,6 @@ msgstr "INTRODUZA O CÓDIGO PARA DESBLOQUEAR"
 msgid "SERVICES"
 msgstr "SERVIÇOS"
 
-msgid "DMD"
-msgstr "DMD"
-
-msgid "SERVER"
-msgstr "SERVIDOR"
-
-msgid "DMDSERVER (for real dmd)"
-msgstr "DMDSERVER (para dmd real)"
-
-msgid "SIMULATOR (for web dmd)"
-msgstr "SIMULADOR (para web dmd)"
-
-msgid "dmd server"
-msgstr "servidor dmd"
-
-msgid "FORMAT"
-msgstr "FORMATO"
-
-msgid "dmd matrix size"
-msgstr "tamanho da matriz dmd"
-
-msgid "MATRIX"
-msgstr "MATRIZ"
-
-msgid "rgb dmd order"
-msgstr "ordem rgb dmd"
-
-msgid "BRIGHTNESS"
-msgstr "BRILHO"
-
-msgid "DMDSERVER stopped"
-msgstr "DMDSERVER parou"
-
-msgid "DMDSERVER restarted"
-msgstr "DMDSERVER reiniciado"
-
-msgid "DMDSERVER started"
-msgstr "DMDSERVER iniciado"
-
-msgid "MULTISCREENS"
-msgstr "MÚLTIPLOS ECRÃS"
-
-msgid "BACKGLASS / INFORMATION SCREEN"
-msgstr "BACKGLASS / ECRÃ DE INFORMAÇÕES"
-
-msgid "VIDEO OUTPUT"
-msgstr "SAÍDA DE VÍDEO"
-
-msgid "VIDEO MODE"
-msgstr "MODO DE VÍDEO"
-
-msgid "Sets the display's resolution."
-msgstr "Define a resolução do ecrã."
-
-msgid "ROTATION"
-msgstr "ROTAÇÃO"
-
-msgid "0 DEGREES"
-msgstr "0 GRAUS"
-
-msgid "90 DEGREES"
-msgstr "90 GRAUS"
-
-msgid "180 DEGREES"
-msgstr "180 GRAUS"
-
-msgid "270 DEGREES"
-msgstr "270 GRAUS"
-
-msgid "SCREEN ROTATION"
-msgstr "ROTAÇÃO DO ECRÃ"
-
-msgid "DMD SCREEN"
-msgstr "ECRÃ DMD"
-
 msgid "FRONTEND DEVELOPER OPTIONS"
 msgstr "OPÇÕES DE INTERFACE DO DESENVOLVEDOR"
 
@@ -1855,6 +1774,9 @@ msgstr "VSYNC"
 
 msgid "OVERSCAN"
 msgstr "OVERSCAN"
+
+msgid "VIDEO MODE"
+msgstr "MODO DE VÍDEO"
 
 msgid "Sets the display's resolution for emulationstation."
 msgstr "Defina a resolução do monitor para o emulationstation."
@@ -2027,12 +1949,6 @@ msgstr "EMULATIONSTATION APENAS COM O PRIMEIRO COMANDO"
 msgid "GUN MOVE TOLERENCE"
 msgstr "TOLERÂNCIA NO MOVIMENTO DA ARMA"
 
-msgid "ENABLE PS3 CONTROLLER SUPPORT"
-msgstr "ATIVAR SUPORTE COMANDO PS3"
-
-msgid "Might have negative impact on security."
-msgstr "Pode ter impacto negativo na segurança."
-
 msgid "ENABLE HID JOYSTICK DRIVERS"
 msgstr "ATIVAR DRIVERS HID DO COMANDO"
 
@@ -2128,8 +2044,7 @@ msgid "INSTANT"
 msgstr "INSTANTÂNEO"
 
 msgid "Reduces power consumption when idle (useful for handhelds)."
-msgstr ""
-"Reduz o consumo de energia quando parado (útil para aparelhos portáteis)."
+msgstr "Reduz o consumo de energia quando parado (útil para aparelhos portáteis)."
 
 msgid "SCREEN READER (TEXT TO SPEECH)"
 msgstr "LEITOR DE ECRÃ (TEXTO PARA VOZ)"
@@ -2167,6 +2082,12 @@ msgstr "ABRIR KODI NA INICIALIZAÇÃO"
 msgid "HARDWARE"
 msgstr "HARDWARE"
 
+msgid "BRIGHTNESS"
+msgstr "BRILHO"
+
+msgid "VIDEO OUTPUT"
+msgstr "SAÍDA DE VÍDEO"
+
 msgid "AUDIO OUTPUT"
 msgstr "SAÍDA DE ÁUDIO"
 
@@ -2175,6 +2096,21 @@ msgstr "PERFIL DE ÁUDIO"
 
 msgid "Available options can change depending on current audio output."
 msgstr "Opções disponíveis podem mudar dependendo da saída de áudio atual."
+
+msgid "SCREEN ROTATION"
+msgstr "ROTAÇÃO DO ECRÃ"
+
+msgid "0 DEGREES"
+msgstr "0 GRAUS"
+
+msgid "90 DEGREES"
+msgstr "90 GRAUS"
+
+msgid "180 DEGREES"
+msgstr "180 GRAUS"
+
+msgid "270 DEGREES"
+msgstr "270 GRAUS"
 
 msgid "BOOT SPLASH"
 msgstr "ECRÃ DE ABERTURA"
@@ -3439,6 +3375,8 @@ msgstr "LEITOR DE ECRÃ ATIVADO"
 msgid "SCREEN READER DISABLED"
 msgstr "LEITOR DE ECRÃ DESATIVADO"
 
+#~ msgid "Achievements won"
+#~ msgstr "Conquistas alcançadas"
 
 #~ msgid ""
 #~ "YOU ARE GOING TO MAP A CONTROLLER. MAP BASED ON THE BUTTON'S POSITION "

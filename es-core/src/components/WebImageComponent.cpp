@@ -3,6 +3,7 @@
 #include "HttpReq.h"
 #include "utils/ZipFile.h"
 #include "resources/TextureResource.h"
+#include "Paths.h"
 
 #include <algorithm>
 #include <cctype>
@@ -44,26 +45,28 @@ public:
 // keepInCacheDuration = 600 -> image expire in 10 minutes ( 60*10 )
 // keepInCacheDuration = 86400 -> image expire in 24 hours ( 60*60*10 )
 
-WebImageComponent::WebImageComponent(Window* window, double keepInCacheDuration) : ImageComponent(window, true), 
-	mRequest(nullptr), mKeepInCacheDuration(keepInCacheDuration),
-	mBusyAnim(window, "")
+WebImageComponent::WebImageComponent(Window* window, double keepInCacheDuration) : ImageComponent(window, false), 
+	mRequest(nullptr), mKeepInCacheDuration(keepInCacheDuration), mMaxSize(MaxSizeInfo::Empty),
+	mBusyAnim(nullptr)
 {
 	mWaitLoaded = false;
 	mOnLoaded = nullptr;
-
-	mBusyAnim.setBackgroundVisible(false);
-	mBusyAnim.setSize(mSize);	
 }
- 
 
 void WebImageComponent::resize()
 {
 	ImageComponent::resize();
 	
-	if (mSize.x() == 0)
-		mBusyAnim.setSize(mTargetSize);
-	else 
-		mBusyAnim.setSize(mSize);
+	if (mBusyAnim != nullptr)
+	{
+		if (mSize.x() == 0)
+			mBusyAnim->setSize(mTargetSize);
+		else
+			mBusyAnim->setSize(mSize);
+	}
+
+	if (getParent() != nullptr && getParent()->isKindOf<ComponentGrid>())
+		getParent()->onSizeChanged();
 }
 
 WebImageComponent::~WebImageComponent()
@@ -71,11 +74,14 @@ WebImageComponent::~WebImageComponent()
 	if (mRequest != nullptr)
 		delete mRequest;
 
+	if (mBusyAnim != nullptr)
+		delete mBusyAnim;
+
 	if (mKeepInCacheDuration == 0 && Utils::FileSystem::exists(mLocalFile))
 	{
 		Utils::FileSystem::removeFile(mLocalFile);
 
-		auto root = Utils::FileSystem::getGenericPath(Utils::FileSystem::getEsConfigPath() + "/tmp");
+		auto root = Utils::FileSystem::getGenericPath(Paths::getUserEmulationStationPath() + "/tmp");
 		auto file = Utils::FileSystem::getParent(Utils::FileSystem::getGenericPath(mLocalFile));
 
 		while (!file.empty() && file != root && file != mLocalFile)
@@ -86,7 +92,7 @@ WebImageComponent::~WebImageComponent()
 	}
 }
 
-void WebImageComponent::setImage(std::string path, bool tile, MaxSizeInfo maxSize, bool checkFileExists)
+void WebImageComponent::setImage(const std::string& path, bool tile, const MaxSizeInfo& maxSize, bool checkFileExists, bool allowMultiImagePlaylist)
 {
 	if (mRequest != nullptr)
 	{
@@ -102,7 +108,7 @@ void WebImageComponent::setImage(std::string path, bool tile, MaxSizeInfo maxSiz
 			ImageComponent::setImage(nullptr, 0);
 		else
 		{
-			ImageComponent::setImage(path, tile, maxSize, checkFileExists);
+			ImageComponent::setImage(path, tile, maxSize, checkFileExists, allowMultiImagePlaylist);
 			resize();
 		}
 		return;
@@ -123,7 +129,7 @@ void WebImageComponent::setImage(std::string path, bool tile, MaxSizeInfo maxSiz
 		queryCrc = "-" + Utils::String::toHexString(file_crc32);
 	}
 
-	std::string localFile = Utils::FileSystem::getEsConfigPath() + "/tmp/" + uri.host + "/" + uri.path + queryCrc;
+	std::string localFile = Paths::getUserEmulationStationPath() + "/tmp/" + uri.host + "/" + uri.path + queryCrc;
 	if (Utils::FileSystem::exists(localFile))
 	{
 		bool keepLoadingLocal = true;
@@ -146,7 +152,7 @@ void WebImageComponent::setImage(std::string path, bool tile, MaxSizeInfo maxSiz
 
 		if (keepLoadingLocal)
 		{
-			ImageComponent::setImage(localFile, tile, maxSize);
+			ImageComponent::setImage(localFile, tile, maxSize, checkFileExists, allowMultiImagePlaylist);
 			resize();
 			return;
 		}
@@ -164,18 +170,25 @@ void WebImageComponent::update(int deltaTime)
 	if (mRequest == nullptr)
 		return;
 
-	mBusyAnim.update(deltaTime);
+	if (mBusyAnim != nullptr)
+		mBusyAnim->update(deltaTime);
 
 	auto status = mRequest->status();
 	if (status == HttpReq::REQ_IN_PROGRESS)
 		return;
+
+	if (mBusyAnim != nullptr)
+	{
+		delete mBusyAnim;
+		mBusyAnim = nullptr;
+	}
 
 	delete mRequest;
 	mRequest = nullptr;	
 
 	if (status == HttpReq::REQ_SUCCESS && Utils::FileSystem::exists(mLocalFile))
 	{
-		ImageComponent::setImage(mLocalFile, false, mMaxSize);
+		ImageComponent::setImage(mLocalFile, false, mMaxSize, false);
 		resize();
 	}
 }
@@ -205,6 +218,13 @@ void WebImageComponent::render(const Transform4x4f& parentTrans)
 		
 		mRequest = new HttpReq(mUrlToLoad, mLocalFile);
 		mUrlToLoad = "";
+
+		if (mBusyAnim != nullptr)
+			delete mBusyAnim;
+
+		mBusyAnim = new BusyComponent(mWindow, "");
+		mBusyAnim->setBackgroundVisible(false);
+		mBusyAnim->setSize(mSize);
 	}
 	
 	if (mRequest == nullptr && mWaitLoaded && mOnLoaded != nullptr && mLoadingTexture == nullptr && mTexture && mTexture->bind())
@@ -216,6 +236,6 @@ void WebImageComponent::render(const Transform4x4f& parentTrans)
 
 	ImageComponent::render(parentTrans);
 
-	if (mRequest != nullptr)
-		mBusyAnim.render(trans);
+	if (mRequest != nullptr && mBusyAnim != nullptr)
+		mBusyAnim->render(trans);
 }

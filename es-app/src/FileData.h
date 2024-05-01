@@ -11,6 +11,7 @@
 #include "KeyboardMapping.h"
 #include "SystemData.h"
 #include "SaveState.h"
+#include "BindingManager.h"
 
 class Window;
 struct SystemEnvironmentData;
@@ -39,30 +40,51 @@ enum NetPlayMode
 	SPECTATOR
 };
 
+struct GetFileContext
+{
+	bool showHiddenFiles;
+	bool filterKidGame;
+	std::set<std::string> hiddenExtensions;
+};
+
 struct LaunchGameOptions
 {
-	LaunchGameOptions() { netPlayMode = NetPlayMode::DISABLED; }
+	LaunchGameOptions() 
+	{ 
+		netPlayMode = NetPlayMode::DISABLED; 
+		port = 0;
+		saveStateInfo = nullptr; 
+		isSaveStateInfoTemporary = false; 		  
+	}
 
 	int netPlayMode;
 	std::string ip;
 	int port;
+	std::string session;
 
 	std::string core;
 	std::string netplayClientPassword;
 
-	SaveState	saveStateInfo;
+	SaveState*	saveStateInfo;
+	bool isSaveStateInfoTemporary;
 };
 
 class FolderData;
 
 // A tree node that holds information for a file.
-class FileData : public IKeyboardMapContainer
+class FileData : public IKeyboardMapContainer, public IBindable
 {
 public:
 	FileData(FileType type, const std::string& path, SystemData* system);
 	virtual ~FileData();
 
+	static FileData* GetRunningGame() { return mRunningGame; }
+
 	virtual const std::string& getName();
+#ifdef _ENABLEEMUELEC
+  virtual const std::string& getSortName();
+	virtual const std::string getSortOrName();
+#endif
 
 	inline FileType getType() const { return mType; }
 	
@@ -76,7 +98,7 @@ public:
 
 	virtual SystemEnvironmentData* getSystemEnvData() const;
 
-	virtual const std::string getThumbnailPath();
+	virtual const std::string getThumbnailPath(bool fallbackWithImage = true);
 	virtual const std::string getVideoPath();
 	virtual const std::string getMarqueePath();
 	virtual const std::string getImagePath();
@@ -89,11 +111,12 @@ public:
 	void setCore(const std::string value);
 	void setEmulator(const std::string value);
 
-	virtual const bool getHidden();
-	virtual const bool getFavorite();
-	virtual const bool getKidGame();
+	virtual const bool getHidden() const;
+	virtual const bool getFavorite() const;
+	virtual const bool getKidGame() const;
 	virtual const bool hasCheevos();
 
+	bool hasAnyMedia();
 	std::vector<std::string> getFileMedias();
 
 	const std::string getConfigurationName();
@@ -104,6 +127,7 @@ public:
 	const bool isArcadeAsset();
 	const bool isVerticalArcadeGame();
 	const bool isLightGunGame();
+  	const bool isWheelGame();
 	inline std::string getFullPath() { return getPath(); };
 	inline std::string getFileName() { return Utils::FileSystem::getFileName(getPath()); };
 	virtual FileData* getSourceFileData();
@@ -127,7 +151,7 @@ public:
 
 	void setMetadata(MetaDataList value) { getMetadata() = value; } 
 	
-	std::string getMetadata(MetaDataId key) { return getMetadata().get(key); }
+	std::string getMetadata(MetaDataId key) const { return getMetadata().get(key); }
 	void setMetadata(MetaDataId key, const std::string& value) { return getMetadata().set(key, value); }
 
 	void detectLanguageAndRegion(bool overWrite);
@@ -152,18 +176,35 @@ public:
 	bool hasContentFiles();
 	std::set<std::string> getContentFiles();
 
-	void speak();
+	void setSelectedGame();
+
+	std::pair<int, int> parsePlayersRange();
+
+	// IBindable
+	BindableProperty getProperty(const std::string& name) override;
+	std::string getBindableTypeName()  override { return "game"; }
+	IBindable*  getBindableParent() override;
+
+	std::string getGenre();
 
 private:
 	std::string getKeyboardMappingFilePath();
+	std::string getMessageFromExitCode(int exitCode);
 	MetaDataList mMetadata;
 
 protected:	
+	std::string  findLocalArt(const std::string& type = "", std::vector<std::string> exts = { ".png", ".jpg" });
+
+	static FileData* mRunningGame;
+
 	FolderData* mParent;
 	std::string mPath;
 	FileType mType;
 	SystemData* mSystem;
 	std::string* mDisplayName;
+#ifdef _ENABLEEMUELEC
+	std::string* mSortName;
+#endif
 };
 
 class CollectionFileData : public FileData
@@ -171,7 +212,7 @@ class CollectionFileData : public FileData
 public:
 	CollectionFileData(FileData* file, SystemData* system);
 	~CollectionFileData();
-	const std::string& getName();
+	const std::string& getName();	
 	FileData* getSourceFileData();
 	std::string getKey();
 	virtual const std::string getPath() const;
@@ -224,6 +265,9 @@ public:
 	void removeFromVirtualFolders(FileData* game);
 
 private:
+	void getFilesRecursiveWithContext(std::vector<FileData*>& out, unsigned int typeMask, GetFileContext* filter, bool displayedOnly, SystemData* system, bool includeVirtualStorage) const;
+
+
 	std::vector<FileData*> mChildren;
 	bool	mOwnsChildrens;
 	bool	mIsDisplayableAsVirtualFolder;

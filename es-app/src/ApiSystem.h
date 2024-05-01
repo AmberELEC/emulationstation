@@ -5,6 +5,8 @@
 #include <map>
 #include "Window.h"
 #include "components/BusyComponent.h"
+#include "resources/TextureData.h"
+#include "components/IExternalActivity.h"
 
 struct BiosFile 
 {
@@ -29,11 +31,15 @@ struct BatoceraBezel
 
 struct BatoceraTheme
 {
-	std::string name;
-	std::string url;
-	bool isInstalled;
-
+	std::string name; 
+	std::string url;  
+	std::string author;
+	std::string lastUpdate;
+	int upToDate;
+	int size;
 	std::string image;
+	
+	bool isInstalled;
 };
 
 struct ThreeFiftyOnePackage
@@ -65,6 +71,8 @@ struct PacmanPackage
 	size_t download_size;
 	size_t installed_size;
 
+	std::string preview_url;
+
 	std::string group;
 	std::vector<std::string> licenses;	
 
@@ -79,17 +87,24 @@ struct PadInfo
 	std::string name;
 	std::string device;
 	std::string status;
+	std::string path;
 	int battery;
 };
 
-class ApiSystem 
+struct Service
+{
+  std::string name;
+  bool enabled;
+};
+
+class ApiSystem : public IPdfHandler, public IExternalActivity
 {
 public:
 	enum ScriptId : unsigned int
 	{
 		WIFI = 0,
 		RETROACHIVEMENTS = 1,
-		BLUETOOTH = 2,
+		BLUETOOTH = 2,		
 		RESOLUTION = 3,
 		BIOSINFORMATION = 4,
 		NETPLAY = 5,
@@ -105,7 +120,19 @@ public:
 		THEMESDOWNLOADER = 15,
 		THEBEZELPROJECT = 16,
 		PADSINFO = 17,
-		BATOCERAPREGAMELISTSHOOK = 18
+		BATOCERAPREGAMELISTSHOOK = 18,
+		TIMEZONES = 19,
+		AUDIODEVICE = 20,
+		BACKUP = 21,
+		INSTALL = 22,
+		SUPPORTFILE = 23,
+		UPGRADE = 24,
+		SUSPEND = 25,
+		VERSIONINFO = 26,
+		VIDEOFILTERS = 27,
+		SERVICES = 28,
+		READPLANEMODE = 29,
+		WRITEPLANEMODE = 30,
 	};
 
 	virtual bool isScriptingSupported(ScriptId script);
@@ -121,7 +148,7 @@ public:
 
     bool isFreeSpaceLimit();
 
-    virtual std::string getVersion();
+    virtual std::string getVersion(bool extra = false);
 	virtual std::string getApplicationName();
 
     std::string getRootPassword();
@@ -149,9 +176,15 @@ public:
 
 	virtual std::string getIpAdress();
 
+	void startBluetoothLiveDevices(const std::function<void(const std::string)>& func);
+	void stopBluetoothLiveDevices();
+	bool pairBluetoothDevice(const std::string& deviceName);
+	bool removeBluetoothDevice(const std::string& deviceName);
+
+	std::vector<std::string> getPairedBluetoothDeviceList();
+
+	// Obsolete
     bool scanNewBluetooth(const std::function<void(const std::string)>& func = nullptr);
-	std::vector<std::string> getBluetoothDeviceList();
-	bool removeBluetoothDevice(const std::string deviceName);
 
     std::vector<std::string> getAvailableBackupDevices();
     std::vector<std::string> getAvailableInstallDevices();
@@ -188,6 +221,7 @@ public:
 
 	// Themes
 	virtual std::vector<BatoceraTheme> getBatoceraThemesList();
+	virtual bool isThemeInstalled(const std::string& themeName, const std::string& url);
 	virtual std::pair<std::string,int> installBatoceraTheme(std::string thname, const std::function<void(const std::string)>& func = nullptr);
 	virtual std::pair<std::string, int> uninstallBatoceraBezel(std::string bezelsystem, const std::function<void(const std::string)>& func = nullptr);
 
@@ -205,10 +239,11 @@ public:
 
 	virtual bool unzipFile(const std::string fileName, const std::string destFolder = "", const std::function<bool(const std::string)>& shouldExtract = nullptr);
 
-	virtual int getPdfPageCount(const std::string fileName);
-	virtual std::vector<std::string> extractPdfImages(const std::string fileName, int pageIndex = -1, int pageCount = 1, bool bestQuality = false);
+	virtual int getPdfPageCount(const std::string& fileName);
+	virtual std::vector<std::string> extractPdfImages(const std::string& fileName, int pageIndex = -1, int pageCount = 1, int quality = 0);
 
 	virtual std::string getRunningArchitecture();
+	virtual std::string getRunningBoard();
 
 	std::vector<PacmanPackage> getBatoceraStorePackages();
 	std::pair<std::string, int> installBatoceraStorePackage(std::string name, const std::function<void(const std::string)>& func = nullptr);
@@ -232,7 +267,8 @@ public:
 
 
 	virtual std::vector<std::string> getRetroachievementsSoundsList();
-	virtual std::vector<std::string> getShaderList(const std::string systemName = "");
+	virtual std::vector<std::string> getVideoFilterList(const std::string& systemName, const std::string& emulator, const std::string& core);
+	virtual std::vector<std::string> getShaderList(const std::string& systemName, const std::string& emulator, const std::string& core);
 	virtual std::string getSevenZipCommand() { return "/usr/bin/7z"; }
 
 	virtual std::vector<std::string> getTimezones();
@@ -242,6 +278,18 @@ public:
 	virtual std::vector<PadInfo> getPadsInfo();
 	virtual std::string getHostsName();
 	virtual bool emuKill();
+	virtual void suspend();
+
+  	virtual void replugControllers_sindenguns();
+    virtual void replugControllers_wiimotes();
+    virtual void replugControllers_steamdeckguns();
+
+    virtual bool isPlaneMode();
+    virtual bool setPlaneMode(bool enable);
+	virtual bool isReadPlaneModeSupported();
+
+    virtual std::vector<Service> getServices();
+    virtual bool enableService(std::string name, bool enable);
 
 protected:
 	ApiSystem();
@@ -249,9 +297,12 @@ protected:
 	virtual bool executeScript(const std::string command);  
 	virtual std::pair<std::string, int> executeScript(const std::string command, const std::function<void(const std::string)>& func);
 	virtual std::vector<std::string> executeEnumerationScript(const std::string command);
-	
-	void getBatoceraThemesImages(std::vector<BatoceraTheme>& items);
-	std::string getUpdateUrl();
+	virtual bool downloadGitRepository(const std::string& url, const std::string& branch, const std::string& fileName, const std::string& label, const std::function<void(const std::string)>& func, int64_t defaultDownloadSize = 0);
+	virtual std::string getGitRepositoryDefaultBranch(const std::string& url);
+		
+	virtual std::string getUpdateUrl();
+	virtual std::string getThemesUrl();
+
     static ApiSystem* instance;
 
 	void getThreeFiftyOnePackagesImages(std::vector<ThreeFiftyOnePackage>& items);

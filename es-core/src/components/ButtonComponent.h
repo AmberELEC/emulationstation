@@ -27,8 +27,8 @@ public:
 	void onSizeChanged() override;
 	void onFocusGained() override;
 	void onFocusLost() override;
-
-        // batocera
+	void onOpacityChanged() override;
+        
 	void setColorShift(unsigned int color) { mModdedColor = color; mNewColor = true; updateImage(); }
 	void removeColorShift() { mNewColor = false; updateImage(); }
 
@@ -36,10 +36,11 @@ public:
 
 	void setRenderNonFocusedBackground(bool value) { mRenderNonFocusedBackground = value; }
 
-	Vector4f getPadding() { return mPadding; }
-	void setPadding(const Vector4f padding);
+	void onPaddingChanged();
 
 	bool hasFocus() { return mFocused; }
+
+	virtual bool onMouseClick(int button, bool pressed, int x, int y) override;
 
 private:
 	std::shared_ptr<Font> mFont;
@@ -47,8 +48,8 @@ private:
 
 	bool mFocused;
 	bool mEnabled;
-	bool mNewColor = false; // batocera
-	unsigned int mModdedColor; // batocera
+	bool mNewColor = false; 
+	unsigned int mModdedColor; 
 	unsigned int mTextColorFocused;
 	unsigned int mTextColorUnfocused;
 	
@@ -66,7 +67,7 @@ private:
 	unsigned int mColorFocused;
 
 	bool mRenderNonFocusedBackground;
-	Vector4f	mPadding;
+	bool mMousePressed;
 };
 
 #endif // ES_CORE_COMPONENTS_BUTTON_COMPONENT_H

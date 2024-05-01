@@ -6,6 +6,7 @@
 #include "components/ComponentGrid.h"
 #include "components/NinePatchComponent.h"
 #include "GuiComponent.h"
+#include "utils/VectorEx.h"
 
 class ComponentList;
 class TextComponent;
@@ -56,12 +57,15 @@ private:
 
 	bool mHoldingInput;
 	Input mHeldInput;
+
+	VectorEx<Input> mAllInputs;
+
 	int mHeldTime;
 	int mHeldInputId;
 
 	BusyComponent mBusyAnim;	
 
-	void initInputConfigStructure();
+	void initInputConfigStructure(InputConfig* target);
 	std::vector<InputConfigStructure> GUI_INPUT_CONFIG_LIST;
 };
 
