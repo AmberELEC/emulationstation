@@ -2125,7 +2125,7 @@ void GuiMenu::openLatencyReductionConfiguration(Window* mWindow, std::string con
 	guiLatency->addSaveFunc([configName, secondinstance] { SystemConf::getInstance()->set(configName + ".secondinstance", secondinstance->getSelected()); });
 
 	// auto frame delay
-	auto video_frame_delay_auto = std::make_shared<OptionListComponent<std::string>>(mWindow, _("AUTOMATIC FRAME DELAY"));
+	/*auto video_frame_delay_auto = std::make_shared<OptionListComponent<std::string>>(mWindow, _("AUTOMATIC FRAME DELAY"));
 	video_frame_delay_auto->addRange({ { _("AUTO"), "" }, { _("ON"), "1" }, { _("OFF"), "0" } }, SystemConf::getInstance()->get(configName + ".video_frame_delay_auto"));
 	guiLatency->addWithDescription(_("AUTO FRAME DELAY"), _("Automatically decrease frame delay temporarily to prevent frame drops. Can introduce stuttering."), video_frame_delay_auto);
 	guiLatency->addSaveFunc([configName, video_frame_delay_auto] { SystemConf::getInstance()->set(configName + ".video_frame_delay_auto", video_frame_delay_auto->getSelected()); });
@@ -2134,9 +2134,211 @@ void GuiMenu::openLatencyReductionConfiguration(Window* mWindow, std::string con
 	auto vrr_runloop_enable = std::make_shared<OptionListComponent<std::string>>(mWindow, _("VARIABLE REFRESH RATE (G-SYNC, FREESYNC)"));
 	vrr_runloop_enable->addRange({ { _("AUTO"), "" }, { _("ON"), "1" }, { _("OFF"), "0" } }, SystemConf::getInstance()->get(configName + ".vrr_runloop_enable"));
 	guiLatency->addWithDescription(_("VARIABLE REFRESH RATE"), _("Don't deviate from core requested timing. G-Sync, FreeSync, HDMI 2.1 VRR."), vrr_runloop_enable);
-	guiLatency->addSaveFunc([configName, vrr_runloop_enable] { SystemConf::getInstance()->set(configName + ".vrr_runloop_enable", vrr_runloop_enable->getSelected()); });
+	guiLatency->addSaveFunc([configName, vrr_runloop_enable] { SystemConf::getInstance()->set(configName + ".vrr_runloop_enable", vrr_runloop_enable->getSelected()); });*/
 
 	mWindow->pushGui(guiLatency);
+}
+
+void GuiMenu::openPerformanceSettingsConfiguration(Window* mWindow, std::string configName, int selectItem)
+{
+	GuiSettings* guiPerformance = new GuiSettings(mWindow, _("PERFORMANCE SETTINGS").c_str());
+
+	guiPerformance->addGroup(_("MODES"));
+
+	// performance mode
+	auto maxperf_enabled = std::make_shared<SwitchComponent>(mWindow);
+	maxperf_enabled->setState(SystemConf::getInstance()->get(configName + ".maxperf") == "1");
+	guiPerformance->addWithDescription(_("ENABLE PERFORMANCE MODE"),_("Set the CPU/GPU/RAM clock to the highest available frequencies"), maxperf_enabled, nullptr, "", selectItem == 1, true, true);
+	maxperf_enabled->setOnChangedCallback([mWindow, guiPerformance, maxperf_enabled, configName]
+	{
+		if (SystemConf::getInstance()->set(configName + ".maxperf", maxperf_enabled->getState() ? "1" : "0"))
+		{
+			if (SystemConf::getInstance()->get(configName + ".maxperf") == "1")
+				SystemConf::getInstance()->set(configName + ".powersave", "0");
+				SystemConf::getInstance()->set(configName + ".customperf", "0");
+			openPerformanceSettingsConfiguration(mWindow, configName, 1);
+			delete guiPerformance;
+		}
+	});
+
+	// powersave mode
+	auto powersave_enabled = std::make_shared<SwitchComponent>(mWindow);
+	powersave_enabled->setState(SystemConf::getInstance()->get(configName + ".powersave") == "1");
+	guiPerformance->addWithDescription(_("ENABLE POWERSAVE MODE"),_("Set the CPU/GPU/RAM clock to the lowest available frequencies"), powersave_enabled, nullptr, "", selectItem == 2, true, true);
+	powersave_enabled->setOnChangedCallback([mWindow, guiPerformance, powersave_enabled, configName]
+	{
+		if (SystemConf::getInstance()->set(configName + ".powersave", powersave_enabled->getState() ? "1" : "0"))
+		{
+			if (SystemConf::getInstance()->get(configName + ".powersave") == "1")
+				SystemConf::getInstance()->set(configName + ".maxperf", "0");
+				SystemConf::getInstance()->set(configName + ".customperf", "0");
+			openPerformanceSettingsConfiguration(mWindow, configName, 2);
+			delete guiPerformance;
+		}
+	});
+
+	// customperf
+	auto customperf_enabled = std::make_shared<SwitchComponent>(mWindow);
+	customperf_enabled->setState(SystemConf::getInstance()->get(configName + ".customperf") == "1");
+	guiPerformance->addWithDescription(_("ENABLE CUSTOM MODE"),_("Set the CPU/GPU/RAM clock to customized frequencies"), customperf_enabled, nullptr, "", selectItem == 3, true, true);
+	customperf_enabled->setOnChangedCallback([mWindow, guiPerformance, customperf_enabled, configName]
+	{
+		if (SystemConf::getInstance()->set(configName + ".customperf", customperf_enabled->getState() ? "1" : "0"))
+		{
+			if (SystemConf::getInstance()->get(configName + ".customperf") == "1")
+				SystemConf::getInstance()->set(configName + ".powersave", "0");
+				SystemConf::getInstance()->set(configName + ".maxperf", "0");
+			openPerformanceSettingsConfiguration(mWindow, configName, 3);
+			delete guiPerformance;
+		}
+	});
+
+#ifdef RG552
+	guiPerformance->addGroup(_("CORES"));
+
+	// disable big cores
+	auto bigcores_disabled = std::make_shared<SwitchComponent>(mWindow);
+	bigcores_disabled->setState(SystemConf::getInstance()->get(configName + ".disable_cores_big") == "1");
+	guiPerformance->addWithDescription(_("DISABLE CPU CORES (BIG)"),_("Disable BIG CPU cores to save energy and/or improve performance"), bigcores_disabled, nullptr, "", selectItem == 4, true, true);
+	bigcores_disabled->setOnChangedCallback([mWindow, guiPerformance, bigcores_disabled, configName]
+	{
+		if (SystemConf::getInstance()->set(configName + ".disable_cores_big", bigcores_disabled->getState() ? "1" : "0"))
+		{
+			if (SystemConf::getInstance()->get(configName + ".disable_cores_big") == "1")
+				SystemConf::getInstance()->set(configName + ".disable_cores", "0");
+			openPerformanceSettingsConfiguration(mWindow, configName, 4);
+			delete guiPerformance;
+		}
+	});
+	// CPU clock (little cores)
+	std::string little_title = "DISABLE CPU CORES (LITTLE)";
+	std::string little_desc = "Disable LITTLE CPU cores to save energy and/or improve performance";
+#else
+	// CPU clock
+	std::string little_title = "DISABLE CPU CORES";
+	std::string little_desc = "Disable half of the CPU cores to save energy";
+	guiPerformance->addGroup(_("CORES"));
+#endif
+
+	// disable little cores
+	auto littlecores_disabled = std::make_shared<SwitchComponent>(mWindow);
+	littlecores_disabled->setState(SystemConf::getInstance()->get(configName + ".disable_cores") == "1");
+	guiPerformance->addWithDescription(_(little_title.c_str()),_(little_desc.c_str()), littlecores_disabled, nullptr, "", selectItem == 5, true, true);
+	littlecores_disabled->setOnChangedCallback([mWindow, guiPerformance, littlecores_disabled, configName]
+	{
+		if (SystemConf::getInstance()->set(configName + ".disable_cores", littlecores_disabled->getState() ? "1" : "0"))
+		{
+			if (SystemConf::getInstance()->get(configName + ".disable_cores") == "1")
+				SystemConf::getInstance()->set(configName + ".disable_cores_big", "0");
+			openPerformanceSettingsConfiguration(mWindow, configName, 5);
+			delete guiPerformance;
+		}
+	});
+
+	if (SystemConf::getInstance()->get(configName + ".customperf") == "1")
+	{
+#ifdef RG552
+		guiPerformance->addGroup(_("CLOCKS"));
+
+		if (SystemConf::getInstance()->get(configName + ".disable_cores_big") == "0" || SystemConf::getInstance()->get(configName + ".disable_cores_big") == "")
+		{
+			// CPU clock (big cores)
+			std::string cpuclock_big;
+			bool oc_condition_cpuclock_big;
+			auto cpuclock_big_choices = std::make_shared<OptionListComponent<std::string> >(mWindow, _("CUSTOM CPU CLOCK (BIG)"),false);
+			std::string currentFilterCPU_big = SystemConf::getInstance()->get(configName + ".cpuclock_big");
+			if (currentFilterCPU_big.empty()) {
+				currentFilterCPU_big = std::string("auto");
+			}
+			cpuclock_big_choices->add(_("AUTO"), "auto", currentFilterCPU_big == "auto");
+			for(std::stringstream ss(getShOutput(R"(awk '{printf "%s ", $1}' /sys/devices/system/cpu/cpufreq/policy4/stats/time_in_state)")); getline(ss, cpuclock_big, ' '); )
+			{
+				bool oc_condition_cpuclock_big=(std::stoi(cpuclock_big)/1000)>1992;
+				cpuclock_big_choices->add(std::to_string(std::stoi(cpuclock_big)/1000) + "MHz" + (oc_condition_cpuclock_big ? " (OC)" : ""), cpuclock_big, currentFilterCPU_big == cpuclock_big);
+			}
+			guiPerformance->addWithDescription(_("CUSTOM CPU CLOCK (BIG)"),_("Set custom CPU clock for BIG cores"), cpuclock_big_choices);
+			guiPerformance->addSaveFunc([cpuclock_big_choices, configName] { SystemConf::getInstance()->set(configName + ".cpuclock_big", cpuclock_big_choices->getSelected()); });
+		}
+
+		// CPU clock (little cores)
+		std::string little_title = "CUSTOM CPU CLOCK (LITTLE)";
+		std::string little_desc = "Set custom CPU clock for LITTLE cores";
+#else
+		// CPU clock
+		std::string little_title = "CUSTOM CPU CLOCK";
+		std::string little_desc = "Set custom CPU clock";
+		guiPerformance->addGroup(_("CLOCKS"));
+#endif
+
+#ifdef RG552
+		if (SystemConf::getInstance()->get(configName + ".disable_cores") == "0" || SystemConf::getInstance()->get(configName + ".disable_cores") == "")
+#endif
+		{
+			std::string cpuclock;
+			bool oc_condition_cpuclock;
+			auto cpuclock_choices = std::make_shared<OptionListComponent<std::string> >(mWindow, _(little_title.c_str()),false);
+			std::string currentFilterCPU = SystemConf::getInstance()->get(configName + ".cpuclock");
+			if (currentFilterCPU.empty()) {
+				currentFilterCPU = std::string("auto");
+			}
+			cpuclock_choices->add(_("AUTO"), "auto", currentFilterCPU == "auto");
+			for(std::stringstream ss(getShOutput(R"(awk '{printf "%s ", $1}' /sys/devices/system/cpu/cpufreq/policy0/stats/time_in_state)")); getline(ss, cpuclock, ' '); )
+			{
+#ifdef RG552
+				bool oc_condition_cpuclock=(std::stoi(cpuclock)/1000)>1512;
+#else
+				bool oc_condition_cpuclock=(std::stoi(cpuclock)/1000)>1296;
+#endif
+				cpuclock_choices->add(std::to_string(std::stoi(cpuclock)/1000) + "MHz" + (oc_condition_cpuclock ? " (OC)" : ""), cpuclock, currentFilterCPU == cpuclock);
+			}
+			guiPerformance->addWithDescription(_(little_title.c_str()),_(little_desc.c_str()), cpuclock_choices);
+			guiPerformance->addSaveFunc([cpuclock_choices, configName] { SystemConf::getInstance()->set(configName + ".cpuclock", cpuclock_choices->getSelected()); });
+		}
+
+		// GPU clock
+		std::string gpuclock;
+		bool oc_condition_gpuclock;
+		auto gpuclock_choices = std::make_shared<OptionListComponent<std::string> >(mWindow, _("CUSTOM GPU CLOCK"),false);
+		std::string currentFilterGPU = SystemConf::getInstance()->get(configName + ".gpuclock");
+		if (currentFilterGPU.empty()) {
+			currentFilterGPU = std::string("auto");
+		}
+		gpuclock_choices->add(_("AUTO"), "auto", currentFilterGPU == "auto");
+		for(std::stringstream ss(getShOutput(R"(cat /sys/devices/platform/*.gpu/devfreq/*.gpu/available_frequencies | tr ' ' '\n' | sort -n | tr '\n' ' ')")); getline(ss, gpuclock, ' '); )
+		{
+#ifdef RG552
+			bool oc_condition_gpuclock=(std::stoi(gpuclock)/1000000)>800;
+#else
+			bool oc_condition_gpuclock=(std::stoi(gpuclock)/1000000)>520;
+#endif
+			gpuclock_choices->add(std::to_string(std::stoi(gpuclock)/1000000) + "MHz" + (oc_condition_gpuclock ? " (OC)" : ""), gpuclock, currentFilterGPU == gpuclock);
+		}
+		guiPerformance->addWithDescription(_("CUSTOM GPU CLOCK"),_("Set custom GPU clock"), gpuclock_choices);
+		guiPerformance->addSaveFunc([gpuclock_choices, configName] { SystemConf::getInstance()->set(configName + ".gpuclock", gpuclock_choices->getSelected()); });
+
+		// RAM clock
+		std::string ramclock;
+		bool oc_condition_ramclock;
+		auto ramclock_choices = std::make_shared<OptionListComponent<std::string> >(mWindow, _("CUSTOM RAM CLOCK"),false);
+		std::string currentFilterRAM = SystemConf::getInstance()->get(configName + ".ramclock");
+		if (currentFilterRAM.empty()) {
+			currentFilterRAM = std::string("auto");
+		}
+		ramclock_choices->add(_("AUTO"), "auto", currentFilterRAM == "auto");
+		for(std::stringstream ss(getShOutput(R"(cat /sys/devices/platform/dmc/devfreq/dmc/available_frequencies)")); getline(ss, ramclock, ' '); )
+		{
+#ifdef RG552
+			bool oc_condition_ramclock=(std::stoi(ramclock)/1000000)>856;
+#else
+			bool oc_condition_ramclock=(std::stoi(ramclock)/1000000)>786;
+#endif
+			ramclock_choices->add(std::to_string(std::stoi(ramclock)/1000000) + "MHz" + (oc_condition_ramclock ? " (OC)" : ""), ramclock, currentFilterRAM == ramclock);
+		}
+		guiPerformance->addWithDescription(_("CUSTOM RAM CLOCK"),_("Set custom RAM clock"), ramclock_choices);
+		guiPerformance->addSaveFunc([ramclock_choices, configName] { SystemConf::getInstance()->set(configName + ".ramclock", ramclock_choices->getSelected()); });
+	}
+
+	mWindow->pushGui(guiPerformance);
 }
 
 void GuiMenu::openRetroachievementsSettings()
@@ -4779,6 +4981,8 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
 	}
 
 	auto customFeatures = systemData->getCustomFeatures(currentEmulator, currentCore);
+
+	systemConfiguration->addEntry(_("PERFORMANCE SETTINGS"), true, [mWindow, configName] { openPerformanceSettingsConfiguration(mWindow, configName); });
 
 	// Screen ratio choice
 	if (systemData->isFeatureSupported(currentEmulator, currentCore, EmulatorFeatures::ratio))
