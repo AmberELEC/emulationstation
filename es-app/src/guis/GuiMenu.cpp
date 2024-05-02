@@ -2112,30 +2112,38 @@ void GuiMenu::openUpdatesSettings()
 		updateGui->addGroup(_("SOFTWARE UPDATES"));
 
 		// Enable updates
-		updateGui->addSwitch(_("CHECK FOR UPDATES"), "updates.enabled", false);
+		auto updates_enabled = std::make_shared<SwitchComponent>(mWindow);
+		updates_enabled->setState(SystemConf::getInstance()->getBool("updates.enabled"));
 
-		auto updatesTypeList = std::make_shared<OptionListComponent<std::string> >(mWindow, _("UPDATE TYPE"), false);
+		updateGui->addWithLabel(_("CHECK FOR UPDATES"), updates_enabled);
+		updateGui->addSaveFunc([updates_enabled]
+		{
+			SystemConf::getInstance()->setBool("updates.enabled", updates_enabled->getState());
+		});
 
-#if BATOCERA
-#define BETA_NAME "butterfly"
-#else
-#define BETA_NAME "beta"
-#endif
+		// Update Bands
+		auto updatesTypeList = std::make_shared<OptionListComponent<std::string> >(mWindow, _("UPDATE CHANNEL"), false);
 
 		std::string updatesType = SystemConf::getInstance()->get("updates.type");
 
-#if WIN32
-		if (updatesType == "unstable")
-			updatesTypeList->add("unstable", "unstable", updatesType == "unstable");
-		else
-#endif
-			if (updatesType.empty() || updatesType != BETA_NAME)
-				updatesType = "stable";
+		//old default was 'daily' - so update to release if they have 'daily' set.
+		if (updatesType.empty() || updatesType == "daily")
+		{
+			updatesType = "release";
+		}
+		// 'prerelease' is the new 'beta'
+		else if (updatesType == "beta")
+		{
+			updatesType = "prerelease";
+		}
 
-		updatesTypeList->add("stable", "stable", updatesType == "stable");
-		updatesTypeList->add(BETA_NAME, BETA_NAME, updatesType == BETA_NAME);
+			//immediately save if we are setting value
+			SystemConf::getInstance()->saveSystemConf();
 
-		updateGui->addWithLabel(_("UPDATE TYPE"), updatesTypeList);
+		updatesTypeList->add("release", "release", updatesType == "release");
+		updatesTypeList->add("prerelease", "prerelease", updatesType == "prerelease");
+
+		updateGui->addWithLabel(_("UPDATE CHANNEL"), updatesTypeList);
 		updatesTypeList->setSelectedChangedCallback([](std::string name)
 		{
 			if (SystemConf::getInstance()->set("updates.type", name))
