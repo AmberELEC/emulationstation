@@ -241,15 +241,15 @@ GuiMenu::GuiMenu(Window *window, bool animate) : GuiComponent(window), mMenu(win
 
 		addEntry(_("USER INTERFACE SETTINGS").c_str(), true, [this] { openUISettings(); }, "iconUI");
 
-		if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::GAMESETTINGS))
+		/*if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::GAMESETTINGS))
 			addEntry(GuiControllersSettings::getControllersSettingsLabel(), true, [window] { GuiControllersSettings::openControllersSettings(window); }, "iconControllers");
 		else
-			addEntry(_("CONFIGURE INPUT"), true, [this] { openConfigInput(); }, "iconControllers");
+			addEntry(_("CONFIGURE INPUT"), true, [this] { openConfigInput(); }, "iconControllers");*/
 
 		addEntry(_("SOUND SETTINGS").c_str(), true, [this] { openSoundSettings(); }, "iconSound");
 
 #ifdef _ENABLEAMBERELEC
-if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::WIFI))
+		if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::WIFI))
 			addEntry(_("NETWORK SETTINGS").c_str(), true, [this] { openNetworkSettings(); }, "iconNetwork");
 #endif
 
@@ -1362,7 +1362,7 @@ void GuiMenu::openUpdatesSettings()
 	}
 
 	// integration with theBezelProject
-	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::DECORATIONS) && ApiSystem::getInstance()->isScriptingSupported(ApiSystem::THEBEZELPROJECT))
+	/*if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::DECORATIONS) && ApiSystem::getInstance()->isScriptingSupported(ApiSystem::THEBEZELPROJECT))
 	{
 		updateGui->addEntry(_("THE BEZEL PROJECT"), true, [this]
 		{
@@ -1371,7 +1371,7 @@ void GuiMenu::openUpdatesSettings()
 
 			mWindow->pushGui(new GuiBezelInstaller(mWindow));
 		});
-	}
+	}*/
 
 	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::UPGRADE))
 	{
