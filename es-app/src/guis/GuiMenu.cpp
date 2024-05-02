@@ -320,776 +320,49 @@ if (!isKidUI)
 }
 #ifdef _ENABLEAMBERELEC
 /* < emuelec */
-void GuiMenu::openEmuELECSettings()
-{
-	auto s = new GuiSettings(mWindow, "EmuELEC Settings");
-
-	Window* window = mWindow;
-	std::string a;
-#if !defined(_ENABLEGAMEFORCE) && !defined(ODROIDGOA)
-	auto emuelec_video_mode = std::make_shared< OptionListComponent<std::string> >(mWindow, "VIDEO MODE", false);
-        std::vector<std::string> videomode;
-		videomode.push_back("1080p60hz");
-		videomode.push_back("1080i60hz");
-		videomode.push_back("720p60hz");
-		videomode.push_back("720p50hz");
-		videomode.push_back("480p60hz");
-		videomode.push_back("480cvbs");
-		videomode.push_back("576p50hz");
-		videomode.push_back("1080p50hz");
-		videomode.push_back("1080i50hz");
-		videomode.push_back("576cvbs");
-		videomode.push_back("Custom");
-		videomode.push_back("-- AUTO-DETECTED RESOLUTIONS --");
-   for(std::stringstream ss(Utils::Platform::getShOutput(R"(/usr/bin/emuelec-utils resolutions)")); getline(ss, a, ','); ) {
-        videomode.push_back(a);
-	}
-		for (auto it = videomode.cbegin(); it != videomode.cend(); it++) {
-		emuelec_video_mode->add(*it, *it, SystemConf::getInstance()->get("ee_videomode") == *it); }
-		s->addWithLabel(_("VIDEO MODE"), emuelec_video_mode);
-
-		s->addSaveFunc([this, emuelec_video_mode, window] {
-
-		//bool v_need_reboot = false;
-
-		if (emuelec_video_mode->changed()) {
-			std::string selectedVideoMode = emuelec_video_mode->getSelected();
-		if (emuelec_video_mode->getSelected() != "-- AUTO-DETECTED RESOLUTIONS --") {
-			if (emuelec_video_mode->getSelected() != "Custom") {
-			std::string msg = _("You are about to set EmuELEC resolution to:") +"\n" + selectedVideoMode + "\n";
-			msg += _("Do you want to proceed ?");
-
-			window->pushGui(new GuiMsgBox(window, msg,
-				_("YES"), [selectedVideoMode] {
-					//Utils::Platform::ProcessStartInfo("echo "+selectedVideoMode+" > /sys/class/display/mode").run();
-					SystemConf::getInstance()->set("ee_videomode", selectedVideoMode);
-					LOG(LogInfo) << "Setting video to " << selectedVideoMode;
-					//Utils::Platform::ProcessStartInfo("/usr/bin/setres.sh").run();
-					SystemConf::getInstance()->saveSystemConf();
-					Scripting::fireEvent("quit", "restart");
-					Utils::Platform::quitES(Utils::Platform::QuitMode::QUIT);
-				//	v_need_reboot = true;
-				}, _("NO"),nullptr));
-
-		} else {
-			if(Utils::FileSystem::exists("/storage/.config/EE_VIDEO_MODE")) {
-				Utils::Platform::ProcessStartInfo("echo $(cat /storage/.config/EE_VIDEO_MODE) > /sys/class/display/mode").run();
-				LOG(LogInfo) << "Setting custom video mode from /storage/.config/EE_VIDEO_MODE to " << Utils::Platform::ProcessStartInfo("cat /storage/.config/EE_VIDEO_MODE").run();
-				SystemConf::getInstance()->set("ee_videomode", selectedVideoMode);
-				SystemConf::getInstance()->saveSystemConf();
-				//v_need_reboot = true;
-			} else {
-				if(Utils::FileSystem::exists("/flash/EE_VIDEO_MODE")) {
-				Utils::Platform::ProcessStartInfo("echo $(cat /flash/EE_VIDEO_MODE) > /sys/class/display/mode").run();
-				LOG(LogInfo) << "Setting custom video mode from /flash/EE_VIDEO_MODE to " << Utils::Platform::ProcessStartInfo("cat /flash/EE_VIDEO_MODE").run();
-				SystemConf::getInstance()->set("ee_videomode", selectedVideoMode);
-				SystemConf::getInstance()->saveSystemConf();
-				//v_need_reboot = true;
-					} else {
-					Utils::Platform::ProcessStartInfo("echo " + SystemConf::getInstance()->get("ee_videomode")+ " > /sys/class/display/mode").run();
-					std::string msg = "/storage/.config/EE_VIDEO_MODE or /flash/EE_VIDEO_MODE not found";
-					window->pushGui(new GuiMsgBox(window, msg,
-				"OK", [selectedVideoMode] {
-					LOG(LogInfo) << "EE_VIDEO_MODE was not found! Setting video mode to " + SystemConf::getInstance()->get("ee_videomode");
-			}));
-					}
-				}
-			}
-		   }
-			//if (v_need_reboot)
-		 	mWindow->displayNotificationMessage(_U("\uF011  ") + _("A REBOOT OF THE SYSTEM IS REQUIRED TO APPLY THE NEW CONFIGURATION"));
-		 }
-		});
-#endif
-#ifdef _ENABLEGAMEFORCE
-		auto emuelec_blrgboptions_def = std::make_shared< OptionListComponent<std::string> >(mWindow, "BUTTON LED COLOR", false);
-		std::vector<std::string> blrgboptions;
-		blrgboptions.push_back("off");
-		blrgboptions.push_back("red");
-		blrgboptions.push_back("green");
-		blrgboptions.push_back("blue");
-		blrgboptions.push_back("white");
-		blrgboptions.push_back("purple");
-		blrgboptions.push_back("yellow");
-		blrgboptions.push_back("cyan");
-
-		auto blrgboptionsS = SystemConf::getInstance()->get("bl_rgb");
-		if (blrgboptionsS.empty())
-		blrgboptionsS = "off";
-
-		for (auto it = blrgboptions.cbegin(); it != blrgboptions.cend(); it++)
-		emuelec_blrgboptions_def->add(*it, *it, blrgboptionsS == *it);
-
-		s->addWithLabel(_("BUTTON LED COLOR"), emuelec_blrgboptions_def);
-		s->addSaveFunc([emuelec_blrgboptions_def] {
-			if (emuelec_blrgboptions_def->changed()) {
-				std::string selectedblrgb = emuelec_blrgboptions_def->getSelected();
-                Utils::Platform::ProcessStartInfo("/usr/bin/odroidgoa_utils.sh bl " +selectedblrgb).run();
-				SystemConf::getInstance()->set("bl_rgb", selectedblrgb);
-                SystemConf::getInstance()->saveSystemConf();
-			}
-		});
-
-        auto emuelec_powerled_def = std::make_shared< OptionListComponent<std::string> >(mWindow, "STATUS LED", false);
-		std::vector<std::string> powerledoptions;
-		powerledoptions.push_back("off");
-		powerledoptions.push_back("heartbeat");
-        powerledoptions.push_back("on");
-
-		auto powerledoptionsS = SystemConf::getInstance()->get("gf_statusled");
-		if (powerledoptionsS.empty())
-		powerledoptionsS = "heartbeat";
-
-		for (auto it = powerledoptions.cbegin(); it != powerledoptions.cend(); it++)
-		emuelec_powerled_def->add(*it, *it, powerledoptionsS == *it);
-
-		s->addWithLabel(_("STATUS LED"), emuelec_powerled_def);
-		s->addSaveFunc([emuelec_powerled_def] {
-			if (emuelec_powerled_def->changed()) {
-				std::string selectedpowerled = emuelec_powerled_def->getSelected();
-                Utils::Platform::ProcessStartInfo("/usr/bin/odroidgoa_utils.sh pl " +selectedpowerled).run();
-				SystemConf::getInstance()->set("gf_statusled", selectedpowerled);
-                SystemConf::getInstance()->saveSystemConf();
-			}
-		});
-#endif
-#if !defined(_ENABLEGAMEFORCE) && !defined(ODROIDGOA)
-		auto emuelec_audiodev_def = std::make_shared< OptionListComponent<std::string> >(mWindow, "AUDIO DEVICE", false);
-		std::vector<std::string> Audiodevices;
-		Audiodevices.push_back("auto");
-		Audiodevices.push_back("0,0");
-		Audiodevices.push_back("0,1");
-		Audiodevices.push_back("1,0");
-		Audiodevices.push_back("1,1");
-
-		auto AudiodevicesS = SystemConf::getInstance()->get("ee_audio_device");
-		if (AudiodevicesS.empty())
-		AudiodevicesS = "auto";
-
-		for (auto it = Audiodevices.cbegin(); it != Audiodevices.cend(); it++)
-		emuelec_audiodev_def->add(*it, *it, AudiodevicesS == *it);
-
-		s->addWithDescription(_("AUDIO DEVICE"), _("Changes will need an EmulationStation restart."), emuelec_audiodev_def);
-
-        emuelec_audiodev_def->setSelectedChangedCallback([emuelec_audiodev_def](std::string name) {
-            if (SystemConf::getInstance()->set("ee_audio_device", name))
-                SystemConf::getInstance()->saveSystemConf();
-                std::string selectedaudio = emuelec_audiodev_def->getSelected();
-                Utils::Platform::ProcessStartInfo("/usr/bin/emuelec-utils setauddev " +selectedaudio).run();
-            });
-#endif
-        auto bluetoothd_enabled = std::make_shared<SwitchComponent>(mWindow);
-		bool btbaseEnabled = SystemConf::getInstance()->get("ee_bluetooth.enabled") == "1";
-		bluetoothd_enabled->setState(btbaseEnabled);
-		s->addWithLabel(_("ENABLE BLUETOOTH"), bluetoothd_enabled);
-		s->addSaveFunc([bluetoothd_enabled] {
-			if (bluetoothd_enabled->changed()) {
-			if (bluetoothd_enabled->getState() == false) {
-				Utils::Platform::ProcessStartInfo("systemctl stop bluetooth").run();
-				Utils::Platform::ProcessStartInfo("rm /storage/.cache/services/bluez.conf").run();
-			} else {
-				Utils::Platform::ProcessStartInfo("mkdir -p /storage/.cache/services/").run();
-				Utils::Platform::ProcessStartInfo("touch /storage/.cache/services/bluez.conf").run();
-				Utils::Platform::ProcessStartInfo("systemctl start bluetooth").run();
-			}
-                bool bluetoothenabled = bluetoothd_enabled->getState();
-                SystemConf::getInstance()->set("ee_bluetooth.enabled", bluetoothenabled ? "1" : "0");
-				SystemConf::getInstance()->saveSystemConf();
-			}
-		});
-
-       auto sshd_enabled = std::make_shared<SwitchComponent>(mWindow);
-		bool baseEnabled = SystemConf::getInstance()->get("ee_ssh.enabled") == "1";
-		sshd_enabled->setState(baseEnabled);
-		s->addWithLabel(_("ENABLE SSH"), sshd_enabled);
-		s->addSaveFunc([sshd_enabled] {
-			if (sshd_enabled->changed()) {
-			if (sshd_enabled->getState() == false) {
-				Utils::Platform::ProcessStartInfo("systemctl stop sshd").run();
-				Utils::Platform::ProcessStartInfo("rm /storage/.cache/services/sshd.conf").run();
-			} else {
-				Utils::Platform::ProcessStartInfo("mkdir -p /storage/.cache/services/").run();
-				Utils::Platform::ProcessStartInfo("touch /storage/.cache/services/sshd.conf").run();
-				Utils::Platform::ProcessStartInfo("systemctl start sshd").run();
-			}
-                bool sshenabled = sshd_enabled->getState();
-                SystemConf::getInstance()->set("ee_ssh.enabled", sshenabled ? "1" : "0");
-				SystemConf::getInstance()->saveSystemConf();
-			}
-		});
-
-		auto emuelec_boot_def = std::make_shared< OptionListComponent<std::string> >(mWindow, "START AT BOOT", false);
-		std::vector<std::string> devices;
-		devices.push_back("Emulationstation");
-		devices.push_back("Retroarch");
-		for (auto it = devices.cbegin(); it != devices.cend(); it++)
-		emuelec_boot_def->add(*it, *it, SystemConf::getInstance()->get("ee_boot") == *it);
-		s->addWithLabel(_("START AT BOOT"), emuelec_boot_def);
-		s->addSaveFunc([emuelec_boot_def] {
-			if (emuelec_boot_def->changed()) {
-				std::string selectedBootMode = emuelec_boot_def->getSelected();
-				SystemConf::getInstance()->set("ee_boot", selectedBootMode);
-				SystemConf::getInstance()->saveSystemConf();
-			}
-		});
-
-       auto fps_enabled = std::make_shared<SwitchComponent>(mWindow);
-		bool fpsEnabled = SystemConf::getInstance()->get("global.showFPS") == "1";
-		fps_enabled->setState(fpsEnabled);
-		s->addWithLabel(_("SHOW RETROARCH FPS"), fps_enabled);
-		s->addSaveFunc([fps_enabled] {
-			bool fpsenabled = fps_enabled->getState();
-                SystemConf::getInstance()->set("global.showFPS", fpsenabled ? "1" : "0");
-				SystemConf::getInstance()->saveSystemConf();
-			});
-/*
-       auto bezels_enabled = std::make_shared<SwitchComponent>(mWindow);
-		bool bezelsEnabled = SystemConf::getInstance()->get("global.bezel") == "1";
-		bezels_enabled->setState(bezelsEnabled);
-		s->addWithLabel(_("ENABLE RA BEZELS"), bezels_enabled);
-		s->addSaveFunc([bezels_enabled] {
-			bool bezelsenabled = bezels_enabled->getState();
-                SystemConf::getInstance()->set("global.bezel", bezelsenabled ? "1" : "0");
-				SystemConf::getInstance()->saveSystemConf();
-			});
-*/
-       auto splash_enabled = std::make_shared<SwitchComponent>(mWindow);
-		bool splashEnabled = SystemConf::getInstance()->get("ee_splash.enabled") == "1";
-		splash_enabled->setState(splashEnabled);
-		s->addWithLabel(_("ENABLE RA SPLASH"), splash_enabled);
-		s->addSaveFunc([splash_enabled] {
-                bool splashenabled = splash_enabled->getState();
-                SystemConf::getInstance()->set("ee_splash.enabled", splashenabled ? "1" : "0");
-				SystemConf::getInstance()->saveSystemConf();
-			});
-
-	auto enable_bootvideo = std::make_shared<SwitchComponent>(mWindow);
-	bool bootEnabled = SystemConf::getInstance()->get("ee_bootvideo.enabled") == "1";
-	enable_bootvideo->setState(bootEnabled);
-	s->addWithLabel(_("ALWAYS SHOW BOOT VIDEO"), enable_bootvideo);
-
-	s->addSaveFunc([enable_bootvideo, window] {
-		bool bootvideoenabled = enable_bootvideo->getState();
-		SystemConf::getInstance()->set("ee_bootvideo.enabled", bootvideoenabled ? "1" : "0");
-		SystemConf::getInstance()->saveSystemConf();
-	});
-
-	auto enable_randombootvideo = std::make_shared<SwitchComponent>(mWindow);
-	bool randombootEnabled = SystemConf::getInstance()->get("ee_randombootvideo.enabled") == "1";
-	enable_randombootvideo->setState(randombootEnabled);
-	s->addWithLabel(_("RANDOMIZE BOOT VIDEO"), enable_randombootvideo);
-
-	s->addSaveFunc([enable_randombootvideo, window] {
-		bool randombootvideoenabled = enable_randombootvideo->getState();
-		SystemConf::getInstance()->set("ee_randombootvideo.enabled", randombootvideoenabled ? "1" : "0");
-        if (randombootvideoenabled)
-        SystemConf::getInstance()->set("ee_bootvideo.enabled", "1");
-		SystemConf::getInstance()->saveSystemConf();
-	});
-
-	s->addInputTextRow(_("DEFAULT YOUTUBE SEARCH WORD"), "youtube.searchword", false);
-
-	auto theme = ThemeData::getMenuTheme();
-
-	ComponentListRow row;
-
-	auto createText = std::make_shared<TextComponent>(window, _("GAMEPAD CONFIG"), theme->Text.font, theme->Text.color);
-	row.addElement(createText, true);
-	row.makeAcceptInputHandler([window, s, createText]
-	{
-		GuiMenu::createGamepadConfig(window, s);
-	});
-	s->addRow(row);
-
-		auto emuelec_retroarch_menu_def = std::make_shared< OptionListComponent<std::string> >(mWindow, "RETROARCH MENU", false);
-		std::vector<std::string> ramenuoptions;
-		ramenuoptions.push_back("auto");
-		ramenuoptions.push_back("ozone");
-		ramenuoptions.push_back("xmb");
-		ramenuoptions.push_back("rgui");
-
-		auto ramenuoptionsS = SystemConf::getInstance()->get("global.retroarch.menu_driver");
-		if (ramenuoptionsS.empty())
-		ramenuoptionsS = "auto";
-
-		for (auto it = ramenuoptions.cbegin(); it != ramenuoptions.cend(); it++)
-		emuelec_retroarch_menu_def->add(*it, *it, ramenuoptionsS == *it);
-
-		s->addWithLabel(_("RETROARCH MENU"), emuelec_retroarch_menu_def);
-		s->addSaveFunc([emuelec_retroarch_menu_def] {
-			if (emuelec_retroarch_menu_def->changed()) {
-				std::string selectedretroarch_menu = emuelec_retroarch_menu_def->getSelected();
-				SystemConf::getInstance()->set("global.retroarch.menu_driver", selectedretroarch_menu);
-				SystemConf::getInstance()->saveSystemConf();
-			}
-		});
-
-if (UIModeController::getInstance()->isUIModeFull())
-	{
-        //External Mount Options
-        s->addEntry(_("EXTERNAL MOUNT OPTIONS"), true, [this] { openExternalMounts(mWindow, "global"); });
-
-        //Danger zone options
-        s->addEntry(_("DANGER ZONE"), true, [this] { openDangerZone(mWindow, "global"); });
-    }
-
-    mWindow->pushGui(s);
-}
-
-void GuiMenu::createGamepadConfig(Window* window, GuiSettings* systemConfiguration)
-{
-	GuiSettings* gamepadConfiguration = new GuiSettings(window, _("GAMEPAD CONFIG"));
-
-	// Advmame Gamepad
-	auto enable_advmamegp = std::make_shared<SwitchComponent>(window);
-	bool advgpEnabled = SystemConf::getInstance()->get("advmame_auto_gamepad") == "1";
-	enable_advmamegp->setState(advgpEnabled);
-	gamepadConfiguration->addWithLabel(_("AUTO CONFIG ADVANCEMAME GAMEPAD"), enable_advmamegp);
-
-	gamepadConfiguration->addSaveFunc([enable_advmamegp, window] {
-		bool advmamegpenabled = enable_advmamegp->getState();
-		SystemConf::getInstance()->set("advmame_auto_gamepad", advmamegpenabled ? "1" : "0");
-		SystemConf::getInstance()->saveSystemConf();
-	});
-
-	auto enable_advmameia = std::make_shared<SwitchComponent>(window);
-	bool adviaEnabled = SystemConf::getInstance()->get("advmame_invert_axis") == "1";
-	enable_advmameia->setState(adviaEnabled);
-	gamepadConfiguration->addWithLabel(_("INVERT AXIS FOR ADVANCEMAME "), enable_advmameia);
-
-	gamepadConfiguration->addSaveFunc([enable_advmameia, window] {
-		bool advmameiaenabled = enable_advmameia->getState();
-		SystemConf::getInstance()->set("advmame_invert_axis", advmameiaenabled ? "1" : "0");
-		SystemConf::getInstance()->saveSystemConf();
-	});
-
-	// Dolphin Gamepad
-	auto enable_dolphingp = std::make_shared<SwitchComponent>(window);
-	bool dolphingpEnabled = SystemConf::getInstance()->get("dolphin_auto_gamepad") == "1";
-	enable_dolphingp->setState(dolphingpEnabled);
-	gamepadConfiguration->addWithLabel(_("AUTO CONFIG DOLPHIN GAMEPAD"), enable_dolphingp);
-
-	gamepadConfiguration->addSaveFunc([enable_dolphingp, window] {
-		bool dolphingpenabled = enable_dolphingp->getState();
-		SystemConf::getInstance()->set("dolphin_auto_gamepad", dolphingpenabled ? "1" : "0");
-		SystemConf::getInstance()->saveSystemConf();
-	});
-
-	// Duckstation Gamepad
-	auto enable_duckstationgp = std::make_shared<SwitchComponent>(window);
-	bool duckstationgpEnabled = SystemConf::getInstance()->get("duckstation_auto_gamepad") == "1";
-	enable_duckstationgp->setState(duckstationgpEnabled);
-	gamepadConfiguration->addWithLabel(_("AUTO CONFIG DUCKSTATION GAMEPAD"), enable_duckstationgp);
-
-	gamepadConfiguration->addSaveFunc([enable_duckstationgp, window] {
-		bool duckstationgpenabled = enable_duckstationgp->getState();
-		SystemConf::getInstance()->set("duckstation_auto_gamepad", duckstationgpenabled ? "1" : "0");
-		SystemConf::getInstance()->saveSystemConf();
-	});
-
-	// Flycast Gamepad
-	auto enable_flycastgp = std::make_shared<SwitchComponent>(window);
-	bool flycastgpEnabled = SystemConf::getInstance()->get("flycast_auto_gamepad") == "1";
-	enable_flycastgp->setState(flycastgpEnabled);
-	gamepadConfiguration->addWithLabel(_("AUTO CONFIG FLYCAST GAMEPAD"), enable_flycastgp);
-
-	gamepadConfiguration->addSaveFunc([enable_flycastgp, window] {
-		bool flycastgpenabled = enable_flycastgp->getState();
-		SystemConf::getInstance()->set("flycast_auto_gamepad", flycastgpenabled ? "1" : "0");
-		SystemConf::getInstance()->saveSystemConf();
-	});
-
-	// Mupen64Plus Gamepad
-	auto enable_mupen64plusgp = std::make_shared<SwitchComponent>(window);
-	bool mupen64plusgpEnabled = SystemConf::getInstance()->get("mupen64plus_auto_gamepad") == "1";
-	enable_mupen64plusgp->setState(mupen64plusgpEnabled);
-	gamepadConfiguration->addWithLabel(_("AUTO CONFIG MUPEN64PLUS GAMEPAD"), enable_mupen64plusgp);
-
-	gamepadConfiguration->addSaveFunc([enable_mupen64plusgp, window] {
-		bool mupen64plusgpenabled = enable_mupen64plusgp->getState();
-		SystemConf::getInstance()->set("mupen64plus_auto_gamepad", mupen64plusgpenabled ? "1" : "0");
-		SystemConf::getInstance()->saveSystemConf();
-	});
-
-	// yabasanshiro Gamepad
-	auto enable_yabasanshirogp = std::make_shared<SwitchComponent>(window);
-	bool yabasanshirogpEnabled = SystemConf::getInstance()->get("yabasanshiro_auto_gamepad") == "1";
-	enable_yabasanshirogp->setState(yabasanshirogpEnabled);
-	gamepadConfiguration->addWithLabel(_("AUTO CONFIG YABASANSHIRO GAMEPAD"), enable_yabasanshirogp);
-
-	gamepadConfiguration->addSaveFunc([enable_yabasanshirogp, window] {
-		bool yabasanshirogpenabled = enable_yabasanshirogp->getState();
-		SystemConf::getInstance()->set("yabasanshiro_auto_gamepad", yabasanshirogpenabled ? "1" : "0");
-		SystemConf::getInstance()->saveSystemConf();
-	});
-
-	// ppssppsdl Gamepad
-	auto enable_ppssppsdlgp = std::make_shared<SwitchComponent>(window);
-	bool ppssppsdlgpEnabled = SystemConf::getInstance()->get("ppssppsdl_auto_gamepad") == "1";
-	enable_ppssppsdlgp->setState(ppssppsdlgpEnabled);
-	gamepadConfiguration->addWithLabel(_("AUTO CONFIG PPSSPPSDL GAMEPAD"), enable_ppssppsdlgp);
-
-	gamepadConfiguration->addSaveFunc([enable_ppssppsdlgp, window] {
-		bool ppssppsdlgpenabled = enable_ppssppsdlgp->getState();
-		SystemConf::getInstance()->set("ppssppsdl_auto_gamepad", ppssppsdlgpenabled ? "1" : "0");
-		SystemConf::getInstance()->saveSystemConf();
-	});
-
-	window->pushGui(gamepadConfiguration);
-}
-
-
-void GuiMenu::openExternalMounts(Window* mWindow, std::string configName)
-{
-
-	GuiSettings* externalMounts = new GuiSettings(mWindow, _("EXTERNAL MOUNT OPTIONS").c_str());
-    std::string a;
-
-		auto emuelec_external_device_def = std::make_shared< OptionListComponent<std::string> >(mWindow, "EXTERNAL DEVICE", false);
-		std::vector<std::string> extdevoptions;
-		extdevoptions.push_back("auto");
-		  for(std::stringstream ss(Utils::Platform::getShOutput(R"(find /var/media/ -type d -maxdepth 1 -mindepth 1 -name EEROMS -prune -o -exec basename {} \; | sed "s/$/,/g")")); getline(ss, a, ','); ) {
-            extdevoptions.push_back(a);
-	    }
-		// use script to get entries
-
-		auto extdevoptionsS = SystemConf::getInstance()->get("global.externalmount");
-		if (extdevoptionsS.empty())
-		extdevoptionsS = "auto";
-
-		for (auto it = extdevoptions.cbegin(); it != extdevoptions.cend(); it++)
-		emuelec_external_device_def->add(*it, *it, extdevoptionsS == *it);
-
-        externalMounts->addWithDescription(_("EXTERNAL DEVICE"), _("Select the mounted drive to be used for ROMS."), emuelec_external_device_def);
-
-        emuelec_external_device_def->setSelectedChangedCallback([emuelec_external_device_def](std::string name) {
-       		if (SystemConf::getInstance()->set("global.externalmount", name)) {
-			   if (emuelec_external_device_def->getSelected() != "auto") {
-                    std::string path = ("/var/media/" + emuelec_external_device_def->getSelected() + "/roms/emuelecroms").c_str();
-                        if (!Utils::FileSystem::exists(path)) {
-                            system((std::string("mkdir -p \"/var/media/") + emuelec_external_device_def->getSelected() + std::string("/roms\"")).c_str());
-                            system((std::string("touch \"/var/media/") + emuelec_external_device_def->getSelected() + std::string("/roms/emuelecroms\"")).c_str());
-                        }
-                }
-            SystemConf::getInstance()->saveSystemConf();
-        }
-        });
-
-		auto emuelec_external_device_retry = std::make_shared< OptionListComponent<std::string> >(mWindow, _("RETRY TIMES"), false);
-		emuelec_external_device_retry->addRange({ { _("AUTO"), "" },{ "1", "1" },{ "2", "2" },{ "3", "3" },{ "4", "4" },{ "5", "5" },{ "6", "6" },{ "7", "7" },{ "8", "8" },{ "9", "9" },{ "10", "10" },{ "11", "11" },{ "12", "12" },{ "13", "13" },{ "14", "14" },{ "15", "15" },{ "16", "16" },{ "17", "17" },{ "18", "18" },{ "19", "19" },{ "20", "20" },{ "21", "21" },{ "22", "22" },{ "23", "23" },{ "24", "24" },{ "25", "25" },{ "26", "26" },{ "27", "27" },{ "28", "28" },{ "29", "29" },{ "30", "30" } }, SystemConf::getInstance()->get("ee_mount.retry"));
-        externalMounts->addWithDescription(_("RETRY TIMES"), _("How many times to retry the mount on boot."), emuelec_external_device_retry);
-		emuelec_external_device_retry->setSelectedChangedCallback([emuelec_external_device_retry](std::string name) {
-            if (SystemConf::getInstance()->set("ee_mount.retry", name))
-                SystemConf::getInstance()->saveSystemConf();
-            });
-
-		auto emuelec_external_device_retry_delay = std::make_shared< OptionListComponent<std::string> >(mWindow, _("DELAY BETWEEN TRIES"), false);
-		emuelec_external_device_retry_delay->addRange({ { _("AUTO"), "" },{ "1", "1" },{ "2", "2" },{ "3", "3" },{ "4", "4" },{ "5", "5" },{ "6", "6" },{ "7", "7" },{ "8", "8" },{ "9", "9" },{ "10", "10" },{ "11", "11" },{ "12", "12" },{ "13", "13" },{ "14", "14" },{ "15", "15" },{ "16", "16" },{ "17", "17" },{ "18", "18" },{ "19", "19" },{ "20", "20" },{ "21", "21" },{ "22", "22" },{ "23", "23" },{ "24", "24" },{ "25", "25" },{ "26", "26" },{ "27", "27" },{ "28", "28" },{ "29", "29" },{ "30", "30" } }, SystemConf::getInstance()->get("ee_load.delay"));
-        externalMounts->addWithDescription(_("DELAY BETWEEN TRIES"), _("How much delay in seconds between each retry."), emuelec_external_device_retry_delay);
-		emuelec_external_device_retry_delay->setSelectedChangedCallback([emuelec_external_device_retry_delay](std::string name) {
-            if (SystemConf::getInstance()->set("ee_load.delay", name))
-                SystemConf::getInstance()->saveSystemConf();
-            });
-
-        externalMounts->addEntry(_("FORCE MOUNT NOW"), true, [mWindow] {
-            std::string selectedExternalDrive = SystemConf::getInstance()->get("global.externalmount");
-            mWindow->pushGui(new GuiMsgBox(mWindow, (_("WARNING THIS WILL RESTART EMULATIONSTATION!\n\nSystem will try to mount the external drive selected ") + "\""+ selectedExternalDrive + "\"" + _(". Make sure you have all the settings saved before running this.\n\nTRY TO MOUNT EXTERNAL AND RESTART?")).c_str(), _("YES"),
-				[selectedExternalDrive] {
-				SystemConf::getInstance()->saveSystemConf();
-
-                auto mountH = SystemConf::getInstance()->get("ee_mount.handler");
-                if (mountH == "eemount" || mountH.empty()) {
-                   Utils::Platform::ProcessStartInfo("eemount --esrestart " + selectedExternalDrive).run();
-                } else if (mountH == "mount_romfs.sh") {
-                   Utils::Platform::ProcessStartInfo("mount_romfs.sh yes " + selectedExternalDrive).run();
-                } else {
-                   Utils::Platform::ProcessStartInfo(mountH + selectedExternalDrive).run();
-                }
-
-                }, _("NO"), nullptr));
-		});
-
-mWindow->pushGui(externalMounts);
-}
-
-
-void GuiMenu::addFrameBufferOptions(Window* mWindow, GuiSettings* guiSettings, std::string configName, std::string header)
-{
-	if (!configName.empty())
-		configName += ".";
-
-	auto getVideoMode = [configName] (){
-		std::string ee_videomode = SystemConf::getInstance()->get("ee_videomode");
-
-		if (Utils::FileSystem::exists("/storage/.config/EE_VIDEO_MODE"))
-			ee_videomode = Utils::Platform::getShOutput(R"(cat /storage/.config/EE_VIDEO_MODE)");
-
-		if (configName != "ee_es.") {
-			ee_videomode = SystemConf::getInstance()->get(configName+"nativevideo");
-		}
-
-		if (ee_videomode.empty() || ee_videomode == "auto")
-			ee_videomode = Utils::Platform::getShOutput(R"(cat /sys/class/display/mode)");
-
-		return ee_videomode;
-	};
-
-	std::string ee_videomode = getVideoMode();
-
-	std::string ee_framebuffer = SystemConf::getInstance()->get(configName+"framebuffer."+ee_videomode);
-	if (ee_framebuffer.empty()) {
-		ee_framebuffer = "auto";
-	}
-
-	std::vector<std::string> reslist;
-	std::string def_dimensions;
-	for(std::stringstream ss(Utils::Platform::getShOutput(R"(/usr/bin/emuelec-utils dimensions)")); getline(ss, def_dimensions, ','); ) {
-		reslist.push_back(def_dimensions.replace(def_dimensions.find("x"),1," "));
-	}
-
-	std::sort(reslist.begin(), reslist.end(), [](const std::string &lhs, const std::string &rhs)
-	{
-			size_t ll = lhs.length();
-			size_t rl = rhs.length();
-	    return (std::tie(ll, lhs) > std::tie(rl, rhs));
-	});
-
-	int* ee_dimensions = getVideoModeDimensions(ee_videomode, reslist);
-
-	int fbWidth = ee_dimensions[0];
-	int fbHeight = ee_dimensions[1];
-
-	auto emuelec_frame_buffer = std::make_shared< OptionListComponent<std::string> >(mWindow, "VIDEO MODE", false);
-
-	emuelec_frame_buffer->add("auto", "auto", ee_framebuffer == "auto");
-
-	for (auto it = reslist.cbegin(); it != reslist.cend(); it++) {
-		std::string lbl = *it;
-		lbl = lbl.replace(lbl.find(" "),1,"x");
-		emuelec_frame_buffer->add(lbl, *it, ee_framebuffer == *it);
-	}
-	guiSettings->addWithLabel(header+_(" FRAME BUFFER"), emuelec_frame_buffer);
-
-	auto fbSave = [mWindow, configName, emuelec_frame_buffer, fbWidth, fbHeight, getVideoMode] (std::string selectedFB) {
-		std::string ee_videomode = getVideoMode();
-
-		if (selectedFB == "auto")
-			selectedFB = "";
-
-		std::string cfgName = "framebuffer."+ee_videomode;
-		if (!configName.empty())
-			cfgName = configName+cfgName;
-
-		SystemConf::getInstance()->set(cfgName, selectedFB);
-
-		if (configName == "ee_es.") {
-			Scripting::fireEvent("quit", "restart");
-			Utils::Platform::quitES(Utils::Platform::QuitMode::QUIT);
-		}
-			//mWindow->displayNotificationMessage(_U("\uF011  ") + _("A REBOOT OF THE SYSTEM IS REQUIRED TO APPLY THE NEW CONFIGURATION"));
-	};
-
-	emuelec_frame_buffer->setSelectedChangedCallback([mWindow, configName, emuelec_frame_buffer, fbSave, fbWidth, fbHeight, getVideoMode](std::string name)
-	{
-		if (configName == "ee_es.") {
-			mWindow->displayNotificationMessage(_U("\uF011  ") + _("A REBOOT OF THE SYSTEM WILL OCCUR TO APPLY THE NEW CONFIGURATION"));
-		}
-	});
-
-	guiSettings->addSaveFunc([mWindow, configName, emuelec_frame_buffer, fbSave, fbWidth, fbHeight, getVideoMode]()
-	{
-		if (emuelec_frame_buffer->changed())
-			fbSave(emuelec_frame_buffer->getSelected());
-	});
-
-	guiSettings->addEntry(_("ADJUST FRAME BORDERS"), true, [mWindow, configName, getVideoMode, ee_framebuffer, fbWidth, fbHeight] {
-		std::string ee_videomode = getVideoMode();
-
-		sScreenBorders ee_borders;
-		ee_borders.left = 0.0f;
-		ee_borders.right = 0.0f;
-		ee_borders.top = 0.0f;
-		ee_borders.bottom = 0.0f;
-
-		std::string cfgName = "framebuffer_border."+ee_videomode;
-		if (!configName.empty())
-			cfgName = configName+cfgName;
-
-		std::string str_ee_offsets = SystemConf::getInstance()->get(cfgName);
-		if (!str_ee_offsets.empty()) {
-			std::vector<int> savedBorders = int_explode(str_ee_offsets, ' ');
-			if (savedBorders.size() == 4) {
-				ee_borders.left = (float) savedBorders[0];
-				ee_borders.top = (float) savedBorders[1];
-				ee_borders.right = (float) savedBorders[2];
-				ee_borders.bottom = (float) savedBorders[3];
-			}
-		}
-
-		GuiSettings* bordersConfig = new GuiSettings(mWindow, _("FRAME BORDERS"));
-		if (ee_framebuffer.empty())
-			return;
-
-		float width = (float)fbWidth;
-		float height = (float)fbHeight;
-
-		// borders
-		// order: left, top, right, bottom.
-		std::shared_ptr<SliderComponent> fb_borders[] = {
-			std::make_shared<SliderComponent>(mWindow, 0.0f, width, 1.0f, "px"),
-			std::make_shared<SliderComponent>(mWindow, 0.0f, height, 1.0f, "px"),
-			std::make_shared<SliderComponent>(mWindow, 0.0f, width, 1.0f, "px"),
-			std::make_shared<SliderComponent>(mWindow, 0.0f, height, 1.0f, "px")
-		};
-
-		fb_borders[0]->setValue(ee_borders.left);
-		fb_borders[1]->setValue(ee_borders.top);
-		fb_borders[2]->setValue((ee_borders.right > 0.0f) ? width-ee_borders.right-1 : 0.0f);
-		fb_borders[3]->setValue((ee_borders.bottom > 0.0f) ? height-ee_borders.bottom-1 : 0.0f);
-
-		fb_borders[0]->setOnValueChanged([fb_borders] (float val) {
-			fb_borders[2]->setValue(val);
-		});
-		fb_borders[1]->setOnValueChanged([fb_borders] (float val) {
-			fb_borders[3]->setValue(val);
-		});
-
-		bordersConfig->addWithLabel(_("LEFT BORDER"), fb_borders[0]);
-		bordersConfig->addWithLabel(_("TOP BORDER"), fb_borders[1]);
-		bordersConfig->addWithLabel(_("RIGHT BORDER"), fb_borders[2]);
-		bordersConfig->addWithLabel(_("BOTTOM BORDER"), fb_borders[3]);
-
-		bordersConfig->addSaveFunc([mWindow, configName, ee_videomode, fb_borders, fbWidth, fbHeight]()
-		{
-			int borders[4] = {
-				(int) fb_borders[0]->getValue(),
-				(int) fb_borders[1]->getValue(),
-				(int) fb_borders[2]->getValue(),
-				(int) fb_borders[3]->getValue()};
-
-			std::string result = "";
-			if (!(fb_borders[0] == 0 &&
-					fb_borders[1] == 0 &&
-					fb_borders[2] == 0 &&
-					fb_borders[3] == 0))
-			{
-				result = std::to_string(borders[0])+" "+
-					std::to_string(borders[1])+" "+
-					std::to_string(fbWidth-(borders[2])-1)+" "+
-					std::to_string(fbHeight-(borders[3])-1);
-			}
-
-			std::string cfgName = "framebuffer_border."+ee_videomode;
-			SystemConf::getInstance()->set(configName+cfgName, result);
-		});
-
-		mWindow->pushGui(bordersConfig);
-	});
-
-}
-
 
 void GuiMenu::openDangerZone(Window* mWindow, std::string configName)
 {
 
 	GuiSettings* dangerZone = new GuiSettings(mWindow, _("DANGER ZONE").c_str());
 
-#if defined(_ENABLEGAMEFORCE) || defined(ODROIDGOA)
-	// OG OC
-	auto emuelec_oga_overclock = std::make_shared<OptionListComponent<std::string>>(mWindow, _("OVERCLOCK"));
-    emuelec_oga_overclock->addRange({ { _("Off"), "Off" }, { _("1.4ghz"), "1.4ghz" }, { "1.5ghz", "1.5ghz" } }, SystemConf::getInstance()->get("ee_oga_oc"));
-    dangerZone->addWithLabel(_("OVERCLOCK"), emuelec_oga_overclock);
-    dangerZone->addSaveFunc([configName, emuelec_oga_overclock, mWindow] {
-
- auto setOverclock = [emuelec_oga_overclock](const std::string& value)
-        {
-            LOG(LogInfo) << "Setting OGA_OC to " + value;
-            Utils::Platform::ProcessStartInfo("/usr/bin/odroidgoa_utils.sh oga_oc " + value).run();
-            SystemConf::getInstance()->set("ee_oga_oc", value);
-            SystemConf::getInstance()->saveSystemConf();
-        };
-
-        std::string selectedoc = emuelec_oga_overclock->getSelected();
-        if (emuelec_oga_overclock && emuelec_oga_overclock->changed())
-        {
-            if (selectedoc != "Off")
-            {
-                std::string msg = _("OGA OC is HIGHLY experimental, you may encounter random lockups or your device might not boot anymore. \n");
-                msg += _("In case you cannot boot anymore, create an empty file called \"no_oc.oga\" on the boot (EMUELEC) partition.\n\n");
-                msg += _("There is also the posibility of SD card file corruption!!! Only enable OC if you agree to the risks!\n\n");
-                msg += _("Do you want to proceed ?");
-
-                mWindow->pushGui(new GuiMsgBox(mWindow, msg, _("YES"), [selectedoc, setOverclock]() { setOverclock(selectedoc); }, _("NO"), nullptr));
-            }
-            else
-                setOverclock(selectedoc);
-        }
-
-
-         });
-#endif
-		addFrameBufferOptions(mWindow, dangerZone, "ee_es", "ES");
-		addFrameBufferOptions(mWindow, dangerZone, "", "EMU");
-
-
-    dangerZone->addEntry(_("CLOUD BACKUP SETTINGS AND GAME SAVES"), true, [mWindow] {
-    mWindow->pushGui(new GuiMsgBox(mWindow, _("WARNING THIS WILL RESTART EMULATIONSTATION!\n\nThis will backup your game saves, savestates and emuelec configs to the cloud service configured on rclone.conf\n\nBACKUP TO CLOUD AND RESTART?"), _("YES"),
+    dangerZone->addEntry(_("BACKUP CONFIGURATIONS"), true, [mWindow] {
+    mWindow->pushGui(new GuiMsgBox(mWindow, _("WARNING THIS WILL RESTART EMULATIONSTATION!\n\nAFTER THE SCRIPT IS DONE REMEMBER TO COPY THE FILE /storage/roms/backup/AmberELEC_BACKUP.zip TO SOME PLACE SAFE OR IT WILL BE DELETED ON NEXT REBOOT!\n\nBACKUP CURRENT CONFIG AND RESTART?"), _("YES"),
 				[] {
-				Utils::Platform::ProcessStartInfo("systemd-run /usr/bin/emuelec-utils ee_cloud_backup backup").run();
+				runSystemCommand("systemd-run /usr/bin/emuelec-utils ee_backup backup", "", nullptr);
 				}, _("NO"), nullptr));
      });
 
-    dangerZone->addEntry(_("CLOUD RESTORE SETTINGS AND GAME SAVES"), true, [mWindow] {
-    mWindow->pushGui(new GuiMsgBox(mWindow, _("WARNING THIS WILL RESTART EMULATIONSTATION!\n\nThis will restore your game saves, savestates and emuelec configs from the cloud service configured on rclone.conf, it will overwrite any existing file!!\n\nRESTORE FROM CLOUD AND RESTART?"), _("YES"),
+    dangerZone->addEntry(_("BACKUP IDENTITY"), true, [mWindow] {
+    mWindow->pushGui(new GuiMsgBox(mWindow, _("THIS SCRIPT WILL BACK UP THE DEVICE AND USER IDENTITY DATA (PASSWORDS, ETC) SO IT CAN BE RESTORED AFTER FLASHING OR RESTORED ON ANOTHER DEVICE. MOVE /storage/roms/backup/identity.tar.gz SOME PLACE SAFE.\n\nBACKUP DEVICE AND USER IDENTITY?"), _("YES"),
 				[] {
-				Utils::Platform::ProcessStartInfo("systemd-run /usr/bin/emuelec-utils ee_cloud_backup restore").run();
+				runSystemCommand("systemd-run /usr/bin/emuelec-utils identity_backup", "", nullptr);
 				}, _("NO"), nullptr));
      });
 
-    dangerZone->addEntry(_("LOCAL BACKUP EMUELEC CONFIGS"), true, [mWindow] {
-    mWindow->pushGui(new GuiMsgBox(mWindow, _("WARNING THIS WILL RESTART EMULATIONSTATION!\n\nAFTER THE SCRIPT IS DONE REMEMBER TO COPY THE FILE /storage/roms/backup/ee_backup_config.tar.gz TO SOME PLACE!\n\nBACKUP CURRENT CONFIG AND RESTART?"), _("YES"),
+    dangerZone->addEntry(_("RESTORE FROM BACKUP"), true, [mWindow] {
+    mWindow->pushGui(new GuiMsgBox(mWindow, _("WARNING THIS WILL RESTART EMULATIONSTATION AND REBOOT!\n\nYOUR EXISTING CONFIGURATION WILL BE OVERWRITTEN!\n\nRESTORE FROM BACKUP AND RESTART?"), _("YES"),
 				[] {
-				Utils::Platform::ProcessStartInfo("systemd-run /usr/bin/emuelec-utils ee_backup backup").run();
-				}, _("NO"), nullptr));
-     });
-
-    dangerZone->addEntry(_("RESET EMUELEC SCRIPTS AND BINARIES TO DEFAULT"), true, [mWindow] {
-    mWindow->pushGui(new GuiMsgBox(mWindow, _("WARNING: SYSTEM WILL RESET SCRIPTS AND BINARIES !\nUPDATE, DOWNLOADS, THEMES, BLUETOOTH PAIRINGS AND ROMS FOLDER WILL NOT BE AFFECTED.\n\nRESET SCRIPTS AND BINARIES TO DEFAULT AND RESTART?"), _("YES"),
-				[] {
-				Utils::Platform::ProcessStartInfo("systemd-run /usr/bin/emuelec-utils clearconfig EMUS").run();
+				runSystemCommand("systemd-run /usr/bin/emuelec-utils ee_backup restore", "", nullptr);
 				}, _("NO"), nullptr));
      });
 
     dangerZone->addEntry(_("RESET RETROARCH CONFIG TO DEFAULT"), true, [mWindow] {
     mWindow->pushGui(new GuiMsgBox(mWindow, _("WARNING: RETROARCH CONFIG WILL RESET TO DEFAULT\n\nPER-CORE CONFIGURATIONS WILL NOT BE AFFECTED BUT NO BACKUP WILL BE CREATED!\n\nRESET RETROARCH CONFIG TO DEFAULT?"), _("YES"),
 				[] {
-				Utils::Platform::ProcessStartInfo("systemd-run /usr/bin/emuelec-utils clearconfig retroarch").run();
+				runSystemCommand("systemd-run /usr/bin/emuelec-utils clearconfig retroarch", "", nullptr);
 				}, _("NO"), nullptr));
      });
 
-    dangerZone->addEntry(_("RESET SYSTEM TO DEFAULT CONFIG"), true, [mWindow] {
-    mWindow->pushGui(new GuiMsgBox(mWindow, _("WARNING: ALL CONFIGURATIONS WILL BE RESET AND NO BACKUP WILL BE CREATED!\n\nIF YOU WANT TO KEEP YOUR SETTINGS MAKE A BACKUP AND SAVE IT ON AN EXTERNAL DRIVE BEFORE RUNING THIS OPTION!\n\nRESET SYSTEM TO DEFAULT CONFIG AND RESTART?"), _("YES"),
+    dangerZone->addEntry(_("FACTORY RESET"), true, [mWindow] {
+    mWindow->pushGui(new GuiMsgBox(mWindow, _("WARNING: RESETTING WILL PRESERVE YOUR PASSWORDS AND NETWORK CONFIGURATION HOWEVER YOUR REMAINING DATA AND ALL OTHER CONFIGURATIONS WILL BE RESET TO DEFAULTS!\n\nIF YOU WANT TO KEEP YOUR SETTINGS MAKE A BACKUP AND SAVE IT ON AN EXTERNAL DRIVE BEFORE RUNING THIS OPTION!\n\nRESET SYSTEM AND RESTART?"), _("YES"),
 				[] {
-				Utils::Platform::ProcessStartInfo("systemd-run /usr/bin/emuelec-utils clearconfig ALL").run();
-				}, _("NO"), nullptr));
-     });
-    dangerZone->addEntry(_("FORCE UPDATE"), true, [mWindow] {
-
-    				if (ApiSystem::getInstance()->getIpAdress() == "NOT CONNECTED")
-					{
-						mWindow->pushGui(new GuiMsgBox(mWindow, _("YOU ARE NOT CONNECTED TO A NETWORK"), _("OK"), nullptr));
-						return;
-					}
-
-    mWindow->pushGui(new GuiMsgBox(mWindow, _("WARNING: A FORCE UPDATE WILL DOWNLOAD WHATEVER VERSION IS AVAILABLE FOR UPDATE REGARDLESS OF VERSION BASED ON THE TYPE YOU HAVE SELECTED IN THE UPDATE & DOWNLOADS (beta or stable)\n\nSYSTEM WILL RESET SCRIPTS AND BINARIES !\nDOWNLOADS, THEMES, BLUETOOTH PAIRINGS AND ROMS FOLDER WILL NOT BE AFFECTED.\n\nCONTINUE WITH FORCE UPDATE?"), _("YES"),
-				[] {
-				Utils::Platform::ProcessStartInfo("systemd-run /usr/bin/updatecheck.sh forceupdate").run();
+				runSystemCommand("systemd-run /usr/bin/emuelec-utils clearconfig ALL", "", nullptr);
 				}, _("NO"), nullptr));
      });
 
 mWindow->pushGui(dangerZone);
 }
-
 
 /*  emuelec >*/
 #endif
@@ -1430,9 +703,9 @@ void GuiMenu::openMultiScreensSettings()
 			optionsVideo2->add(currentDevice2, currentDevice2, true);
 
 		s->addWithLabel(_("VIDEO OUTPUT"), optionsVideo2);
-		s->addSaveFunc([this, optionsVideo2, currentDevice2, s] 
+		s->addSaveFunc([this, optionsVideo2, currentDevice2, s]
 		{
-			if (optionsVideo2->changed()) 
+			if (optionsVideo2->changed())
 			{
 				SystemConf::getInstance()->set("global.videooutput2", optionsVideo2->getSelected());
 				SystemConf::getInstance()->saveSystemConf();
@@ -1502,9 +775,9 @@ void GuiMenu::openMultiScreensSettings()
 			optionsVideo3->add(currentDevice3, currentDevice3, true);
 
 		s->addWithLabel(_("VIDEO OUTPUT"), optionsVideo3);
-		s->addSaveFunc([this, optionsVideo3, currentDevice3, s] 
+		s->addSaveFunc([this, optionsVideo3, currentDevice3, s]
 		{
-			if (optionsVideo3->changed()) 
+			if (optionsVideo3->changed())
 			{
 				SystemConf::getInstance()->set("global.videooutput3", optionsVideo3->getSelected());
 				SystemConf::getInstance()->saveSystemConf();
@@ -1543,7 +816,7 @@ void GuiMenu::openMultiScreensSettings()
 
 	s->addSaveFunc([this, optionsRotation3, selectedRotation3, s]
 	{
-	  if (optionsRotation3->changed()) 
+	  if (optionsRotation3->changed())
 {
 	    SystemConf::getInstance()->set("display.rotate3", optionsRotation3->getSelected());
 	    SystemConf::getInstance()->saveSystemConf();
@@ -2834,9 +2107,13 @@ void GuiMenu::openSystemSettings()
 	}
 #endif
 
-	// Developer options
-	if (isFullUI)
-		s->addEntry(_("FRONTEND DEVELOPER OPTIONS"), true, [this] { openDeveloperSettings(); });
+	if (isFullUI){
+		// Developer options
+		s->addEntry(_("DEVELOPER"), true, [this] { openDeveloperSettings(); });
+
+		// Danger zone options
+		s->addEntry(_("DANGER ZONE"), true, [this] { openDangerZone(mWindow, "global"); });
+	}
 
 	auto pthis = this;
 	s->onFinalize([s, pthis, window]
@@ -6126,10 +5403,6 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
 			}
 		});
 	}
-#endif
-
-#ifdef _ENABLEAMBERELEC
-	addFrameBufferOptions(mWindow, systemConfiguration, configName, "EMU");
 #endif
 
 	mWindow->pushGui(systemConfiguration);
