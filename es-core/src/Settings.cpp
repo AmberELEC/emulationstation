@@ -251,8 +251,8 @@ void Settings::setDefaults()
 
 	mBoolMap["ShowCheevosIcon"] = true;
 
-	mBoolMap["ShowWheelIconOnGames"] = true;
-	mBoolMap["ShowGunIconOnGames"] = true;
+	mBoolMap["ShowWheelIconOnGames"] = false;
+	mBoolMap["ShowGunIconOnGames"] = false;
 
 	mBoolMap["SlideshowScreenSaverCustomVideoSource"] = false;
 #ifdef _ENABLEAMBERELEC
