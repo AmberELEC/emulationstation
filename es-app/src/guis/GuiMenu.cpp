@@ -3491,10 +3491,10 @@ void GuiMenu::openGamesSettings()
 
 	// Enable Decorations for AmberELEC
 	// decorations
-	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::DECORATIONS) && systemData->isFeatureSupported(currentEmulator, currentCore, EmulatorFeatures::decoration))
+	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::DECORATIONS) && SystemData->isFeatureSupported(currentEmulator, currentCore, EmulatorFeatures::decoration))
 	{
 			Window* window = mWindow;
-			auto sets = GuiMenu::getDecorationsSets(systemData);
+			auto sets = GuiMenu::getDecorationsSets(SystemData);
 			if (sets.size() > 0)
 			{
 				auto decorations = std::make_shared<OptionListComponent<std::string> >(mWindow, _("DECORATION SET"), false);
