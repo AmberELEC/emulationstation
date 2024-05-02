@@ -158,9 +158,6 @@ GuiGameOptions::GuiGameOptions(Window* window, FileData* game) : GuiComponent(wi
 					options.saveStateInfo = state;
 					ViewController::get()->launch(game, options);
 				}));
-#ifdef _ENABLEEMUELEC
-					guiSaveStateLoad(mWindow, game);
-#endif
 				this->close();
 
 			});
