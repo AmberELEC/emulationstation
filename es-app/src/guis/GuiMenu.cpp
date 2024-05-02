@@ -5548,6 +5548,7 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
 		rgascale_enabled->add(_("OFF"), "0", SystemConf::getInstance()->get(configName + ".rgascale") == "0");
 		systemConfiguration->addWithLabel(_("RGA SCALING"), rgascale_enabled);
 		systemConfiguration->addSaveFunc([configName, rgascale_enabled] { SystemConf::getInstance()->set(configName + ".rgascale", rgascale_enabled->getSelected()); });
+#endif
 
 	// Enable Decorations for AmberELEC
 	// decorations
@@ -5600,8 +5601,6 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
                                               { openDecorationConfiguration(mWindow, configName, sets); });
 			}
 	}
-#endif
-
 #else
 
 	// Shaders preset
