@@ -27,11 +27,6 @@
 #include "guis/GuiSaveState.h"
 #include "SystemConf.h"
 
-#ifdef _ENABLEAMBERELEC
-#include <regex>
-#include "utils/Platform.h"
-#endif
-
 GuiGameOptions::GuiGameOptions(Window* window, FileData* game) : GuiComponent(window),
 	mMenu(window, game->getName()), mReloadAll(false)
 {
@@ -249,44 +244,7 @@ GuiGameOptions::GuiGameOptions(Window* window, FileData* game) : GuiComponent(wi
 
 
 			});
-#ifdef _ENABLEAMBERELEC			
-			if (!isImageViewer) {
-				if (game->getMetadata(MetaDataId::Hidden) == "false")
-				{
-					mMenu.addEntry(_("HIDE GAME"), false, [this, game]
-					{
-						hideGame(game, true);
-						close();
-					});
-				}
-				else {
-					mMenu.addEntry(_("UNHIDE GAME"), false, [this, game]
-					{
-						hideGame(game, false);
-						close();
-					});
-				}
-			}
-#endif
 		}
-
-#ifdef _ENABLEAMBERELEC
-	std::regex str_expr (".*(disc\\s*\\d)[^\\d]{0,1}.*", std::regex_constants::icase);
-	if (std::regex_match(game->getName(),str_expr))
-		mMenu.addEntry(isImageViewer ? _("CREATE MULTIDISC") : _("CREATE MULTIDISC"), false, [this, game]
-		{
-			mWindow->pushGui(new GuiMsgBox(mWindow, _("THIS WILL CREATE A MULTI-DISC FILE(S)!\nARE YOU SURE?"), _("YES"),
-				[this, game]
-			{
-				createMultidisc(game);
-				close();
-			},
-				_("NO"), nullptr));
-
-
-		});
-#endif
-
 	}
 
 	bool isCustomCollection = (mSystem->isCollection() && game->getType() == FOLDER && CollectionSystemManager::get()->isCustomCollection(mSystem->getName()));
@@ -531,68 +489,6 @@ void GuiGameOptions::deleteGame(FileData* file)
 		delete sourceFile;
 	}
 }
-
-#ifdef _ENABLEAMBERELEC
-
-void GuiGameOptions::hideGame(FileData* file, bool hide)
-{
-	if (file->getType() != GAME)
-		return;
-
-	auto sourceFile = file->getSourceFileData();
-	file->setMetadata(MetaDataId::Hidden, (hide) ? "true" : "false");
-	ViewController::get()->onFileChanged(file, FILE_METADATA_CHANGED);
-
-	auto sys = sourceFile->getSystem();
-	if (sys->isGroupChildSystem())
-		sys = sys->getParentGroupSystem();
-
-	sys->getRootFolder()->getMetadata().setDirty();
-	
-	CollectionSystemManager::get()->deleteCollectionFiles(sourceFile);
-
-	auto view = ViewController::get()->getGameListView(sys, false);
-	if (view != nullptr)
-		ViewController::get()->reloadGameListView(view.get());
-}
-
-void GuiGameOptions::createMultidisc(FileData* file)
-{
-	if (file->getType() != GAME)
-		return;
-
-	auto sourceFile = file->getSourceFileData();
-
-	std::string args = "createMultidisc \""+sourceFile->getPath()+"\"";
-	args="(/usr/bin/emuelec-utils "+args+")";
-	LOG(LogInfo) << "createMultidisc:" << args;
-	std::stringstream ss(Utils::Platform::getShOutput(args));
-	std::string newFileName;
-	getline(ss, newFileName);
-
-	if (newFileName.empty())
-		return;
-
-	FileData* newFile = new FileData(GAME, newFileName, sourceFile->getSystem());
-
-	auto sys = sourceFile->getSystem();
-	if (sys->isGroupChildSystem())
-		sys = sys->getParentGroupSystem();
-
-	sourceFile->getSystem()->getRootFolder()->addChild(newFile);
-
-	// NOT WORKING UNSURE WHY
-	CollectionSystemManager::get()->refreshCollectionSystems(newFile);
-
-	auto view = ViewController::get()->getGameListView(sys, false);
-	if (view != nullptr) {
-			view.get()->repopulate();
-			view->setCursor(newFile);
-	}
-	ViewController::get()->reloadGameListView(sys);
-}
-
-#endif
 
 void GuiGameOptions::openMetaDataEd()
 {

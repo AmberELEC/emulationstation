@@ -8,6 +8,8 @@
 #include "guis/GuiGeneralScreensaverOptions.h"
 #include "guis/GuiMsgBox.h"
 #include "guis/GuiScraperStart.h"
+#include "guis/GuiPackageInstaller.h" //AmberELEC
+#include "guis/GuiDecorationOptions.h" //AmberELEC
 #include "guis/GuiHashStart.h"
 #include "guis/GuiThemeInstaller.h"
 #include "guis/GuiBezelInstaller.h"
@@ -1562,6 +1564,19 @@ void GuiMenu::openMultiScreensSettings()
 	});
 
 	window->pushGui(s);
+}
+
+void GuiMenu::openDecorationConfiguration(Window *mWindow, std::string configName, std::vector<DecorationSetInfo> sets)
+{
+	//Using a shared pointer to ensure the memory doesn't cause issues in the other class
+	std::map<std::string, std::string> decorationSetNameToPath;
+	for (auto set : sets)
+	{
+		decorationSetNameToPath.insert(std::make_pair(set.name, set.path));
+	}
+
+	auto decorationOptions = new GuiDecorationOptions(mWindow, configName, decorationSetNameToPath);
+	mWindow->pushGui(decorationOptions);
 }
 
 void GuiMenu::openDeveloperSettings()
@@ -3474,6 +3489,57 @@ void GuiMenu::openGamesSettings()
 	s->addWithLabel(_("RGA SCALING"), rgascale_enabled);
 	s->addSaveFunc([rgascale_enabled] { SystemConf::getInstance()->set("global.rgascale", rgascale_enabled->getSelected()); });
 #endif
+
+	// Enable Decorations for AmberELEC
+	// decorations
+	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::DECORATIONS) && systemData->isFeatureSupported(currentEmulator, currentCore, EmulatorFeatures::decoration))
+	{
+			Window* window = mWindow;
+			auto sets = GuiMenu::getDecorationsSets(systemData);
+			if (sets.size() > 0)
+			{
+				auto decorations = std::make_shared<OptionListComponent<std::string> >(mWindow, _("DECORATION SET"), false);
+				decorations->setRowTemplate([window, sets](std::string data, ComponentListRow& row)
+				{
+					createDecorationItemTemplate(window, sets, data, row);
+				});
+
+			std::vector<std::string> decorations_item;
+			decorations_item.push_back(_("AUTO"));
+			decorations_item.push_back(_("NONE"));
+
+			for (auto set : sets)
+				decorations_item.push_back(set.name);
+
+			for (auto it = decorations_item.begin(); it != decorations_item.end(); it++) {
+				decorations->add(*it, *it,
+					(SystemConf::getInstance()->get(configName + ".bezel") == *it)
+					||
+					(SystemConf::getInstance()->get(configName + ".bezel") == "none" && *it == _("NONE"))
+					||
+					(SystemConf::getInstance()->get(configName + ".bezel") == "" && *it == _("AUTO"))
+				);
+			}
+			systemConfiguration->addWithLabel(_("DECORATION SET"), decorations);
+
+			//AmberELEC - set decoration on change so it's update for decoration options without exiting screen
+			decorations->setSelectedChangedCallback([decorations, configName](std::string value)
+			{
+				LOG(LogDebug) << "Setting bezel on change: " << configName << " to: " << value;
+				if (Utils::String::toLower(value) == "auto") {
+					value = "";
+				}
+				SystemConf::getInstance()->set(configName + ".bezel", value);
+			});
+
+			if (decorations->getSelectedName() == "")
+			{
+				decorations->selectFirstItem();
+			}
+
+            systemConfiguration->addEntry(_("DECORATION OPTIONS"), true, [mWindow, configName, sets]
+                                              { openDecorationConfiguration(mWindow, configName, sets); });
+
 #endif
 #ifndef _ENABLEAMBERELEC
 	// decorations

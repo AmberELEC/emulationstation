@@ -41,7 +41,6 @@ const std::map<PlatformId, std::string> gamesdb_new_platformid_map{
 	{ BBC_MICRO, "5013"},
 	{ COLECOVISION, "31" },	
 	{ COMMODORE_64, "40" },
-	{ COMMODORE_VIC20, "4945" },
 	{ COMMODORE_PET, "5008" },
 	{ COMMODORE_PLUS4, "5007" },
 	{ INTELLIVISION, "32" },
@@ -82,7 +81,6 @@ const std::map<PlatformId, std::string> gamesdb_new_platformid_map{
 	{ PLAYSTATION_VITA, "39" },
 	{ PLAYSTATION_PORTABLE, "13" },
 	{ SUPER_NINTENDO, "6" },
-	{ SNESMSU1, "6" },
 	{ TURBOGRAFX_16, "34" },   // HuCards only
 	{ TURBOGRAFX_CD, "4955" }, // CD-ROMs only
 	{ WONDERSWAN, "4925" },
@@ -93,7 +91,6 @@ const std::map<PlatformId, std::string> gamesdb_new_platformid_map{
 	{ TRS80_COLOR_COMPUTER, "4941" },
 	{ TANDY, "4941" },
 	{ SUPERGRAFX, "34" }, // The code is TurboGrafx 16, but they manage SUPERGRAFX into this one....
-	{ CREATONIC_MEGA_DUCK, "4948" },
 	{ AMIGACD32, "4947" },	
 	{ NEOGEO_CD, "4956" },
 	{ PCFX, "4930" },
@@ -116,7 +113,6 @@ const std::map<PlatformId, std::string> gamesdb_new_platformid_map{
 	{ FMTOWNS, "4932" },
 	{ PHILIPS_CDI, "4917" },
 	{ WATARA_SUPERVISION, "4959" },
-	{ BITCORP_GAMATE, "5004" },
 	{ SONIC, "36,21" }, // Sega Mega Drive & Sega CD
 	{ GP32, "5015"},
 	{ VTECH_SOCRATES, "4998" },

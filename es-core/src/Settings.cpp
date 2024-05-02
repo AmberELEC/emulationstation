@@ -166,11 +166,7 @@ void Settings::setDefaults()
 
 	mBoolMap["PublicWebAccess"] = false;	
 	mBoolMap["FirstJoystickOnly"] = false;
-#ifdef _ENABLEAMBERELEC
-	mBoolMap["EnableSounds"] = true;
-#else
 	mBoolMap["EnableSounds"] = false;
-#endif
 	mBoolMap["ShowHelpPrompts"] = true;
 	mBoolMap["ScrapeRatings"] = true;
 	mBoolMap["ScrapeDescription"] = true;	
