@@ -2251,7 +2251,7 @@ void GuiMenu::openPerformanceSettingsConfiguration(Window* mWindow, std::string 
 				currentFilterCPU_big = std::string("auto");
 			}
 			cpuclock_big_choices->add(_("AUTO"), "auto", currentFilterCPU_big == "auto");
-			for(std::stringstream ss(getShOutput(R"(awk '{printf "%s ", $1}' /sys/devices/system/cpu/cpufreq/policy4/stats/time_in_state)")); getline(ss, cpuclock_big, ' '); )
+			for(std::stringstream ss(Utils::Platform::getShOutput(R"(awk '{printf "%s ", $1}' /sys/devices/system/cpu/cpufreq/policy4/stats/time_in_state)")); getline(ss, cpuclock_big, ' '); )
 			{
 				bool oc_condition_cpuclock_big=(std::stoi(cpuclock_big)/1000)>1992;
 				cpuclock_big_choices->add(std::to_string(std::stoi(cpuclock_big)/1000) + "MHz" + (oc_condition_cpuclock_big ? " (OC)" : ""), cpuclock_big, currentFilterCPU_big == cpuclock_big);
@@ -2282,7 +2282,7 @@ void GuiMenu::openPerformanceSettingsConfiguration(Window* mWindow, std::string 
 				currentFilterCPU = std::string("auto");
 			}
 			cpuclock_choices->add(_("AUTO"), "auto", currentFilterCPU == "auto");
-			for(std::stringstream ss(getShOutput(R"(awk '{printf "%s ", $1}' /sys/devices/system/cpu/cpufreq/policy0/stats/time_in_state)")); getline(ss, cpuclock, ' '); )
+			for(std::stringstream ss(Utils::Platform::getShOutput(R"(awk '{printf "%s ", $1}' /sys/devices/system/cpu/cpufreq/policy0/stats/time_in_state)")); getline(ss, cpuclock, ' '); )
 			{
 #ifdef RG552
 				bool oc_condition_cpuclock=(std::stoi(cpuclock)/1000)>1512;
@@ -2304,7 +2304,7 @@ void GuiMenu::openPerformanceSettingsConfiguration(Window* mWindow, std::string 
 			currentFilterGPU = std::string("auto");
 		}
 		gpuclock_choices->add(_("AUTO"), "auto", currentFilterGPU == "auto");
-		for(std::stringstream ss(getShOutput(R"(cat /sys/devices/platform/*.gpu/devfreq/*.gpu/available_frequencies | tr ' ' '\n' | sort -n | tr '\n' ' ')")); getline(ss, gpuclock, ' '); )
+		for(std::stringstream ss(Utils::Platform::getShOutput(R"(cat /sys/devices/platform/*.gpu/devfreq/*.gpu/available_frequencies | tr ' ' '\n' | sort -n | tr '\n' ' ')")); getline(ss, gpuclock, ' '); )
 		{
 #ifdef RG552
 			bool oc_condition_gpuclock=(std::stoi(gpuclock)/1000000)>800;
@@ -2325,7 +2325,7 @@ void GuiMenu::openPerformanceSettingsConfiguration(Window* mWindow, std::string 
 			currentFilterRAM = std::string("auto");
 		}
 		ramclock_choices->add(_("AUTO"), "auto", currentFilterRAM == "auto");
-		for(std::stringstream ss(getShOutput(R"(cat /sys/devices/platform/dmc/devfreq/dmc/available_frequencies)")); getline(ss, ramclock, ' '); )
+		for(std::stringstream ss(Utils::Platform::getShOutput(R"(cat /sys/devices/platform/dmc/devfreq/dmc/available_frequencies)")); getline(ss, ramclock, ' '); )
 		{
 #ifdef RG552
 			bool oc_condition_ramclock=(std::stoi(ramclock)/1000000)>856;
