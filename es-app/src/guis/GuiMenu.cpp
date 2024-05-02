@@ -329,35 +329,35 @@ void GuiMenu::openDangerZone(Window* mWindow, std::string configName)
     dangerZone->addEntry(_("BACKUP CONFIGURATIONS"), true, [mWindow] {
     mWindow->pushGui(new GuiMsgBox(mWindow, _("WARNING THIS WILL RESTART EMULATIONSTATION!\n\nAFTER THE SCRIPT IS DONE REMEMBER TO COPY THE FILE /storage/roms/backup/AmberELEC_BACKUP.zip TO SOME PLACE SAFE OR IT WILL BE DELETED ON NEXT REBOOT!\n\nBACKUP CURRENT CONFIG AND RESTART?"), _("YES"),
 				[] {
-				runSystemCommand("systemd-run /usr/bin/emuelec-utils ee_backup backup", "", nullptr);
+				Utils::Platform::ProcessStartInfo("systemd-run /usr/bin/emuelec-utils ee_backup backup").run();
 				}, _("NO"), nullptr));
      });
 
     dangerZone->addEntry(_("BACKUP IDENTITY"), true, [mWindow] {
     mWindow->pushGui(new GuiMsgBox(mWindow, _("THIS SCRIPT WILL BACK UP THE DEVICE AND USER IDENTITY DATA (PASSWORDS, ETC) SO IT CAN BE RESTORED AFTER FLASHING OR RESTORED ON ANOTHER DEVICE. MOVE /storage/roms/backup/identity.tar.gz SOME PLACE SAFE.\n\nBACKUP DEVICE AND USER IDENTITY?"), _("YES"),
 				[] {
-				runSystemCommand("systemd-run /usr/bin/emuelec-utils identity_backup", "", nullptr);
+				Utils::Platform::ProcessStartInfo("systemd-run /usr/bin/emuelec-utils identity_backup").run();
 				}, _("NO"), nullptr));
      });
 
     dangerZone->addEntry(_("RESTORE FROM BACKUP"), true, [mWindow] {
     mWindow->pushGui(new GuiMsgBox(mWindow, _("WARNING THIS WILL RESTART EMULATIONSTATION AND REBOOT!\n\nYOUR EXISTING CONFIGURATION WILL BE OVERWRITTEN!\n\nRESTORE FROM BACKUP AND RESTART?"), _("YES"),
 				[] {
-				runSystemCommand("systemd-run /usr/bin/emuelec-utils ee_backup restore", "", nullptr);
+				Utils::Platform::ProcessStartInfo("systemd-run /usr/bin/emuelec-utils ee_backup restore").run();
 				}, _("NO"), nullptr));
      });
 
     dangerZone->addEntry(_("RESET RETROARCH CONFIG TO DEFAULT"), true, [mWindow] {
     mWindow->pushGui(new GuiMsgBox(mWindow, _("WARNING: RETROARCH CONFIG WILL RESET TO DEFAULT\n\nPER-CORE CONFIGURATIONS WILL NOT BE AFFECTED BUT NO BACKUP WILL BE CREATED!\n\nRESET RETROARCH CONFIG TO DEFAULT?"), _("YES"),
 				[] {
-				runSystemCommand("systemd-run /usr/bin/emuelec-utils clearconfig retroarch", "", nullptr);
+				Utils::Platform::ProcessStartInfo("systemd-run /usr/bin/emuelec-utils clearconfig retroarch").run();
 				}, _("NO"), nullptr));
      });
 
     dangerZone->addEntry(_("FACTORY RESET"), true, [mWindow] {
     mWindow->pushGui(new GuiMsgBox(mWindow, _("WARNING: RESETTING WILL PRESERVE YOUR PASSWORDS AND NETWORK CONFIGURATION HOWEVER YOUR REMAINING DATA AND ALL OTHER CONFIGURATIONS WILL BE RESET TO DEFAULTS!\n\nIF YOU WANT TO KEEP YOUR SETTINGS MAKE A BACKUP AND SAVE IT ON AN EXTERNAL DRIVE BEFORE RUNING THIS OPTION!\n\nRESET SYSTEM AND RESTART?"), _("YES"),
 				[] {
-				runSystemCommand("systemd-run /usr/bin/emuelec-utils clearconfig ALL", "", nullptr);
+				Utils::Platform::ProcessStartInfo("systemd-run /usr/bin/emuelec-utils clearconfig ALL").run();
 				}, _("NO"), nullptr));
      });
 
