@@ -116,6 +116,7 @@ void Settings::setDefaults()
 	mWasChanged = false;
 	mBoolMap.clear();
 	mIntMap.clear();
+
 	mBoolMap["BackgroundJoystickInput"] = false;
 	mBoolMap["ParseGamelistOnly"] = false;
 	mBoolMap["ShowHiddenFiles"] = false;
@@ -147,9 +148,10 @@ void Settings::setDefaults()
 
 	mBoolMap["UseOSK"] = true; // on screen keyboard
 	mBoolMap["DrawClock"] = true;
-	mBoolMap["ClockMode12"] = Settings::_ClockMode12;	
-	mBoolMap["ShowControllerActivity"] = false;
-	mBoolMap["ShowControllerBattery"] = true;
+	mBoolMap["ClockMode12"] = false;	
+	mBoolMap["ShowControllerNotifications"] = true;
+	mBoolMap["ShowControllerActivity"] = false;	
+	mBoolMap["ShowControllerBattery"] = false;	
 	mIntMap["SystemVolume"] = 95;
 	mBoolMap["Overscan"] = false;
 	mStringMap["Language"] = "en_US";
@@ -166,11 +168,7 @@ void Settings::setDefaults()
 
 	mBoolMap["PublicWebAccess"] = false;	
 	mBoolMap["FirstJoystickOnly"] = false;
-#ifdef _ENABLEEMUELEC
-	mBoolMap["EnableSounds"] = true;
-#else
 	mBoolMap["EnableSounds"] = false;
-#endif
 	mBoolMap["ShowHelpPrompts"] = true;
 	mBoolMap["ScrapeRatings"] = true;
 	mBoolMap["ScrapeDescription"] = true;	
@@ -243,11 +241,6 @@ void Settings::setDefaults()
 	mIntMap["ScreenSaverSwapImageTimeout"] = 10000;
 	mBoolMap["SlideshowScreenSaverStretch"] = false;
 	mBoolMap["SlideshowScreenSaverCustomImageSource"] = false;
-#ifdef _ENABLEEMUELEC
-	mStringMap["SlideshowScreenSaverImageDir"] = "/storage/roms/screenshots"; // AmberELEC
-#else
-	mStringMap["SlideshowScreenSaverImageDir"] = "/userdata/screenshots"; // batocera
-#endif
 	mStringMap["SlideshowScreenSaverImageFilter"] = ".png,.jpg";
 	mBoolMap["SlideshowScreenSaverRecurse"] = false;
 	mBoolMap["SlideshowScreenSaverGameName"] = true;
@@ -259,14 +252,8 @@ void Settings::setDefaults()
 	mBoolMap["ShowGunIconOnGames"] = true;
 
 	mBoolMap["SlideshowScreenSaverCustomVideoSource"] = false;
-#ifdef _ENABLEEMUELEC
-	mStringMap["SlideshowScreenSaverVideoDir"] = "/storage/roms/mplayer"; // AmberELEC
-	mStringMap["SlideshowScreenSaverVideoFilter"] = ".mp4,.avi,.mkv,.flv,.mpg,.mov";
-	mBoolMap["SlideshowScreenSaverVideoRecurse"] = true;
-#endif
 	mStringMap["SlideshowScreenSaverVideoFilter"] = ".mp4,.avi";
 	mBoolMap["SlideshowScreenSaverVideoRecurse"] = false;
-
 
 	// This setting only applies to raspberry pi but set it for all platforms so
 	// we don't get a warning if we encounter it on a different platform

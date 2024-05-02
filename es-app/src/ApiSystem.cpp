@@ -114,20 +114,12 @@ unsigned long ApiSystem::getFreeSpaceGB(std::string mountpoint)
 
 std::string ApiSystem::getFreeSpaceUserInfo()
 {
-#ifdef _ENABLEEMUELEC
-	return getFreeSpaceInfo("/storage/roms");
-#else
 	return getFreeSpaceInfo(Paths::getRootPath());
-#endif
 }
 
 std::string ApiSystem::getFreeSpaceSystemInfo()
 {
-#ifdef _ENABLEEMUELEC
-  return getFreeSpaceInfo("/storage");
-#else
 	return getFreeSpaceInfo("/boot");
-#endif
 }
 
 std::string ApiSystem::getFreeSpaceInfo(const std::string mountpoint)
@@ -160,21 +152,12 @@ std::string ApiSystem::getFreeSpaceInfo(const std::string mountpoint)
 
 bool ApiSystem::isFreeSpaceLimit()
 {
-#ifdef _ENABLEEMUELEC
-	return getFreeSpaceGB("/storage/roms") < 2;
-#else
 	return getFreeSpaceGB(Paths::getRootPath()) < 2;
-#endif
 }
 
 std::string ApiSystem::getVersion(bool extra)
 {
 	LOG(LogDebug) << "ApiSystem::getVersion";
-#ifdef _ENABLEEMUELEC
-	std::ifstream ifs("/usr/config/.OS_VERSION");
-#else
-	std::ifstream ifs("/usr/share/batocera/batocera.version");
-#endif
 
 	if (isScriptingSupported(VERSIONINFO)) 
 	{
@@ -247,8 +230,7 @@ std::pair<std::string, int> ApiSystem::updateSystem(const std::function<void(con
 	char line[1024] = "";
 	FILE *flog = fopen("/tmp/logs/amberelec-upgrade.log", "w");
 	while (fgets(line, 1024, pipe))
-	{
-	
+	{	
 		strtok(line, "\n");
 		if (flog != nullptr)
 			fprintf(flog, "%s\n", line);
@@ -1546,7 +1528,7 @@ bool ApiSystem::isScriptingSupported(ScriptId script)
 		break;
 	case ApiSystem::UPGRADE:
 #ifdef _ENABLEEMUELEC
-        executables.push_back("emuelec-upgrade");
+        executables.push_back("amberelec-upgrade");
 #else
         executables.push_back("batocera-upgrade");
 #endif

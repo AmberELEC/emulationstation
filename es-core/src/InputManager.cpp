@@ -587,6 +587,16 @@ bool InputManager::parseEvent(const SDL_Event& ev, Window* window)
 		if (ev.key.repeat)
 			return false;
 
+#if !WIN32
+		if (ev.key.keysym.sym == SDLK_F4)
+		{
+			SDL_Event* quit = new SDL_Event();
+			quit->type = SDL_QUIT;
+			SDL_PushEvent(quit);
+			return false;
+		}
+#endif
+
 		window->input(getInputConfigByDevice(DEVICE_KEYBOARD), Input(DEVICE_KEYBOARD, TYPE_KEY, ev.key.keysym.sym, 1, false));
 		return true;
 
@@ -913,6 +923,7 @@ void InputManager::loadDefaultKBConfig()
 	cfg->mapInput(BUTTON_BACK, Input(DEVICE_KEYBOARD, TYPE_KEY, SDLK_ESCAPE, 1, true));
 	cfg->mapInput("start", Input(DEVICE_KEYBOARD, TYPE_KEY, SDLK_F1, 1, true));
 	cfg->mapInput("select", Input(DEVICE_KEYBOARD, TYPE_KEY, SDLK_F2, 1, true));
+
 	cfg->mapInput("leftshoulder", Input(DEVICE_KEYBOARD, TYPE_KEY, SDLK_RIGHTBRACKET, 1, true));
 	cfg->mapInput("rightshoulder", Input(DEVICE_KEYBOARD, TYPE_KEY, SDLK_LEFTBRACKET, 1, true));
 }
@@ -1046,11 +1057,7 @@ std::string InputManager::getConfigPath()
 
 std::string InputManager::getTemporaryConfigPath()
 {
-#ifdef _ENABLEEMUELEC
-	return Paths::getUserEmulationStationPath() + "/es_temporaryinput.cfg";
-#else
 	return Paths::getUserEmulationStationPath() + "/es_last_input.cfg";
-#endif
 }
 
 bool InputManager::initialized() const

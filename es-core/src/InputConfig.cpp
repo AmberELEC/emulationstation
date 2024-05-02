@@ -225,16 +225,18 @@ bool InputConfig::isMappedTo(const std::string& name, Input input, bool reversed
 
 bool InputConfig::isMappedLike(const std::string& name, Input input)
 {
-	if(name == "left")
-	{
-	  return isMappedTo("left", input) || isMappedTo("leftanalogleft", input) || isMappedTo("rightanalogleft", input);
-	}else if(name == "right"){
-	  return isMappedTo("right", input) || isMappedTo("leftanalogright", input) || isMappedTo("rightanalogright", input);
-	}else if(name == "up"){
-	  return isMappedTo("up", input) || isMappedTo("leftanalogup", input) || isMappedTo("rightanalogup", input);
-	}else if(name == "down"){
-	  return isMappedTo("down", input) || isMappedTo("leftanalogdown", input) || isMappedTo("rightanalogdown", input);
-	}
+	if (name == "left")
+		return isMappedTo("left", input) || isMappedTo("leftanalogleft", input) || isMappedTo("rightanalogleft", input);
+
+	if (name == "right")
+		return isMappedTo("right", input) || isMappedTo("leftanalogright", input) || isMappedTo("rightanalogright", input);
+
+	if (name == "up")
+		return isMappedTo("up", input) || isMappedTo("leftanalogup", input) || isMappedTo("rightanalogup", input);
+
+	if (name == "down")
+		return isMappedTo("down", input) || isMappedTo("leftanalogdown", input) || isMappedTo("rightanalogdown", input);
+
 	return isMappedTo(name, input);
 }
 
@@ -402,12 +404,6 @@ void InputConfig::AssignActionButtons()
 	BUTTON_OK = invertButtons ? ABUTTON : BBUTTON;
 	BUTTON_BACK = invertButtons ? BBUTTON : ABUTTON;
 #endif
-
-#ifdef _ENABLEEMUELEC
-	BUTTON_OK = invertButtons ? BBUTTON : ABUTTON;
-	BUTTON_BACK = invertButtons ? ABUTTON : BBUTTON;
-#endif
-
 }
 
 std::string InputConfig::getSortDevicePath()

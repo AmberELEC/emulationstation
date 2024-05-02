@@ -12,10 +12,6 @@
 #include "ThemeData.h"
 #include "Paths.h"
 
-#ifdef _ENABLEEMUELEC
-#include "utils/Platform.h"
-#endif
-
 #ifdef WIN32
 #include <time.h>
 #else
@@ -111,11 +107,6 @@ void AudioManager::deinit()
 
 	Mix_HookMusicFinished(nullptr);
 	Mix_HaltMusic();
-
-#ifdef _ENABLEEMUELEC	
-	LOG(LogInfo) << "Attempting to close SDL AUDIO";
-    Utils::Platform::ProcessStartInfo("/usr/bin/emuelec-utils audio alsa").run();	
-#endif
 
 	//completely tear down SDL audio. else SDL hogs audio resources and emulators might fail to start...
 	Mix_CloseAudio();

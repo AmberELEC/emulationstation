@@ -27,9 +27,7 @@ public:
 
 	  	mReady   = 0;
 		mMute    = 0;
-
-		std::string volume = SystemConf::getInstance()->get("audio.volume");
-		mVolume = !volume.empty() ? Utils::String::toInteger(volume) : 100;
+		mVolume  = 100;
 
 		mThread = new std::thread(&PulseAudioControl::run, this);
 		WaitEvent();

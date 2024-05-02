@@ -316,16 +316,29 @@ bool GuiTextEditPopupKeyboard::input(InputConfig* config, Input input)
 
 	// For deleting a chara (Left Top Button)
 	if (config->isMappedTo("leftshoulder", input) && input.value) {
+		bool editing = mText->isEditing();
+		if (!editing)
 		mText->startEditing();
+
 		mText->textInput("\b");
+
+		if (!editing)
 		mText->stopEditing();
 	}
 
 	// For Adding a space (Right Top Button)
-	if (config->isMappedTo("rightshoulder", input) && input.value) {
+	if (config->isMappedTo("rightshoulder", input) && input.value) 
+	{
+		bool editing = mText->isEditing();
+		if (!editing)
 		mText->startEditing();
+
 		mText->textInput(" ");
+
+		if (!editing)
+			mText->stopEditing();
 	}
+
 	// For Shifting (Y)
 	if (config->isMappedTo("y", input) && input.value) 
 		shiftKeys();

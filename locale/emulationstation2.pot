@@ -3264,19 +3264,19 @@ msgstr ""
 msgid "ALREADY TAKEN"
 msgstr ""
 
-msgid "DANGER ZONE!"
+msgid "WELCOME"
 msgstr ""
 
-msgid "You are about to set EmuELEC resolution to"
+#, c-format
+msgid "%i GAMEPAD DETECTED"
+msgid_plural "%i GAMEPADS DETECTED"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "NO GAMEPADS DETECTED"
 msgstr ""
 
-msgid "Emulationstation will restart"
-msgstr ""
-
-msgid "AUDIO DEVICE"
-msgstr ""
-
-msgid "ENABLE SSH"
+msgid "HOLD A BUTTON ON YOUR DEVICE TO CONFIGURE IT."
 msgstr ""
 
 msgid "PRESS ESC TO CANCEL."
@@ -3286,48 +3286,39 @@ msgid "PRESS ESC OR A HOTKEY TO CANCEL."
 msgstr ""
 
 msgid "DISCARD CHANGES"
-
-
-msgid "START AT BOOT"
 msgstr ""
 
-msgid "ENABLE RA BEZELS"
+msgid "up/down"
 msgstr ""
 
-msgid "ENABLE RA SPLASH"
+msgid "accept"
 msgstr ""
 
-msgid "ALWAYS SHOW BOOT VIDEO"
+msgid "SELECT ALL"
 msgstr ""
 
-msgid ""
-"WARNING THIS WILL RESTART EMULATIONSTATION!\n\n"
-"AFTER THE SCRIPT IS DONE REMEMBER TO COPY THE FILE /storage/downloads/ee_backup_config.zip TO SOME PLACE SAFE OR IT WILL BE DELETED ON NEXT REBOOT!\n\n"
-"BACKUP CURRENT CONFIG AND RESTART?"
+msgid "select all"
 msgstr ""
 
-msgid "BACKUP EMUELEC CONFIGS"
+msgid "SELECT NONE"
 msgstr ""
 
-msgid ""
-"WARNING: SYSTEM WILL RESET SCRIPTS AND BINARIES !\n"
-"UPDATE, DOWNLOADS, THEMES, BLUETOOTH PAIRINGS AND ROMS FOLDER WILL NOT BE AFFECTED.\n\n"
-"RESET SCRIPTS AND BINARIES TO DEFAULT AND RESTART?"
+msgid "select none"
 msgstr ""
 
-msgid "RESET EMUELEC SCRIPTS AND BINARIES TO DEFAULT"
+#, c-format
+msgid "%i SELECTED"
+msgid_plural "%i SELECTED"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "CHANGE"
 msgstr ""
 
-msgid ""
-"WARNING: ALL CONFIGURATIONS WILL BE RESET AND NO BACKUP WILL BE CREATED!\n\n"
-"IF YOU WANT TO KEEP YOUR SETTINGS MAKE A BACKUP AND SAVE IT ON AN EXTERNAL DRIVE BEFORE RUNING THIS OPTION!\n\n"
-"RESET SYSTEM TO DEFAULT CONFIG AND RESTART?"
+msgid "MOVE CURSOR"
 msgstr ""
 
-msgid "RESET SYSTEM TO DEFAULT CONFIG"
-msgstr ""
-
-msgid "You are about to set EmuELEC Language to:"
+msgid "EDIT"
 msgstr ""
 
 msgid "ENABLED"
@@ -3364,14 +3355,11 @@ msgid_plural "%d days ago"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "RESTART EMULATIONSTATION"
-msgstr ""
-
-msgid "REALLY RESTART EMULATIONSTATION?"
-msgstr ""
-
-msgid "REALLY START RETROARCH?"
-msgstr ""
+#, c-format
+msgid "%d hour ago"
+msgid_plural "%d hours ago"
+msgstr[0] ""
+msgstr[1] ""
 
 #, c-format
 msgid "%d minute ago"
@@ -3385,17 +3373,8 @@ msgid_plural "%d seconds ago"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "START RETROARCH"
-msgstr ""
-
-msgid "REALLY REBOOT FROM NAND?"
-msgstr ""
-
 msgid "SCREEN READER ENABLED"
 msgstr ""
 
 msgid "SCREEN READER DISABLED"
-msgstr ""
-
-msgid "REBOOT FROM NAND"
 msgstr ""

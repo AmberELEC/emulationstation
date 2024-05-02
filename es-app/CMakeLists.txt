@@ -28,8 +28,6 @@ set(ES_HEADERS
 	${CMAKE_CURRENT_SOURCE_DIR}/src/SaveStateRepository.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/SaveStateConfigFile.h    
 	${CMAKE_CURRENT_SOURCE_DIR}/src/CustomFeatures.h
-# EmuELEC
-	${CMAKE_CURRENT_SOURCE_DIR}/src/CloudSaves.h
 
     # GuiComponents    
     ${CMAKE_CURRENT_SOURCE_DIR}/src/components/ScraperSearchComponent.h    
@@ -135,8 +133,6 @@ set(ES_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/src/SaveStateRepository.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/SaveStateConfigFile.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/CustomFeatures.cpp	
-# EmuELEC	
-	${CMAKE_CURRENT_SOURCE_DIR}/src/CloudSaves.cpp
 
     # GuiComponents    
     ${CMAKE_CURRENT_SOURCE_DIR}/src/components/ScraperSearchComponent.cpp	

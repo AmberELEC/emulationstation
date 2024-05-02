@@ -21,7 +21,7 @@
 #elif RETROBAT
 #define SCREENSCRAPER_SOFTNAME			"Retrobat-Emulationstation"
 #elif _ENABLEEMUELEC
-#define SCREENSCRAPER_SOFTNAME			"EmuELEC-Emulationstation"
+#define SCREENSCRAPER_SOFTNAME			"AmberELEC-Emulationstation"
 #else
 #define SCREENSCRAPER_SOFTNAME			"Emulationstation"
 #endif

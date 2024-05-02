@@ -391,7 +391,7 @@ msgstr "PLACAR"
 msgid "Compete in high-score and best time leaderboards (requires hardcore)."
 msgstr ""
 "Competir em tabelas de classificação de pontuação alta e melhor tempo "
-"(requer modo restrito esteja ativo)."
+"(requer modo hardcore ativo)."
 
 msgid "VERBOSE MODE"
 msgstr "MODO DETALHADO"
@@ -2128,7 +2128,8 @@ msgid "INSTANT"
 msgstr "INSTANTÂNEO"
 
 msgid "Reduces power consumption when idle (useful for handhelds)."
-msgstr "Reduz o consumo de energia quando parado (útil para aparelhos portáteis)."
+msgstr ""
+"Reduz o consumo de energia quando parado (útil para aparelhos portáteis)."
 
 msgid "SCREEN READER (TEXT TO SPEECH)"
 msgstr "LEITOR DE ECRÃ (TEXTO PARA VOZ)"
