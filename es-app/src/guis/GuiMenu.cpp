@@ -2694,7 +2694,7 @@ void GuiMenu::openGamesSettings()
 	filters_choices->add(_("AUTO"), "auto", currentFilter.empty() || currentFilter == "auto");
 	filters_choices->add(_("NONE"), "none", currentFilter == "none");
 	std::string filterList;
-	for(std::stringstream ss(getShOutput(R"(/usr/bin/emuelec-utils getfilters)")); getline(ss, filterList, ','); )
+	for(std::stringstream ss(Utils::Platform::getShOutput(R"(/usr/bin/emuelec-utils getfilters)")); getline(ss, filterList, ','); )
 		filters_choices->add(filterList, filterList, currentFilter == filterList); // emuelec
 	s->addWithLabel(_("FILTER SET"), filters_choices);
 	s->addSaveFunc([filters_choices] { SystemConf::getInstance()->set("global.filterset", filters_choices->getSelected()); });
@@ -4907,24 +4907,19 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
 	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::SHADERS) &&
 		systemData->isFeatureSupported(currentEmulator, currentCore, EmulatorFeatures::shaders))
 	{
-		auto installedShaders = ApiSystem::getInstance()->getShaderList(systemData->getName(), currentEmulator, currentCore);
-		if (installedShaders.size() > 0)
-		{
-			std::string currentShader = SystemConf::getInstance()->get(configName + ".shaderset");
-
-			auto shaders_choices = std::make_shared<OptionListComponent<std::string> >(mWindow, _("SHADER SET"), false);
-			shaders_choices->add(_("AUTO"), "auto", currentShader.empty() || currentShader == "auto");
-			shaders_choices->add(_("NONE"), "none", currentShader == "none");
-
-			for (auto shader : installedShaders)
-				shaders_choices->add(_(Utils::String::toUpper(shader).c_str()), shader, currentShader == shader);
-
-			if (!shaders_choices->hasSelection())
-				shaders_choices->selectFirstItem();
-
-			systemConfiguration->addWithLabel(_("SHADER SET"), shaders_choices);
-			systemConfiguration->addSaveFunc([configName, shaders_choices] { SystemConf::getInstance()->set(configName + ".shaderset", shaders_choices->getSelected()); });
+        std::string a;
+		auto shaders_choices = std::make_shared<OptionListComponent<std::string> >(mWindow, _("SHADER SET"),false);
+		std::string currentShader = SystemConf::getInstance()->get(configName + ".shaderset");
+		if (currentShader.empty()) {
+			currentShader = std::string("auto");
 		}
+
+		shaders_choices->add(_("AUTO"), "auto", currentShader == "auto");
+		shaders_choices->add(_("NONE"), "none", currentShader == "none");
+		for(std::stringstream ss(Utils::Platform::getShOutput(R"(/usr/bin/emuelec-utils getshaders)")); getline(ss, a, ','); )
+		shaders_choices->add(a, a, currentShader == a); // emuelec
+		systemConfiguration->addWithLabel(_("SHADER SET"), shaders_choices);
+		systemConfiguration->addSaveFunc([shaders_choices, configName] { SystemConf::getInstance()->set(configName + ".shaderset", shaders_choices->getSelected()); });
 	}
 
 	// Filters preset
@@ -4940,7 +4935,7 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
 
 		filters_choices->add(_("AUTO"), "auto", currentFilter == "auto");
 		filters_choices->add(_("NONE"), "none", currentFilter == "none");
-		for(std::stringstream ss(getShOutput(R"(/usr/bin/emuelec-utils getfilters)")); getline(ss, a, ','); )
+		for(std::stringstream ss(Utils::Platform::getShOutput(R"(/usr/bin/emuelec-utils getfilters)")); getline(ss, a, ','); )
 		filters_choices->add(a, a, currentFilter == a); // emuelec
 		systemConfiguration->addWithLabel(_("FILTER SET"), filters_choices);
 		systemConfiguration->addSaveFunc([filters_choices, configName] { SystemConf::getInstance()->set(configName + ".filterset", filters_choices->getSelected()); });
