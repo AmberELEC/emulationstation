@@ -3124,7 +3124,8 @@ void GuiMenu::addFeatureItem(Window* window, GuiSettings* settings, const Custom
 	}
 	else
 	{
-		item->add(_("AUTO"), "", storedValue.empty() || storedValue == "auto");
+		if (feat.value != "GB_Colorization" && feat.value != "Internal_Palette" && feat.value != "TWB64_-_Pack_1" && feat.value != "TWB64_-_Pack_2" && feat.value != "TWB64_-_Pack_3" && feat.value != "PixelShift_-_Pack_1")
+			item->add(_("AUTO"), "", storedValue.empty() || storedValue == "auto");
 
 		for (auto fval : feat.choices)
 			item->add(pgettext("game_options", fval.name.c_str()), fval.value, storedValue == fval.value);
