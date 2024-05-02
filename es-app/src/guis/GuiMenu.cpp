@@ -8,7 +8,6 @@
 #include "guis/GuiGeneralScreensaverOptions.h"
 #include "guis/GuiMsgBox.h"
 #include "guis/GuiScraperStart.h"
-#include "guis/GuiPackageInstaller.h" //AmberELEC
 #include "guis/GuiDecorationOptions.h" //AmberELEC
 #include "guis/GuiHashStart.h"
 #include "guis/GuiThemeInstaller.h"
