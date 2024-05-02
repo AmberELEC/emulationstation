@@ -5463,163 +5463,6 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
 
 	auto customFeatures = systemData->getCustomFeatures(currentEmulator, currentCore);
 
-#ifdef _ENABLEEMUELEC
-		// Conf gptokeyb.
-		if (systemData->isFeatureSupported(currentEmulator, currentCore, EmulatorFeatures::gptokeyb) || currentEmulator == "ports")
-		{
-			auto emuelec_virtual_kb = std::make_shared< OptionListComponent<std::string> >(mWindow, "Virtual Keyboard", false);
-			std::vector<std::string> virtual_kb;
-
-			std::string def_vkb;
-			for(std::stringstream ss(Utils::Platform::getShOutput(R"(/usr/bin/emuelec-utils get_filenames_no_ext /emuelec/configs/gptokeyb)")); getline(ss, def_vkb, ','); ) {
-				if (!std::count(virtual_kb.begin(), virtual_kb.end(), def_vkb)) {
-					 virtual_kb.push_back(def_vkb);
-				}
-			}
-
-			std::string index = SystemConf::getInstance()->get(configName + ".gptokeyb");
-			if (index.empty())
-				index = "auto";
-
-			emuelec_virtual_kb->add(_("AUTO"), "auto", index == "auto");
-			for (auto it = virtual_kb.cbegin(); it != virtual_kb.cend(); it++) {
-				emuelec_virtual_kb->add(*it, *it, index == *it);
-			}
-
-			systemConfiguration->addWithLabel(_("VIRTUAL KEYBOARD"), emuelec_virtual_kb);
-
-			systemConfiguration->addSaveFunc([mWindow, configName, emuelec_virtual_kb] {
-				std::string vkb_choice = emuelec_virtual_kb->getSelected();
-
-				if (vkb_choice == "auto")
-					vkb_choice = "";
-
-				SystemConf::getInstance()->set(configName + ".gptokeyb", vkb_choice);
-			});
-		}
-#endif
-
-#ifdef _ENABLEEMUELEC
-	// NATIVE VIDEO.
-
-	if (systemData->isFeatureSupported(currentEmulator, currentCore, EmulatorFeatures::nativevideo))
-	{
-		auto videoNativeResolutionMode_choice = createNativeVideoResolutionModeOptionList(mWindow, configName);
-		systemConfiguration->addWithLabel(_("NATIVE VIDEO"), videoNativeResolutionMode_choice);
-
-		const std::function<void()> video_changed([mWindow, configName, videoNativeResolutionMode_choice] {
-
-			std::string def_video;
-			std::string video_choice = videoNativeResolutionMode_choice->getSelected();
-			bool safe_video = false;
-
-			if (video_choice == "auto")
-				safe_video = true;
-			else {
-				for(std::stringstream ss(Utils::Platform::getShOutput(R"(/usr/bin/emuelec-utils resolutions)")); getline(ss, def_video, ','); ) {
-					if (video_choice == def_video) {
-						safe_video = true;
-						break;
-					}
-				}
-			}
-
-			const std::function<void()> saveFunc([configName, videoNativeResolutionMode_choice] {
-				SystemConf::getInstance()->set(configName + ".nativevideo", videoNativeResolutionMode_choice->getSelected());
-				SystemConf::getInstance()->saveSystemConf();
-			});
-
-			const std::function<void()> abortFunc([configName, videoNativeResolutionMode_choice] {
-				videoNativeResolutionMode_choice->selectFirstItem();
-				SystemConf::getInstance()->set(configName + ".nativevideo", "");
-				SystemConf::getInstance()->saveSystemConf();
-			});
-
-			if (!safe_video) {
-				mWindow->pushGui(new GuiMsgBox(mWindow,  video_choice + _(" UNSAFE RESOLUTION DETECTED, CONTINUE?"),
-					_("YES"), saveFunc, _("NO"), abortFunc));
-			}
-			else {
-				saveFunc();
-			}
-		});
-
-		systemConfiguration->addSaveFunc([mWindow, video_changed] {
-			video_changed();
-		});
-	}
-#endif
-
-#ifdef _ENABLEEMUELEC
-	// JOY BUTTON REMAP.
-
-	std::string tEmulator = fileData != nullptr ? fileData->getEmulator(true) : systemData->getEmulator(true);
-	if (tEmulator == "auto")
-		tEmulator = systemData->getEmulator(true);
-	if (!tEmulator.empty() && systemData->isFeatureSupported(tEmulator, currentCore, EmulatorFeatures::joybtnremap))
-	{
-		[&] {
-			std::string prefixName = tEmulator;
-			if (SystemConf::getInstance()->get(prefixName + ".joy_btn_defaults").empty())
-				SystemConf::getInstance()->set(prefixName + ".joy_btn_defaults", "B button (S),A button (E),Y button (W),X button (N),L1 button,R1 button,L2 button,R2 button");
-			if (SystemConf::getInstance()->get(prefixName + ".joy_btn_button_names").empty())
-				SystemConf::getInstance()->set(prefixName + ".joy_btn_button_names" , "Button1,Button2,Button3,Button4,Button5,Button6,Button7,Button8" );
-			if (SystemConf::getInstance()->get(prefixName + ".joy_btn_button_names.mk").empty())
-				SystemConf::getInstance()->set(prefixName + ".joy_btn_button_names.mk" , "HK,B1,LP,HP,LK,B2,L2,R2" );
-			if (SystemConf::getInstance()->get(prefixName + ".joy_btn_button_names.sf").empty())
-				SystemConf::getInstance()->set(prefixName + ".joy_btn_button_names.sf" , "MP,HP,FK,MK,FP,HK,L2,R2" );
-			if (SystemConf::getInstance()->get(prefixName + ".joy_btn_remap_names").empty())
-				SystemConf::getInstance()->set(prefixName + ".joy_btn_remap_names", "mk,sf" );
-			if (SystemConf::getInstance()->get(prefixName + ".joy_btn_order.mk").empty())
-				SystemConf::getInstance()->set(prefixName + ".joy_btn_order.mk", "2 4 3 0 1 5 6 7" );
-			if (SystemConf::getInstance()->get(prefixName + ".joy_btn_order.sf").empty())
-				SystemConf::getInstance()->set(prefixName + ".joy_btn_order.sf", "2 3 4 0 1 5 6 7" );
-
-			std::string remapName = SystemConf::getInstance()->get(configName + ".joy_btn_index");
-			std::string btnNames = SystemConf::getInstance()->get(prefixName + ".joy_btn_remap_names");
-			std::vector<std::string> btn_names(explode(btnNames));
-			int btnId = -1;
-			if (!remapName.empty()) {
-				for (int i = 0; i < btn_names.size(); ++i) {
-					if (remapName == btn_names[i])
-					{
-						btnId = i;
-						break;
-					}
-				}
-			}
-
-			btn_choice = createJoyBtnOptionList(mWindow, prefixName, _("BUTTON REMAP"), btnId);
-			edit_choice = createJoyBtnOptionList(mWindow, prefixName, _("EDIT REMAP"));
-			del_choice = createJoyBtnOptionList(mWindow, prefixName, _("DELETE REMAP"));
-
-			systemConfiguration->addWithLabel(_("BUTTON REMAP"), btn_choice);
-			systemConfiguration->addWithLabel(_("EDIT REMAP"), edit_choice);
-			systemConfiguration->addWithLabel(_("DELETE REMAP"), del_choice);
-
-			systemConfiguration->addSaveFunc([btn_choice, configName, prefixName] {
-				std::string remapName = btn_choice->getSelectedName();
-				if (remapName == "NONE")
-					remapName = "";
-				SystemConf::getInstance()->set(configName + ".joy_btn_index", remapName);
-			});
-
-			GuiMenu::editJoyBtnRemapOptionList(mWindow, systemConfiguration, prefixName);
-			GuiMenu::createBtnJoyCfgName(mWindow, systemConfiguration, prefixName);
-			GuiMenu::deleteBtnJoyCfg(mWindow, systemConfiguration, prefixName);
-		}();
-	}
-#endif
-
-#ifdef _ENABLEEMUELEC
- // PR - HLE BIOS.
-
-	if (systemData->isFeatureSupported(currentEmulator, currentCore, EmulatorFeatures::hlebios))
-	{
-		systemConfiguration->addSwitch(_("Use HLE BIOS"), configName + ".hlebios", false);
-	}
-#endif
-
 	// Screen ratio choice
 	if (systemData->isFeatureSupported(currentEmulator, currentCore, EmulatorFeatures::ratio))
 	{
@@ -5663,20 +5506,6 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
 		systemConfiguration->addSaveFunc([configName, autosave_enabled] { SystemConf::getInstance()->set(configName + ".autosave", autosave_enabled->getSelected()); });
 	}
 #ifdef _ENABLEEMUELEC
-	if (systemData->isFeatureSupported(currentEmulator, currentCore, EmulatorFeatures::cloudsave))
-	{
-		auto enable_cloudsave = std::make_shared<SwitchComponent>(mWindow);
-		bool cloudSaveEnabled = SystemConf::getInstance()->get(configName + ".cloudsave") == "1";
-		enable_cloudsave->setState(cloudSaveEnabled);
-		systemConfiguration->addWithLabel(_("ENABLE CLOUD SAVE"), enable_cloudsave);
-
-		systemConfiguration->addSaveFunc([enable_cloudsave, mWindow, configName] {
-			bool cloudSaveEnabled = enable_cloudsave->getState();
-			SystemConf::getInstance()->set(configName + ".cloudsave", cloudSaveEnabled ? "1" : "0");
-			SystemConf::getInstance()->saveSystemConf();
-		});
-	}
-
 	// Shaders preset
 	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::SHADERS) &&
 		systemData->isFeatureSupported(currentEmulator, currentCore, EmulatorFeatures::shaders))
@@ -5706,20 +5535,6 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
 		systemConfiguration->addSaveFunc([configName, rgascale_enabled] { SystemConf::getInstance()->set(configName + ".rgascale", rgascale_enabled->getSelected()); });
 #endif
 
-	// Vertical Game
-	if (systemData->isFeatureSupported(currentEmulator, currentCore, EmulatorFeatures::vertical))
-	{
-		auto vertical_enabled = std::make_shared<OptionListComponent<std::string>>(mWindow, _("ENABLE VERTICAL"));
-		vertical_enabled->add(_("OFF"), "auto", SystemConf::getInstance()->get(configName + ".vertical") != "1");
-		vertical_enabled->add(_("ON"), "1", SystemConf::getInstance()->get(configName + ".vertical") == "1");
-		systemConfiguration->addWithLabel(_("ENABLE VERTICAL"), vertical_enabled);
-		systemConfiguration->addSaveFunc([configName, vertical_enabled] { SystemConf::getInstance()->set(configName + ".vertical", vertical_enabled->getSelected()); });
-
-        auto vert_aspect_enabled = std::make_shared<OptionListComponent<std::string>>(mWindow, _("VERTICAL ASPECT RATIO"));
-		vert_aspect_enabled->addRange({ { _("16:9") , "1" }, { _("3:2") , "7" }, { _("21:9"), "4" }, { _("4:3") , "0" } }, SystemConf::getInstance()->get(configName + ".vert_aspect"));
-		systemConfiguration->addWithLabel(_("VERTICAL ASPECT RATIO"), vert_aspect_enabled);
-		systemConfiguration->addSaveFunc([configName, vert_aspect_enabled] { SystemConf::getInstance()->set(configName + ".vert_aspect", vert_aspect_enabled->getSelected()); });
-	}
 #else
 
 	// Shaders preset
