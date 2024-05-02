@@ -4283,41 +4283,11 @@ void GuiMenu::openQuitMenu_static(Window *window, bool quickAccessMenu, bool ani
 	s->addEntry(_("RESTART EMULATIONSTATION"), false, [window] {
 		window->pushGui(new GuiMsgBox(window, _("REALLY RESTART EMULATIONSTATION?"), _("YES"),
 			[] {
-    		   /*Utils::Platform::ProcessStartInfo("systemctl restart emustation.service", "", nullptr);*/
     		   Scripting::fireEvent("quit", "restart");
 			   Utils::Platform::quitES(Utils::Platform::QuitMode::QUIT);
 		}, _("NO"), nullptr));
 	}, "iconRestart");
-
-	bool isFullUI = UIModeController::getInstance()->isUIModeFull();
-	if (isFullUI)
-	{
-		s->addEntry(_("START RETROARCH"), false, [window] {
-			window->pushGui(new GuiMsgBox(window, _("REALLY START RETROARCH?"), _("YES"),
-				[] {
-				remove("/var/lock/start.games");
-				Utils::Platform::ProcessStartInfo("touch /var/lock/start.retro").run();
-				Utils::Platform::ProcessStartInfo("systemctl start retroarch.service").run();
-				Scripting::fireEvent("quit", "retroarch");
-				Utils::Platform::quitES(Utils::Platform::QuitMode::QUIT);
-			}, _("NO"), nullptr));
-		}, "iconControllers");
-
-		s->addEntry(_("REBOOT FROM NAND"), false, [window] {
-			window->pushGui(new GuiMsgBox(window, _("REALLY REBOOT FROM NAND?"), _("YES"),
-				[] {
-				Scripting::fireEvent("quit", "nand");
-				Utils::Platform::ProcessStartInfo("rebootfromnand").run();
-				Utils::Platform::ProcessStartInfo("sync").run();
-				Utils::Platform::ProcessStartInfo("systemctl reboot").run();
-				Utils::Platform::quitES(Utils::Platform::QuitMode::QUIT);
-			}, _("NO"), nullptr));
-		}, "iconAdvanced");
-	}
 #endif
-
-	if (quickAccessMenu)
-		s->addGroup(_("QUIT"));
 
 	s->addEntry(_("RESTART SYSTEM"), false, [window] {
 		window->pushGui(new GuiMsgBox(window, _("REALLY RESTART?"),
@@ -4325,14 +4295,6 @@ void GuiMenu::openQuitMenu_static(Window *window, bool quickAccessMenu, bool ani
 			_("NO"), nullptr));
 	}, "iconRestart");
 
-	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::SUSPEND))
-	{
-		s->addEntry(_("SUSPEND SYSTEM"), false, [window, s] {
-			window->pushGui(new GuiMsgBox(window, _("REALLY SUSPEND ?"),
-				_("YES"), [s] { s->close(); ApiSystem::getInstance()->suspend(); },
-				_("NO"), nullptr));
-		}, "iconFastShutdown");
-	}
 
 	s->addEntry(_("SHUTDOWN SYSTEM"), false, [window] {
 		window->pushGui(new GuiMsgBox(window, _("REALLY SHUTDOWN?"),
