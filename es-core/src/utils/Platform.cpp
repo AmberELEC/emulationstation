@@ -178,6 +178,8 @@ namespace Utils
 		{
 #ifdef WIN32 // windows
 			return system("shutdown -s -t 0");
+#elif defined (_ENABLEAMBERELEC)
+			return system("show_splash.sh ; sync ; systemctl poweroff");
 #else // osx / linux	
 			return system("shutdown -h now");
 #endif
@@ -187,6 +189,8 @@ namespace Utils
 		{
 #ifdef WIN32 // windows	
 			return system("shutdown -r -t 0");
+#elif defined (_ENABLEAMBERELEC)
+			return system("show_splash.sh ; sync ; systemctl reboot");
 #else // osx / linux	
 			return system("shutdown -r now");
 #endif
