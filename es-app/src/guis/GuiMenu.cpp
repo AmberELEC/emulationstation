@@ -4753,6 +4753,89 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable)
 	s->addInputTextRow(_("HOSTNAME"), "system.hostname", false);
 #endif
 
+       auto sshd_enabled = std::make_shared<SwitchComponent>(mWindow);
+		bool sshbaseEnabled = SystemConf::getInstance()->get("ee_ssh.enabled") == "1";
+		sshd_enabled->setState(sshbaseEnabled);
+		s->addWithLabel(_("ENABLE SSH"), sshd_enabled);
+		sshd_enabled->setOnChangedCallback([sshd_enabled] {
+			if (sshd_enabled->getState() == false) {
+				Utils::Platform::ProcessStartInfo("systemctl stop sshd").run()
+				Utils::Platform::ProcessStartInfo("systemctl disable sshd").run()
+				Utils::Platform::ProcessStartInfo("rm /storage/.cache/services/sshd.conf").run()
+			} else {
+				Utils::Platform::ProcessStartInfo("mkdir -p /storage/.cache/services/").run()
+				Utils::Platform::ProcessStartInfo("touch /storage/.cache/services/sshd.conf").run()
+				Utils::Platform::ProcessStartInfo("systemctl enable sshd").run()
+				Utils::Platform::ProcessStartInfo("systemctl start sshd").run()
+			}
+		bool sshenabled = sshd_enabled->getState();
+		SystemConf::getInstance()->set("ee_ssh.enabled", sshenabled ? "1" : "0");
+				SystemConf::getInstance()->saveSystemConf();
+		});
+
+       auto samba_enabled = std::make_shared<SwitchComponent>(mWindow);
+		bool smbbaseEnabled = SystemConf::getInstance()->get("ee_samba.enabled") == "1";
+		samba_enabled->setState(smbbaseEnabled);
+		s->addWithLabel(_("ENABLE SAMBA"), samba_enabled);
+		samba_enabled->setOnChangedCallback([samba_enabled] {
+			if (samba_enabled->getState() == false) {
+				Utils::Platform::ProcessStartInfo("systemctl stop nmbd").run()
+				Utils::Platform::ProcessStartInfo("systemctl disable nmbd").run()
+				Utils::Platform::ProcessStartInfo("systemctl stop smbd").run()
+				Utils::Platform::ProcessStartInfo("systemctl disable smbd").run()
+				Utils::Platform::ProcessStartInfo("rm /storage/.cache/services/smb.conf").run()
+			} else {
+				Utils::Platform::ProcessStartInfo("mkdir -p /storage/.cache/services/").run()
+				Utils::Platform::ProcessStartInfo("touch /storage/.cache/services/smb.conf").run()
+				Utils::Platform::ProcessStartInfo("systemctl enable nmbd").run()
+				Utils::Platform::ProcessStartInfo("systemctl start nmbd").run()
+				Utils::Platform::ProcessStartInfo("systemctl enable smbd").run()
+				Utils::Platform::ProcessStartInfo("systemctl start smbd").run()
+			}
+		bool sambaenabled = samba_enabled->getState();
+		SystemConf::getInstance()->set("ee_samba.enabled", sambaenabled ? "1" : "0");
+				SystemConf::getInstance()->saveSystemConf();
+		});
+
+       auto syncthing_enabled = std::make_shared<SwitchComponent>(mWindow);
+                bool syncthingEnabled = SystemConf::getInstance()->get("ee_syncthing.enabled") == "1";
+                syncthing_enabled->setState(syncthingEnabled);
+		auto syncthing_location = "http://"+ApiSystem::getInstance()->getIpAdress()+":8384 or http://"+ApiSystem::getInstance()->getHostsName()+":8384";
+		s->addWithDescription(_("ENABLE SYNCTHING"),_(syncthing_location.c_str()), syncthing_enabled);
+                syncthing_enabled->setOnChangedCallback([syncthing_enabled] {
+                        if (syncthing_enabled->getState() == false) {
+                                Utils::Platform::ProcessStartInfo("systemctl stop syncthing").run()
+                        } else {
+                                Utils::Platform::ProcessStartInfo("systemctl start syncthing").run()
+                        }
+                bool syncthingenabled = syncthing_enabled->getState();
+                SystemConf::getInstance()->set("ee_syncthing.enabled", syncthingenabled ? "1" : "0");
+                                SystemConf::getInstance()->saveSystemConf();
+                });
+
+//Right now limit webui to RG552
+#ifdef RG552
+       auto webui_enabled = std::make_shared<SwitchComponent>(mWindow);
+		bool webuibaseEnabled = SystemConf::getInstance()->get("ee_webui.enabled") == "1";
+		webui_enabled->setState(webuibaseEnabled);
+		auto web_ui_location = "http://"+ApiSystem::getInstance()->getIpAdress()+" or http://"+ApiSystem::getInstance()->getHostsName();
+		s->addWithDescription(_("ENABLE WEB UI"),_(web_ui_location.c_str()), webui_enabled);
+		webui_enabled->setOnChangedCallback([webui_enabled] {
+			if (webui_enabled->getState() == false) {
+				Utils::Platform::ProcessStartInfo("systemctl stop webui").run()
+				Utils::Platform::ProcessStartInfo("systemctl disable webui").run()
+				Utils::Platform::ProcessStartInfo("rm /storage/.cache/services/webui.conf").run()
+			} else {
+				Utils::Platform::ProcessStartInfo("mkdir -p /storage/.cache/services/").run()
+				Utils::Platform::ProcessStartInfo("touch /storage/.cache/services/webui.conf").run()
+				Utils::Platform::ProcessStartInfo("systemctl enable webui").run()
+				Utils::Platform::ProcessStartInfo("systemctl start webui").run()
+			}
+			bool webuienabled = webui_enabled->getState();
+			SystemConf::getInstance()->set("ee_webui.enabled", webuienabled ? "1" : "0");
+			SystemConf::getInstance()->saveSystemConf();
+		});
+#endif
 
 	// Wifi enable
 	auto enable_wifi = std::make_shared<SwitchComponent>(mWindow);
@@ -4809,7 +4892,25 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable)
 			openNetworkSettings(true);
 		}
 	});
+#if defined(RG552) || defined(RG351P) || defined(RG351V) || defined(RG353) || defined(RG503)
+	if (baseWifiEnabled)
+	{
+		s->addGroup(_("ADVANCED WIFI SETTINGS"));
 
+		bool internalWifiDisabled = SystemConf::getInstance()->getBool("wifi.internal.disabled");
+		auto disableInternalWifi = std::make_shared<SwitchComponent>(mWindow);
+		disableInternalWifi->setState(internalWifiDisabled);
+		s->addWithDescription(_("DISABLE INTERNAL WIFI"),"Turns off internal WiFi adapter.  Allows external wifi adapters", disableInternalWifi);
+
+		disableInternalWifi->setOnChangedCallback([this, disableInternalWifi, internalWifiDisabled]()
+		{
+			const std::string interalWifiDisableString = (disableInternalWifi->getState()) ? "disable" : "enable";
+			SystemConf::getInstance()->setBool("wifi.internal.disabled", disableInternalWifi->getState());
+			LOG(LogDebug) << "Calling: batocera-internal-wifi " << interalWifiDisableString;
+			Utils::Platform::ProcessStartInfo("/usr/bin/batocera-internal-wifi "+interalWifiDisableString+" &").run()
+		});
+	}
+#endif
 	mWindow->pushGui(s);
 }
 
