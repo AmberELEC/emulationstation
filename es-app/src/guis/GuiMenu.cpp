@@ -3538,7 +3538,7 @@ void GuiMenu::openGamesSettings()
 
             systemConfiguration->addEntry(_("DECORATION OPTIONS"), true, [mWindow, configName, sets]
                                               { openDecorationConfiguration(mWindow, configName, sets); });
-
+	}
 #endif
 #ifndef _ENABLEAMBERELEC
 	// decorations
