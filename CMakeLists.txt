@@ -96,17 +96,9 @@ LIST(APPEND CMAKE_MODULE_PATH
     ${CMAKE_CURRENT_SOURCE_DIR}/CMake/Packages
 )
 
-# emuelec
-if("${ENABLE_EMUELEC}" STREQUAL "1")
+# AmberELEC
+if("${ENABLE_AMBERELEC}" STREQUAL "1")
   add_definitions(-D_ENABLEAMBERELEC)
-endif()
-
-if("${ENABLE_GAMEFORCE}" STREQUAL "1")
-  add_definitions(-D_ENABLEGAMEFORCE)
-endif()
-
-if("${ODROIDGOA}" STREQUAL "1")
-  add_definitions(-DODROIDGOA)
 endif()
 
 if("${RG351P}" STREQUAL "1")
@@ -318,7 +310,7 @@ if (CMAKE_BUILD_TYPE MATCHES Debug)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wno-attributes -O0") #support C++14 for std::, optimize
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -O0")
 else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wno-attributes -Ofast") #support C++14 for std::, optimize
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -w -Ofast") #support C++14 for std::, optimize
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Ofast")  #-s = strip binary
 endif()
 endif()
