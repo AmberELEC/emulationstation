@@ -2901,6 +2901,49 @@ void GuiMenu::openGamesSettings()
 	s->addWithLabel(_("FILTER SET"), filters_choices);
 	s->addSaveFunc([filters_choices] { SystemConf::getInstance()->set("global.filterset", filters_choices->getSelected()); });
 
+	// decorations
+	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::DECORATIONS))
+	{
+		auto sets = GuiMenu::getDecorationsSets(ViewController::get()->getState().getSystem());
+		if (sets.size() > 0)
+		{
+				auto decorations = std::make_shared<OptionListComponent<std::string> >(mWindow, _("DECORATION SET"), false);
+				decorations->setRowTemplate([window, sets](std::string data, ComponentListRow& row)
+				{
+					createDecorationItemTemplate(window, sets, data, row);
+				});
+
+				std::vector<std::string> decorations_item;
+				decorations_item.push_back(_("AUTO"));
+				decorations_item.push_back(_("NONE"));
+				for (auto set : sets)
+					decorations_item.push_back(set.name);
+
+				for (auto it = decorations_item.begin(); it != decorations_item.end(); it++)
+					decorations->add(*it, *it,
+					(SystemConf::getInstance()->get("global.bezel") == *it) ||
+						(SystemConf::getInstance()->get("global.bezel") == "none" && *it == _("NONE")) ||
+						(SystemConf::getInstance()->get("global.bezel") == "" && *it == _("AUTO")));
+
+			s->addWithLabel(_("DECORATION SET"), decorations);
+
+			decorations->setSelectedChangedCallback([decorations](std::string value)
+			{
+				if (Utils::String::toLower(value) == "auto") {
+					value = "";
+				}
+				LOG(LogDebug) << "Setting bezel on change to: " << value;
+
+				SystemConf::getInstance()->set("global.bezel", value);
+			});
+
+			if (decorations->getSelectedName() == "")
+			{
+				decorations->selectFirstItem();
+			}
+		}
+	}
+
 	// Video Filters
 	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::VIDEOFILTERS) && !hasGlobalFeature("videofilters"))
 	{
