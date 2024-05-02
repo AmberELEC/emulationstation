@@ -537,7 +537,7 @@ public:
 		onSelectedChanged();
 	}
 
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	void removeIndex(const int i)
 	{
 		if (i <= 0 || i >= mEntries.size())

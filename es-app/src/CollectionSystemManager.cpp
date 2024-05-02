@@ -989,7 +989,7 @@ void CollectionSystemManager::populateAutoCollection(CollectionSystemData* sysDa
 			switch (sysDecl.type)
 			{
 			case AUTO_ALL_GAMES:
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 				include = !(game->getSystemName() == "setup") && !(game->getSystemName() == "imageviewer") && !(game->getSystemName() == "mediaplayer");
 #endif
 				break;
@@ -1090,7 +1090,7 @@ void CollectionSystemManager::populateCustomCollection(CollectionSystemData* sys
 			std::vector<FileData*> games = folder->getFilesRecursive(GAME);
 			for (auto game : games)
 			{
-                if (game->getSystemName() != "mplayer") { //emuelec
+                if (game->getSystemName() != "mplayer") { //AmberELEC
 				if (sysData->filteredIndex->isSystemSelected(game->getSystemName()))
 					sysData->filteredIndex->addToIndex(game);
 

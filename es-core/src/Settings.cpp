@@ -91,7 +91,7 @@ std::vector<const char*> settings_dont_save {
 	{ "ScreenOffsetY" },
 	{ "ScreenRotate" },
 	{ "MonitorID" },
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	{ "LogPath" },
 #endif
 };
@@ -116,7 +116,6 @@ void Settings::setDefaults()
 	mWasChanged = false;
 	mBoolMap.clear();
 	mIntMap.clear();
-
 	mBoolMap["BackgroundJoystickInput"] = false;
 	mBoolMap["ParseGamelistOnly"] = false;
 	mBoolMap["ShowHiddenFiles"] = false;
@@ -148,10 +147,9 @@ void Settings::setDefaults()
 
 	mBoolMap["UseOSK"] = true; // on screen keyboard
 	mBoolMap["DrawClock"] = true;
-	mBoolMap["ClockMode12"] = false;	
-	mBoolMap["ShowControllerNotifications"] = true;
-	mBoolMap["ShowControllerActivity"] = false;	
-	mBoolMap["ShowControllerBattery"] = false;	
+	mBoolMap["ClockMode12"] = Settings::_ClockMode12;	
+	mBoolMap["ShowControllerActivity"] = false;
+	mBoolMap["ShowControllerBattery"] = true;
 	mIntMap["SystemVolume"] = 95;
 	mBoolMap["Overscan"] = false;
 	mStringMap["Language"] = "en_US";
@@ -168,7 +166,11 @@ void Settings::setDefaults()
 
 	mBoolMap["PublicWebAccess"] = false;	
 	mBoolMap["FirstJoystickOnly"] = false;
+#ifdef _ENABLEAMBERELEC
+	mBoolMap["EnableSounds"] = true;
+#else
 	mBoolMap["EnableSounds"] = false;
+#endif
 	mBoolMap["ShowHelpPrompts"] = true;
 	mBoolMap["ScrapeRatings"] = true;
 	mBoolMap["ScrapeDescription"] = true;	
@@ -207,7 +209,7 @@ void Settings::setDefaults()
 #elif defined(_RPI_)
 	// Rpi 0, 1
 	mIntMap["MaxVRAM"] = 128;
-#elif defined(_ENABLEEMUELEC)
+#elif defined(_ENABLEAMBERELEC)
 	// AmberELEC
 	mIntMap["MaxVRAM"] = 128;
 #else 
@@ -241,6 +243,11 @@ void Settings::setDefaults()
 	mIntMap["ScreenSaverSwapImageTimeout"] = 10000;
 	mBoolMap["SlideshowScreenSaverStretch"] = false;
 	mBoolMap["SlideshowScreenSaverCustomImageSource"] = false;
+#ifdef _ENABLEAMBERELEC
+	mStringMap["SlideshowScreenSaverImageDir"] = "/storage/roms/screenshots"; // AmberELEC
+#else
+	mStringMap["SlideshowScreenSaverImageDir"] = "/userdata/screenshots"; // batocera
+#endif
 	mStringMap["SlideshowScreenSaverImageFilter"] = ".png,.jpg";
 	mBoolMap["SlideshowScreenSaverRecurse"] = false;
 	mBoolMap["SlideshowScreenSaverGameName"] = true;
@@ -252,8 +259,14 @@ void Settings::setDefaults()
 	mBoolMap["ShowGunIconOnGames"] = true;
 
 	mBoolMap["SlideshowScreenSaverCustomVideoSource"] = false;
+#ifdef _ENABLEAMBERELEC
+	mStringMap["SlideshowScreenSaverVideoDir"] = "/storage/roms/mplayer"; // AmberELEC
+	mStringMap["SlideshowScreenSaverVideoFilter"] = ".mp4,.avi,.mkv,.flv,.mpg,.mov";
+	mBoolMap["SlideshowScreenSaverVideoRecurse"] = true;
+#endif
 	mStringMap["SlideshowScreenSaverVideoFilter"] = ".mp4,.avi";
 	mBoolMap["SlideshowScreenSaverVideoRecurse"] = false;
+
 
 	// This setting only applies to raspberry pi but set it for all platforms so
 	// we don't get a warning if we encounter it on a different platform
@@ -292,7 +305,7 @@ void Settings::setDefaults()
 	mBoolMap["WebServices"] = false;
 
 	// Audio out device for volume control
-	#if defined _RPI_ || defined _ENABLEEMUELEC
+	#if defined _RPI_ || defined _ENABLEAMBERELEC
 		mStringMap["AudioDevice"] = "PCM";
 	#else
 		mStringMap["AudioDevice"] = "Master";
@@ -346,7 +359,7 @@ void Settings::setDefaults()
 	mStringMap["INPUT P6NAME"] = "DEFAULT";
 	mStringMap["INPUT P7NAME"] = "DEFAULT";
 	mStringMap["INPUT P8NAME"] = "DEFAULT";
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	mStringMap["LogPath"] = "";
 #endif
 
@@ -442,7 +455,7 @@ bool Settings::saveFile()
 		auto def = mDefaultStringMap.find(iter->first);
 		if (def == mDefaultStringMap.cend() && iter->second.empty())
 			continue;
-#ifndef _ENABLEEMUELEC
+#ifndef _ENABLEAMBERELEC
 		// Value is know and has default value, don't save it
 		if (def != mDefaultStringMap.cend() && def->second == iter->second)
 			continue;

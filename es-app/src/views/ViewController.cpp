@@ -890,7 +890,7 @@ bool ViewController::input(InputConfig* config, Input input)
 		return true;
 	}
 
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	// Emuelec next song
 	if (((mState.viewing != GAME_LIST && config->isMappedTo("leftthumb", input)) || config->isMappedTo("rightthumb", input)) && input.value != 0)
 #else

@@ -27,7 +27,7 @@
 #include "guis/GuiSaveState.h"
 #include "SystemConf.h"
 
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 #include <regex>
 #include "utils/Platform.h"
 #endif
@@ -249,7 +249,7 @@ GuiGameOptions::GuiGameOptions(Window* window, FileData* game) : GuiComponent(wi
 
 
 			});
-#ifdef _ENABLEEMUELEC			
+#ifdef _ENABLEAMBERELEC			
 			if (!isImageViewer) {
 				if (game->getMetadata(MetaDataId::Hidden) == "false")
 				{
@@ -270,7 +270,7 @@ GuiGameOptions::GuiGameOptions(Window* window, FileData* game) : GuiComponent(wi
 #endif
 		}
 
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	std::regex str_expr (".*(disc\\s*\\d)[^\\d]{0,1}.*", std::regex_constants::icase);
 	if (std::regex_match(game->getName(),str_expr))
 		mMenu.addEntry(isImageViewer ? _("CREATE MULTIDISC") : _("CREATE MULTIDISC"), false, [this, game]
@@ -532,7 +532,7 @@ void GuiGameOptions::deleteGame(FileData* file)
 	}
 }
 
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 
 void GuiGameOptions::hideGame(FileData* file, bool hide)
 {

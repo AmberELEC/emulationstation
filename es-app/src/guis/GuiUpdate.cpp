@@ -19,7 +19,7 @@ public:
 		GuiUpdate::state = GuiUpdateState::State::UPDATER_RUNNING;
 
 		mWndNotification = mWindow->createAsyncNotificationComponent();
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 		mWndNotification->updateTitle(_U("\uF019 ") + _("UPDATING AmberELEC"));
 #else
 		auto label = Utils::String::format(_("UPDATING %s").c_str(), ApiSystem::getInstance()->getApplicationName().c_str());

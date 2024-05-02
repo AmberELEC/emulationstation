@@ -214,7 +214,7 @@ static PulseAudioControl PulseAudio;
 #endif
 
 #if defined(__linux__)
-#if defined(_RPI_) || defined(_VERO4K_) || defined(_ENABLEEMUELEC)
+#if defined(_RPI_) || defined(_VERO4K_) || defined(_ENABLEAMBERELEC)
 		std::string VolumeControl::mixerName = "PCM";
 #else
 		std::string VolumeControl::mixerName = "Master";

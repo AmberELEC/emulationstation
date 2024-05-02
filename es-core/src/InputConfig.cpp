@@ -405,7 +405,7 @@ void InputConfig::AssignActionButtons()
 	BUTTON_BACK = invertButtons ? BBUTTON : ABUTTON;
 #endif
 
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	BUTTON_OK = invertButtons ? BBUTTON : ABUTTON;
 	BUTTON_BACK = invertButtons ? ABUTTON : BBUTTON;
 #endif

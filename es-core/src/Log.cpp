@@ -43,7 +43,7 @@ void Log::init()
 		else
 			lvl = (LogLevel) -1; // Disabled
 	}
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	auto logPath = Paths::getLogPath() + "/es_log.txt";
 #else	
     auto logPath = Paths::getUserEmulationStationPath() + "/es_log.txt";

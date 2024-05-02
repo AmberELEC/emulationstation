@@ -522,7 +522,7 @@ namespace Utils
 		}
 #endif
 
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 /* < emuelec */
 std::string getShOutput(const std::string& mStr)
 {

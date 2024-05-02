@@ -64,7 +64,7 @@ Paths::Paths()
 #endif
 
 // EmuElec paths
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	mRootPath = "/storage";
 	mEmulationStationPath = getExePath();
 	mUserEmulationStationPath = Utils::FileSystem::getCanonicalPath(getHomePath() + "/.emulationstation");

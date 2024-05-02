@@ -23,7 +23,7 @@ struct DecorationSetInfo
 	std::string imageUrl;
 };
 
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 struct sScreenDimensions
 {
 	int width;
@@ -69,7 +69,7 @@ private:
 	void openUISettings();
 	void openUpdatesSettings();
 	
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	void openEmuELECSettings(); /* < emuelec */
     static void openDangerZone(Window* mWindow, std::string configName);
     static void createGamepadConfig(Window* window, GuiSettings* systemConfiguration);
@@ -103,7 +103,7 @@ private:
 
 	static std::shared_ptr<OptionListComponent<std::string>> createRatioOptionList(Window *window, std::string configname);
 	static std::shared_ptr<OptionListComponent<std::string>> createVideoResolutionModeOptionList(Window *window, std::string configname, std::string configoptname = "videomode");
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
   static std::shared_ptr<OptionListComponent<std::string>> createNativeVideoResolutionModeOptionList(Window *window, std::string configname);
 
   static std::shared_ptr<OptionListComponent<std::string>> createJoyBtnOptionList(Window *window, std::string prefixName, std::string title, int selectId = -1);
@@ -139,7 +139,7 @@ public:
 
 	virtual bool hitTest(int x, int y, Transform4x4f& parentTransform, std::vector<GuiComponent*>* pResult = nullptr) override;
 	virtual bool onMouseClick(int button, bool pressed, int x, int y);
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
   static std::shared_ptr<OptionListComponent<std::string>> btn_choice;
   static std::shared_ptr<OptionListComponent<std::string>> del_choice;
   static std::shared_ptr<OptionListComponent<std::string>> edit_choice;

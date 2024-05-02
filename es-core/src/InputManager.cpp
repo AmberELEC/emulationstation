@@ -1232,7 +1232,7 @@ std::string InputManager::configureEmulators() {
   for (int player = 0; player < MAX_PLAYERS; player++) {
     InputConfig * playerInputConfig = playerJoysticks[player];
     if(playerInputConfig != NULL){
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
       command << " -p" << player+1 << "index "      << playerInputConfig->getDeviceIndex();
       command << " -p" << player+1 << "guid "       << playerInputConfig->getDeviceGUIDString();
       command << " ";

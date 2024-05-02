@@ -25,7 +25,7 @@
 #include "Splash.h"
 #include "PowerSaver.h"
 #include "renderers/Renderer.h"
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 #include "utils/FileSystemUtil.h"
 #endif
 

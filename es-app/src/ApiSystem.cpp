@@ -207,7 +207,7 @@ bool ApiSystem::setOverscan(bool enable)
 
 bool ApiSystem::setOverclock(std::string mode)
 {
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	return true;
 #endif
 	if (mode.empty())
@@ -319,7 +319,7 @@ std::pair<std::string, int> ApiSystem::scrape(BusyComponent* ui)
 
 	char line[1024] = "";
 
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	FILE* flog = fopen(Utils::FileSystem::combine(Paths::getLogPath(), "amberelec-scraper.log").c_str(), "w");
 #else	
 	FILE* flog = fopen(Utils::FileSystem::combine(Paths::getLogPath(), "batocera-scraper.log").c_str(), "w");
@@ -390,7 +390,7 @@ void ApiSystem::launchExternalWindow_before(Window *window)
 
 	AudioManager::getInstance()->deinit();
 	VolumeControl::getInstance()->deinit();
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	window->deinit(false);
 #else
 	window->deinit();
@@ -401,7 +401,7 @@ void ApiSystem::launchExternalWindow_before(Window *window)
 void ApiSystem::launchExternalWindow_after(Window *window)
 {
 	LOG(LogDebug) << "ApiSystem::launchExternalWindow_after";
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	window->init(false);
 #else
 	window->init();
@@ -475,7 +475,7 @@ bool ApiSystem::enableWifi(std::string ssid, std::string key)
 	regex tic("(')");
 	key = regex_replace(key,tic,"\\'");
         ssid = regex_replace(ssid,tic,"\\'");
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	return executeScript("batocera-config wifi enable $\'" + ssid + "\' $\'" + key + "\' &");
 #else
 	return executeScript("batocera-wifi enable \"" + ssid + "\" \"" + key + "\"");
@@ -484,7 +484,7 @@ bool ApiSystem::enableWifi(std::string ssid, std::string key)
 
 bool ApiSystem::disableWifi()
 {
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	return executeScript("batocera-config wifi disable &");
 #else
 	return executeScript("batocera-wifi disable");
@@ -575,7 +575,7 @@ std::vector<std::string> ApiSystem::getAvailableInstallArchitectures()
 
 std::vector<std::string> ApiSystem::getAvailableOverclocking()
 {
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	return executeEnumerationScript("echo no");
 #else
 	return executeEnumerationScript("batocera-overclock list");
@@ -1527,7 +1527,7 @@ bool ApiSystem::isScriptingSupported(ScriptId script)
 		executables.push_back("batocera-support");
 		break;
 	case ApiSystem::UPGRADE:
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
         executables.push_back("amberelec-upgrade");
 #else
         executables.push_back("batocera-upgrade");

@@ -81,8 +81,8 @@ public:
 	static FileData* GetRunningGame() { return mRunningGame; }
 
 	virtual const std::string& getName();
-#ifdef _ENABLEEMUELEC
-	virtual const std::string& getSortName();
+#ifdef _ENABLEAMBERELEC
+  virtual const std::string& getSortName();
 	virtual const std::string getSortOrName();
 #endif
 
@@ -202,7 +202,7 @@ protected:
 	FileType mType;
 	SystemData* mSystem;
 	std::string* mDisplayName;
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	std::string* mSortName;
 #endif
 };

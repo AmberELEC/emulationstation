@@ -101,7 +101,7 @@
 #define fake_gettext_resolution_max_1K  _("maximum 1920x1080")
 #define fake_gettext_resolution_max_640 _("maximum 640x480")
 
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 
 static std::vector<std::string> explode(std::string sData, char delimeter=',')
 {
@@ -187,7 +187,7 @@ GuiMenu::GuiMenu(Window *window, bool animate) : GuiComponent(window), mMenu(win
 {
 	// MAIN MENU
 	bool isFullUI = !UIModeController::getInstance()->isUIModeKid() && !UIModeController::getInstance()->isUIModeKiosk();
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	bool isKidUI = UIModeController::getInstance()->isUIModeKid();
 #endif
 
@@ -214,7 +214,7 @@ GuiMenu::GuiMenu(Window *window, bool animate) : GuiComponent(window), mMenu(win
 	}, "iconKodi");
 #endif
 
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	if (isFullUI)
 	{
 		addEntry(_("EMUELEC SETTINGS").c_str(), true, [this] { openEmuELECSettings(); }, "iconEmuelec"); /* < emuelec */
@@ -254,7 +254,7 @@ GuiMenu::GuiMenu(Window *window, bool animate) : GuiComponent(window), mMenu(win
 
 		addEntry(_("SOUND SETTINGS").c_str(), true, [this] { openSoundSettings(); }, "iconSound");
 
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::WIFI))
 			addEntry(_("NETWORK SETTINGS").c_str(), true, [this] { openNetworkSettings(); }, "iconNetwork");
 #endif
@@ -292,7 +292,7 @@ if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::WIFI))
 #ifdef WIN32
 	addEntry(_("QUIT"), !Settings::getInstance()->getBool("ShowOnlyExit") || !Settings::getInstance()->getBool("ShowExit"), [this] { openQuitMenu(); }, "iconQuit");
 #else
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 if (!isKidUI)
 #endif
 	addEntry(_("QUIT").c_str(), true, [this] { openQuitMenu(); }, "iconQuit");
@@ -317,7 +317,7 @@ if (!isKidUI)
 			setPosition((Renderer::getScreenWidth() - mSize.x()) / 2, Renderer::getScreenHeight() * 0.15f);
 	}
 }
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 /* < emuelec */
 void GuiMenu::openEmuELECSettings()
 {
@@ -1126,7 +1126,7 @@ void GuiMenu::addVersionInfo()
 			label = "BATOCERA.LINUX ES V" + ApiSystem::getInstance()->getVersion() + buildDate;
 		else
 		{
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 		label = "EMUELEC ES V" + ApiSystem::getInstance()->getVersion() + buildDate + " IP:" + Utils::Platform::getShOutput(R"(/usr/bin/emuelec-utils getip)");
 #else
 			std::string aboutInfo = ApiSystem::getInstance()->getApplicationName() + " V" + ApiSystem::getInstance()->getVersion();
@@ -1644,7 +1644,7 @@ void GuiMenu::openDeveloperSettings()
 		});
 	}
 #endif
-#ifndef _ENABLEEMUELEC
+#ifndef _ENABLEAMBERELEC
 	// WEB ACCESS
 	auto hostName = Utils::String::toLower(ApiSystem::getInstance()->getHostsName());
 
@@ -1665,7 +1665,7 @@ void GuiMenu::openDeveloperSettings()
 	auto logLevel = std::make_shared< OptionListComponent<std::string> >(mWindow, _("LOG LEVEL"), false);
 	std::vector<std::string> modes;
 	modes.push_back("default");
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	modes.push_back("minimal");
 #else
 	modes.push_back("disabled");
@@ -2171,7 +2171,7 @@ void GuiMenu::openSystemSettings()
 	// System informations
 	s->addEntry(_("INFORMATION"), true, [this] { openSystemInformations(); });
 
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	auto emuelec_timezones = std::make_shared<OptionListComponent<std::string> >(mWindow, _("TIMEZONE"), false);
 	std::string currentTimezone = SystemConf::getInstance()->get("system.timezone");
 	std::string test_shell = Utils::Platform::getShOutput(R"(/usr/bin/emuelec-utils test)");
@@ -2251,7 +2251,7 @@ void GuiMenu::openSystemSettings()
 		}
 	});
 
-#if !defined(_ENABLEEMUELEC)
+#if !defined(_ENABLEAMBERELEC)
 	// Timezone
 	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::ScriptId::TIMEZONES))
 	{
@@ -2363,7 +2363,7 @@ void GuiMenu::openSystemSettings()
 		brightnessComponent->setValue(brighness);
 		brightnessComponent->setOnValueChanged([](const float &newVal)
 		{
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
             auto thebright = std::to_string((int)Math::round(newVal));
             Utils::Platform::ProcessStartInfo("/usr/bin/odroidgoa_utils.sh bright " + thebright).run();
 #else
@@ -2585,7 +2585,7 @@ void GuiMenu::openSystemSettings()
 		if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::BIOSINFORMATION))
 		{
 			s->addEntry(_("MISSING BIOS CHECK"), true, [this, s] { openMissingBiosSettings(); });
-#ifndef _ENABLEEMUELEC
+#ifndef _ENABLEAMBERELEC
 			s->addSwitch(_("CHECK BIOS FILES BEFORE RUNNING A GAME"), "CheckBiosesAtLaunch", true);
 #endif
 		}
@@ -3350,7 +3350,7 @@ void GuiMenu::openGamesSettings()
 		s->addWithDescription(_("GAME ASPECT RATIO"), _("Force the game to render in this aspect ratio."), ratio_choice);
 		s->addSaveFunc([ratio_choice] { SystemConf::getInstance()->set("global.ratio", ratio_choice->getSelected()); });
 	}
-#ifndef _ENABLEEMUELEC
+#ifndef _ENABLEAMBERELEC
 	// video resolution mode
 	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::RESOLUTION) && !hasGlobalFeature("videomode"))
 	{
@@ -3368,7 +3368,7 @@ void GuiMenu::openGamesSettings()
 		s->addWithLabel(_("SMOOTH GAMES (BILINEAR FILTERING)"), smoothing_enabled);
 		s->addSaveFunc([smoothing_enabled] { SystemConf::getInstance()->set("global.smooth", smoothing_enabled->getSelected()); });
 	}
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	// bezel
 	auto bezel_enabled = std::make_shared<OptionListComponent<std::string>>(mWindow, _("ENABLE RA BEZELS"));
 	bezel_enabled->add(_("AUTO"), "auto", SystemConf::getInstance()->get("global.bezel") != "0" && SystemConf::getInstance()->get("global.bezel") != "1");
@@ -3403,7 +3403,7 @@ void GuiMenu::openGamesSettings()
 		s->addSaveFunc([integerscale_enabled] { SystemConf::getInstance()->set("global.integerscale", integerscale_enabled->getSelected()); });
 	}
 
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	// Integer scale overscale
 	auto integerscaleoverscale_enabled = std::make_shared<OptionListComponent<std::string>>(mWindow, _("INTEGER SCALING (OVERSCALE)"));
 	integerscaleoverscale_enabled->addRange({ { _("AUTO"), "auto" },{ _("ON") , "1" },{ _("OFF") , "0" } }, SystemConf::getInstance()->get("global.integerscaleoverscale"));
@@ -3411,7 +3411,7 @@ void GuiMenu::openGamesSettings()
 	s->addSaveFunc([integerscaleoverscale_enabled] { SystemConf::getInstance()->set("global.integerscaleoverscale", integerscaleoverscale_enabled->getSelected()); });
 #endif
 	// Shaders preset
-#ifndef _ENABLEEMUELEC
+#ifndef _ENABLEAMBERELEC
 	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::SHADERS) && !hasGlobalFeature("shaderset"))
 	{
 		auto installedShaders = ApiSystem::getInstance()->getShaderList("", "", "");
@@ -3424,7 +3424,7 @@ void GuiMenu::openGamesSettings()
 			shaders_choices->add(_("AUTO"), "auto", currentShader.empty() || currentShader == "auto");
 			shaders_choices->add(_("NONE"), "none", currentShader == "none");
 
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	std::string a;
 	for(std::stringstream ss(Utils::Platform::getShOutput(R"(/usr/bin/emuelec-utils getshaders)")); getline(ss, a, ','); )
 		shaders_choices->add(a, a, currentShader == a); // emuelec
@@ -3438,7 +3438,7 @@ void GuiMenu::openGamesSettings()
 #endif
 			s->addWithLabel(_("SHADER SET"), shaders_choices);
 			s->addSaveFunc([shaders_choices] { SystemConf::getInstance()->set("global.shaderset", shaders_choices->getSelected()); });
-#ifndef _ENABLEEMUELEC
+#ifndef _ENABLEAMBERELEC
 		}
 	}
 #endif
@@ -3466,7 +3466,7 @@ void GuiMenu::openGamesSettings()
 		}
 	}
 
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 #if defined(ODROIDGOA) || defined(_ENABLEGAMEFORCE)
 	// RGA SCALING
 	auto rgascale_enabled = std::make_shared<OptionListComponent<std::string>>(mWindow, _("RGA SCALING"));
@@ -3475,7 +3475,7 @@ void GuiMenu::openGamesSettings()
 	s->addSaveFunc([rgascale_enabled] { SystemConf::getInstance()->set("global.rgascale", rgascale_enabled->getSelected()); });
 #endif
 #endif
-#ifndef _ENABLEEMUELEC
+#ifndef _ENABLEAMBERELEC
 	// decorations
 	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::DECORATIONS) && !hasGlobalFeature("bezel"))
 	{
@@ -4201,7 +4201,7 @@ void GuiMenu::openThemeConfiguration(Window* mWindow, GuiComponent* s, std::shar
 				themeconfig->setVariable("reloadAll", true);
 		});
 
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	auto enable_hideSortName = std::make_shared<SwitchComponent>(window);
 	bool hideSortNameEnabled = SystemConf::getInstance()->get(system->getName() + ".hideSortNames") == "1";
 	enable_hideSortName->setState(hideSortNameEnabled);
@@ -4738,6 +4738,7 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable)
 	s->addInputTextRow(_("HOSTNAME"), "system.hostname", false);
 #endif
 
+
 	// Wifi enable
 	auto enable_wifi = std::make_shared<SwitchComponent>(mWindow);
 	enable_wifi->setState(baseWifiEnabled);
@@ -4877,7 +4878,7 @@ void GuiMenu::openQuitMenu_static(Window *window, bool quickAccessMenu, bool ani
 		}
 	}
 
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	s->addEntry(_("RESTART EMULATIONSTATION"), false, [window] {
 		window->pushGui(new GuiMsgBox(window, _("REALLY RESTART EMULATIONSTATION?"), _("YES"),
 			[] {
@@ -4938,7 +4939,7 @@ void GuiMenu::openQuitMenu_static(Window *window, bool quickAccessMenu, bool ani
 			_("NO"), nullptr));
 	}, "iconShutdown");
 
-#ifndef _ENABLEEMUELEC
+#ifndef _ENABLEAMBERELEC
 	s->addWithDescription(_("FAST SHUTDOWN SYSTEM"), _("Shutdown without saving metadata."), nullptr, [window] {
 		window->pushGui(new GuiMsgBox(window, _("REALLY SHUTDOWN WITHOUT SAVING METADATA?"),
 			_("YES"), [] { Utils::Platform::quitES(Utils::Platform::QuitMode::FAST_SHUTDOWN); },
@@ -5028,7 +5029,7 @@ void GuiMenu::popGameConfigurationGui(Window* mWindow, FileData* fileData)
 
 // TODO
 
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 // Button Remapper currently AdvMame supported only.
 
 std::shared_ptr<OptionListComponent<std::string>> GuiMenu::btn_choice = nullptr;
@@ -5505,7 +5506,7 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
 		systemConfiguration->addWithDescription(_("AUTO SAVE/LOAD ON GAME LAUNCH"), _("Load latest save state on game launch and save state when exiting game."), autosave_enabled);
 		systemConfiguration->addSaveFunc([configName, autosave_enabled] { SystemConf::getInstance()->set(configName + ".autosave", autosave_enabled->getSelected()); });
 	}
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	// Shaders preset
 	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::SHADERS) &&
 		systemData->isFeatureSupported(currentEmulator, currentCore, EmulatorFeatures::shaders))
@@ -5593,7 +5594,7 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
 		integerscale_enabled->addRange({ { _("AUTO"), "auto" },{ _("ON") , "1" },{ _("OFF"), "0" } }, SystemConf::getInstance()->get(configName + ".integerscale"));
 		systemConfiguration->addWithLabel(_("INTEGER SCALING (PIXEL PERFECT)"), integerscale_enabled);
 		systemConfiguration->addSaveFunc([integerscale_enabled, configName] { SystemConf::getInstance()->set(configName + ".integerscale", integerscale_enabled->getSelected()); });
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
         auto integerscaleoverscale_enabled = std::make_shared<OptionListComponent<std::string>>(mWindow, _("INTEGER SCALING (OVERSCALE)"));
 		integerscaleoverscale_enabled->addRange({ { _("AUTO"), "auto" },{ _("ON") , "1" },{ _("OFF"), "0" } }, SystemConf::getInstance()->get(configName + ".integerscaleoverscale"));
 		systemConfiguration->addWithLabel(_("INTEGER SCALING (OVERSCALE)"), integerscaleoverscale_enabled);
@@ -5703,7 +5704,7 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
 
 		colorizations_choices->add(_("AUTO"), "auto", currentColorization == "auto");
 		colorizations_choices->add(_("NONE"), "none", currentColorization == "none");
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
         colorizations_choices->add(_("GBC"), "GBC", currentColorization == "GBC");
 		colorizations_choices->add(_("SGB"), "SGB", currentColorization == "SGB");
 #endif
@@ -5839,7 +5840,7 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
 		int n_all_gambate_gc_colors_modes = 126;
 		for (int i = 0; i < n_all_gambate_gc_colors_modes; i++)
 			colorizations_choices->add(all_gambate_gc_colors_modes[i], all_gambate_gc_colors_modes[i], currentColorization == std::string(all_gambate_gc_colors_modes[i]));
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
         if (CustomFeatures::FeaturesLoaded || (!CustomFeatures::FeaturesLoaded && (systemData->getName() == "gb" || systemData->getName() == "gbc" || systemData->getName() == "gb2players" || systemData->getName() == "gbc2players" || systemData->getName() == "gbh" || systemData->getName() == "gbch"))) // only for gb, gbc and gb2players gbh gbch
 #else
 		if (CustomFeatures::FeaturesLoaded || (!CustomFeatures::FeaturesLoaded && (systemData->getName() == "gb" || systemData->getName() == "gbc" || systemData->getName() == "gb2players" || systemData->getName() == "gbc2players")))  // only for gb, gbc and gb2players
@@ -5849,7 +5850,7 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
 			systemConfiguration->addSaveFunc([colorizations_choices, configName] { SystemConf::getInstance()->set(configName + "-renderer.colorization", colorizations_choices->getSelected()); });
 		}
 	}
-#ifndef _ENABLEEMUELEC
+#ifndef _ENABLEAMBERELEC
 	// ps2 full boot
 	if (systemData->isFeatureSupported(currentEmulator, currentCore, EmulatorFeatures::fullboot))
 	{
@@ -5952,7 +5953,7 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
 	}
 #endif
 
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 	addFrameBufferOptions(mWindow, systemConfiguration, configName, "EMU");
 #endif
 
@@ -5977,7 +5978,7 @@ std::shared_ptr<OptionListComponent<std::string>> GuiMenu::createRatioOptionList
 	return ratio_choice;
 }
 
-#ifdef _ENABLEEMUELEC
+#ifdef _ENABLEAMBERELEC
 
 int getResWidth (std::string res)
 {
