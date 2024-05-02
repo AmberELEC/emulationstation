@@ -2148,7 +2148,7 @@ void GuiMenu::openPerformanceSettingsConfiguration(Window* mWindow, std::string 
 	// performance mode
 	auto maxperf_enabled = std::make_shared<SwitchComponent>(mWindow);
 	maxperf_enabled->setState(SystemConf::getInstance()->get(configName + ".maxperf") == "1");
-	guiPerformance->addWithDescription(_("ENABLE PERFORMANCE MODE"),_("Set the CPU/GPU/RAM clock to the highest available frequencies"), maxperf_enabled, nullptr, "", selectItem == 1, true, true);
+	guiPerformance->addWithDescription(_("ENABLE PERFORMANCE MODE"),_("Set the CPU/GPU/RAM clock to the highest available frequencies"), maxperf_enabled, nullptr, "", selectItem == 1, true);
 	maxperf_enabled->setOnChangedCallback([mWindow, guiPerformance, maxperf_enabled, configName]
 	{
 		if (SystemConf::getInstance()->set(configName + ".maxperf", maxperf_enabled->getState() ? "1" : "0"))
@@ -2164,7 +2164,7 @@ void GuiMenu::openPerformanceSettingsConfiguration(Window* mWindow, std::string 
 	// powersave mode
 	auto powersave_enabled = std::make_shared<SwitchComponent>(mWindow);
 	powersave_enabled->setState(SystemConf::getInstance()->get(configName + ".powersave") == "1");
-	guiPerformance->addWithDescription(_("ENABLE POWERSAVE MODE"),_("Set the CPU/GPU/RAM clock to the lowest available frequencies"), powersave_enabled, nullptr, "", selectItem == 2, true, true);
+	guiPerformance->addWithDescription(_("ENABLE POWERSAVE MODE"),_("Set the CPU/GPU/RAM clock to the lowest available frequencies"), powersave_enabled, nullptr, "", selectItem == 2, true);
 	powersave_enabled->setOnChangedCallback([mWindow, guiPerformance, powersave_enabled, configName]
 	{
 		if (SystemConf::getInstance()->set(configName + ".powersave", powersave_enabled->getState() ? "1" : "0"))
@@ -2180,7 +2180,7 @@ void GuiMenu::openPerformanceSettingsConfiguration(Window* mWindow, std::string 
 	// customperf
 	auto customperf_enabled = std::make_shared<SwitchComponent>(mWindow);
 	customperf_enabled->setState(SystemConf::getInstance()->get(configName + ".customperf") == "1");
-	guiPerformance->addWithDescription(_("ENABLE CUSTOM MODE"),_("Set the CPU/GPU/RAM clock to customized frequencies"), customperf_enabled, nullptr, "", selectItem == 3, true, true);
+	guiPerformance->addWithDescription(_("ENABLE CUSTOM MODE"),_("Set the CPU/GPU/RAM clock to customized frequencies"), customperf_enabled, nullptr, "", selectItem == 3, true);
 	customperf_enabled->setOnChangedCallback([mWindow, guiPerformance, customperf_enabled, configName]
 	{
 		if (SystemConf::getInstance()->set(configName + ".customperf", customperf_enabled->getState() ? "1" : "0"))
@@ -2199,7 +2199,7 @@ void GuiMenu::openPerformanceSettingsConfiguration(Window* mWindow, std::string 
 	// disable big cores
 	auto bigcores_disabled = std::make_shared<SwitchComponent>(mWindow);
 	bigcores_disabled->setState(SystemConf::getInstance()->get(configName + ".disable_cores_big") == "1");
-	guiPerformance->addWithDescription(_("DISABLE CPU CORES (BIG)"),_("Disable BIG CPU cores to save energy and/or improve performance"), bigcores_disabled, nullptr, "", selectItem == 4, true, true);
+	guiPerformance->addWithDescription(_("DISABLE CPU CORES (BIG)"),_("Disable BIG CPU cores to save energy and/or improve performance"), bigcores_disabled, nullptr, "", selectItem == 4, true);
 	bigcores_disabled->setOnChangedCallback([mWindow, guiPerformance, bigcores_disabled, configName]
 	{
 		if (SystemConf::getInstance()->set(configName + ".disable_cores_big", bigcores_disabled->getState() ? "1" : "0"))
@@ -2223,7 +2223,7 @@ void GuiMenu::openPerformanceSettingsConfiguration(Window* mWindow, std::string 
 	// disable little cores
 	auto littlecores_disabled = std::make_shared<SwitchComponent>(mWindow);
 	littlecores_disabled->setState(SystemConf::getInstance()->get(configName + ".disable_cores") == "1");
-	guiPerformance->addWithDescription(_(little_title.c_str()),_(little_desc.c_str()), littlecores_disabled, nullptr, "", selectItem == 5, true, true);
+	guiPerformance->addWithDescription(_(little_title.c_str()),_(little_desc.c_str()), littlecores_disabled, nullptr, "", selectItem == 5, true);
 	littlecores_disabled->setOnChangedCallback([mWindow, guiPerformance, littlecores_disabled, configName]
 	{
 		if (SystemConf::getInstance()->set(configName + ".disable_cores", littlecores_disabled->getState() ? "1" : "0"))
