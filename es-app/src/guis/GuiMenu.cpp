@@ -385,34 +385,15 @@ void GuiMenu::addVersionInfo()
 
 	mVersion.setLineSpacing(0);
 
-	std::string label;
-
 	if (!ApiSystem::getInstance()->getVersion().empty())
 	{
-		if (ApiSystem::getInstance()->getApplicationName() == "BATOCERA")
-			label = "BATOCERA.LINUX ES V" + ApiSystem::getInstance()->getVersion() + buildDate;
+#if WIN32
+		std::string aboutInfo = ApiSystem::getInstance()->getApplicationName()+ " V"+ ApiSystem::getInstance()->getVersion();
+		if (!aboutInfo.empty())
+			mVersion.setText(aboutInfo + buildDate);
 		else
-		{
-#ifdef _ENABLEAMBERELEC
-		label = "EMUELEC ES V" + ApiSystem::getInstance()->getVersion() + buildDate + " IP:" + Utils::Platform::getShOutput(R"(/usr/bin/emuelec-utils getip)");
-#else
-			std::string aboutInfo = ApiSystem::getInstance()->getApplicationName() + " V" + ApiSystem::getInstance()->getVersion();
-			label = aboutInfo + buildDate;
 #endif
-		}
-	}
-
-	if (!label.empty())
-	{
-		if (Renderer::ScreenSettings::fullScreenMenus())
-		{
-			mMenu.setSubTitle(label);
-			mMenu.addButton(_("BACK"), _("go back"), [&] { delete this; });
-		}
-		else
-		{
-			mVersion.setText(label);
-		}
+		mVersion.setText(ApiSystem::getInstance()->getApplicationName());
 	}
 
 	mVersion.setHorizontalAlignment(ALIGN_CENTER);
