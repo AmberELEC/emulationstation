@@ -1090,13 +1090,13 @@ void GuiMenu::openDeveloperSettings()
 	s->addGroup(_("DISPLAY SETTINGS"));
 
 	auto menuFontScale = std::make_shared< OptionListComponent<std::string> >(mWindow, _("MENU FONT SCALE"), false);
-	menuFontScale->addRange({ { _("AUTO"), "" },{ "100%", "1.0" },{ "110%", "1.1" },{ "125%", "1.25" },{ "133%", "1.31" },{ "150%", "1.5" },{ "175%", "1.75" },{ "200%", "2" },{ "75%", "0.75" } ,{ "50%", "0.5" } },
+	menuFontScale->addRange({ { _("AUTO"), "" },{ "100%", "1.0" },{ "105%", "1.05" },{ "110%", "1.1" },{ "115%", "1.15" },{ "120%", "1.2" },{ "125%", "1.25" },{ "133%", "1.33" },{ "150%", "1.5" },{ "175%", "1.75" },{ "200%", "2" },{ "90%", "0.9" },{ "75%", "0.75" } ,{ "50%", "0.5" } },
 		Settings::getInstance()->getString("MenuFontScale"));
 	s->addWithLabel(_("MENU FONT SCALE"), menuFontScale);
 	s->addSaveFunc([s, menuFontScale] { if (Settings::getInstance()->setString("MenuFontScale", menuFontScale->getSelected())) s->setVariable("reboot", true); });
 
 	auto fontScale = std::make_shared< OptionListComponent<std::string> >(mWindow, _("FONT SCALE"), false);
-	fontScale->addRange({ { _("AUTO"), "" },{ "100%", "1.0" },{ "110%", "1.1" },{ "125%", "1.25" },{ "133%", "1.31" },{ "150%", "1.5" },{ "175%", "1.75" },{ "200%", "2" },{ "75%", "0.75" } ,{ "50%", "0.5" } },
+	fontScale->addRange({ { _("AUTO"), "" },{ "100%", "1.0" },{ "105%", "1.05" },{ "110%", "1.1" },{ "115%", "1.15" },{ "120%", "1.2" },{ "125%", "1.25" },{ "133%", "1.33" },{ "150%", "1.5" },{ "175%", "1.75" },{ "200%", "2" },{ "90%", "0.9" },{ "75%", "0.75" } ,{ "50%", "0.5" } },
 		Settings::getInstance()->getString("FontScale"));
 	s->addWithLabel(_("THEME FONT SCALE"), fontScale);
 	s->addSaveFunc([s, fontScale] { if (Settings::getInstance()->setString("FontScale", fontScale->getSelected())) s->setVariable("reboot", true); });
@@ -1469,7 +1469,7 @@ void GuiMenu::openSystemSettings()
 
 	language_choice->add("ARABIC",               "ar_YE", language == "ar_YE");
 	language_choice->add("CATALÀ",               "ca_ES", language == "ca_ES");
-	language_choice->add("ČEŠTINA",                "cs_CZ", language == "cs_CZ");
+	language_choice->add("ČEŠTINA",              "cs_CZ", language == "cs_CZ");
 	language_choice->add("CYMRAEG",              "cy_GB", language == "cy_GB");
 	language_choice->add("DEUTSCH", 	     "de_DE", language == "de_DE");
 	language_choice->add("GREEK",                "el_GR", language == "el_GR");
@@ -1477,7 +1477,7 @@ void GuiMenu::openSystemSettings()
 	language_choice->add("ENGLISH (UK)", 	     "en_GB", language == "en_GB");
 	language_choice->add("ESPAÑOL", 	     "es_ES", language == "es_ES" || language == "es");
 	language_choice->add("ESPAÑOL MEXICANO",     "es_MX", language == "es_MX");
-	language_choice->add("EUSKARA",               "eu_ES", language == "eu_ES");
+	language_choice->add("EUSKARA",              "eu_ES", language == "eu_ES");
 	language_choice->add("SUOMI",                "fi_FI", language == "fi_FI");
 	language_choice->add("FRANÇAIS",             "fr_FR", language == "fr_FR" || language == "fr");
 	language_choice->add("עברית",                "he_IL", language == "he_IL");
@@ -1547,7 +1547,7 @@ void GuiMenu::openSystemSettings()
 	s->addSwitch(_("SHOW CLOCK IN 12-HOUR FORMAT"), "ClockMode12", true);
 
 	// power saver
-	auto power_saver = std::make_shared< OptionListComponent<std::string> >(mWindow, _("POWER SAVING MODE"), false);
+	/*auto power_saver = std::make_shared< OptionListComponent<std::string> >(mWindow, _("POWER SAVING MODE"), false);
 	power_saver->addRange({ { _("DISABLED"), "disabled" }, { _("DEFAULT"), "default" }, { _("ENHANCED"), "enhanced" }, { _("INSTANT"), "instant" }, }, Settings::PowerSaverMode());
 	s->addWithDescription(_("POWER SAVING MODE"), _("Reduces power consumption when idle (useful for handhelds)."), power_saver);
 	s->addSaveFunc([this, power_saver]
@@ -1557,7 +1557,7 @@ void GuiMenu::openSystemSettings()
 
 		Settings::setPowerSaverMode(power_saver->getSelected());
 		PowerSaver::init();
-	});
+	});*/
 
 #if defined(_ENABLE_TTS_) || defined(WIN32)
 	if (TextToSpeech::getInstance()->isAvailable())
