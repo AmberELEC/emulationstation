@@ -23,23 +23,6 @@ struct DecorationSetInfo
 	std::string imageUrl;
 };
 
-#ifdef _ENABLEAMBERELEC
-struct sScreenDimensions
-{
-	int width;
-	int height;
-};
-
-struct sScreenBorders
-{
-	float left;
-	float right;
-	float top;
-	float bottom;
-};
-
-#endif
-
 class GuiMenu : public GuiComponent
 {
 public:
