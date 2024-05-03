@@ -281,12 +281,12 @@ GuiMenu::GuiMenu(Window *window, bool animate) : GuiComponent(window), mMenu(win
 
 		addEntry(_("SCRAPER").c_str(), true, [this] { openScraperSettings(); }, "iconScraper");
 
+		addEntry(_("SYSTEM SETTINGS").c_str(), true, [this] { openSystemSettings(); }, "iconSystem");
+
 		if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::BATOCERASTORE) || ApiSystem::getInstance()->isScriptingSupported(ApiSystem::THEMESDOWNLOADER) ||
 			(ApiSystem::getInstance()->isScriptingSupported(ApiSystem::THEBEZELPROJECT) && ApiSystem::getInstance()->isScriptingSupported(ApiSystem::DECORATIONS)) ||
 			ApiSystem::getInstance()->isScriptingSupported(ApiSystem::UPGRADE))
 			addEntry(_("UPDATES & DOWNLOADS"), true, [this] { openUpdatesSettings(); }, "iconUpdates");
-
-		addEntry(_("SYSTEM SETTINGS").c_str(), true, [this] { openSystemSettings(); }, "iconSystem");
 	}
 	else
 	{
@@ -1628,36 +1628,7 @@ void GuiMenu::openSystemSettings()
 	}
 #endif
 
-#ifdef BATOCERA
-	s->addGroup(_("HARDWARE"));
-#endif
-
-	// brighness
-	int brighness;
-	if (ApiSystem::getInstance()->getBrightness(brighness))
-	{
-		auto brightnessComponent = std::make_shared<SliderComponent>(mWindow, 1.f, 100.f, 1.f, "%");
-		brightnessComponent->setValue(brighness);
-		brightnessComponent->setOnValueChanged([](const float &newVal)
-		{
 #ifdef _ENABLEAMBERELEC
-            auto thebright = std::to_string((int)Math::round(newVal));
-            Utils::Platform::ProcessStartInfo("/usr/bin/odroidgoa_utils.sh bright " + thebright).run();
-#else
-			ApiSystem::getInstance()->setBrightness((int)Math::round(newVal));
-#if !WIN32
-			SystemConf::getInstance()->set("display.brightness", std::to_string((int)Math::round(newVal)));
-#endif
-#endif
-		});
-
-       s->addSaveFunc([this, brightnessComponent] {
-            SystemConf::getInstance()->set("brightness.level", std::to_string((int)Math::round(brightnessComponent->getValue())));
-       });
-
-		s->addWithLabel(_("BRIGHTNESS"), brightnessComponent);
-	}
-
 	// retroarch.menu_driver choose from 'auto' (default), 'xmb', 'rgui', 'ozone', 'glui'
 	auto retroarchRgui = std::make_shared< OptionListComponent<std::string> >(mWindow, _("RETROARCH MENU DRIVER"), false);
 	std::vector<std::string> driver;
@@ -1690,6 +1661,37 @@ void GuiMenu::openSystemSettings()
 	SystemConf::getInstance()->set("global.showFPS", fpsenabled ? "1" : "0");
 			SystemConf::getInstance()->saveSystemConf();
 		});
+#endif
+
+#if defined(BATOCERA) || defined(_ENABLEAMBERELEC)
+	s->addGroup(_("HARDWARE"));
+#endif
+
+	// brighness
+	int brighness;
+	if (ApiSystem::getInstance()->getBrightness(brighness))
+	{
+		auto brightnessComponent = std::make_shared<SliderComponent>(mWindow, 1.f, 100.f, 1.f, "%");
+		brightnessComponent->setValue(brighness);
+		brightnessComponent->setOnValueChanged([](const float &newVal)
+		{
+#ifdef _ENABLEAMBERELEC
+            auto thebright = std::to_string((int)Math::round(newVal));
+            Utils::Platform::ProcessStartInfo("/usr/bin/odroidgoa_utils.sh bright " + thebright).run();
+#else
+			ApiSystem::getInstance()->setBrightness((int)Math::round(newVal));
+#if !WIN32
+			SystemConf::getInstance()->set("display.brightness", std::to_string((int)Math::round(newVal)));
+#endif
+#endif
+		});
+
+       s->addSaveFunc([this, brightnessComponent] {
+            SystemConf::getInstance()->set("brightness.level", std::to_string((int)Math::round(brightnessComponent->getValue())));
+       });
+
+		s->addWithLabel(_("BRIGHTNESS"), brightnessComponent);
+	}
 
 #ifdef _ENABLEAMBERELEC
 	// powersave
@@ -1943,56 +1945,6 @@ void GuiMenu::openSystemSettings()
 	}
 #endif
 	std::shared_ptr<OptionListComponent<std::string>> overclock_choice;
-
-#if ODROIDGOA || GAMEFORCE || RK3326
-	// multimedia keys
-	auto multimediakeys_enabled = std::make_shared<OptionListComponent<std::string>>(mWindow, _("MULTIMEDIA KEYS"));
-	multimediakeys_enabled->add(_("AUTO"), "auto", SystemConf::getInstance()->get("system.multimediakeys.enabled") != "0" && SystemConf::getInstance()->get("system.multimediakeys.enabled") != "1");
-	multimediakeys_enabled->add(_("ON"), "1", SystemConf::getInstance()->get("system.multimediakeys.enabled") == "1");
-	multimediakeys_enabled->add(_("OFF"), "0", SystemConf::getInstance()->get("system.multimediakeys.enabled") == "0");
-	s->addWithLabel(_("MULTIMEDIA KEYS"), multimediakeys_enabled);
-	s->addSaveFunc([this, multimediakeys_enabled, s]
-	{
-		if (multimediakeys_enabled->changed())
-		{
-			SystemConf::getInstance()->set("system.multimediakeys.enabled", multimediakeys_enabled->getSelected());
-			s->setVariable("reboot", true);
-		}
-	});
-#endif
-
-#if GAMEFORCE || RK3326
-	auto buttonColor_GameForce = std::make_shared< OptionListComponent<std::string> >(mWindow, _("BUTTON LED COLOR"));
-	buttonColor_GameForce->add(_("off"), "off", SystemConf::getInstance()->get("color_rgb") == "off" || SystemConf::getInstance()->get("color_rgb") == "");
-	buttonColor_GameForce->add(_("red"), "red", SystemConf::getInstance()->get("color_rgb") == "red");
-	buttonColor_GameForce->add(_("green"), "green", SystemConf::getInstance()->get("color_rgb") == "green");
-	buttonColor_GameForce->add(_("blue"), "blue", SystemConf::getInstance()->get("color_rgb") == "blue");
-	buttonColor_GameForce->add(_("white"), "white", SystemConf::getInstance()->get("color_rgb") == "white");
-	buttonColor_GameForce->add(_("purple"), "purple", SystemConf::getInstance()->get("color_rgb") == "purple");
-	buttonColor_GameForce->add(_("yellow"), "yellow", SystemConf::getInstance()->get("color_rgb") == "yellow");
-	buttonColor_GameForce->add(_("cyan"), "cyan", SystemConf::getInstance()->get("color_rgb") == "cyan");
-	s->addWithLabel(_("BUTTON LED COLOR"), buttonColor_GameForce);
-	s->addSaveFunc([buttonColor_GameForce]
-	{
-		if (buttonColor_GameForce->changed()) {
-			ApiSystem::getInstance()->setButtonColorGameForce(buttonColor_GameForce->getSelected());
-			SystemConf::getInstance()->set("color_rgb", buttonColor_GameForce->getSelected());
-		}
-	});
-
-	auto powerled_GameForce = std::make_shared< OptionListComponent<std::string> >(mWindow, _("POWER LED COLOR"));
-	powerled_GameForce->add(_("heartbeat"), "heartbeat", SystemConf::getInstance()->get("option_powerled") == "heartbeat" || SystemConf::getInstance()->get("option_powerled") == "");
-	powerled_GameForce->add(_("off"), "off", SystemConf::getInstance()->get("option_powerled") == "off");
-	powerled_GameForce->add(_("on"), "on", SystemConf::getInstance()->get("option_powerled") == "on");
-	s->addWithLabel(_("POWER LED COLOR"), powerled_GameForce);
-	s->addSaveFunc([powerled_GameForce]
-	{
-		if (powerled_GameForce->changed()) {
-			ApiSystem::getInstance()->setPowerLedGameForce(powerled_GameForce->getSelected());
-			SystemConf::getInstance()->set("option_powerled", powerled_GameForce->getSelected());
-		}
-	});
-#endif
 
 	// Overclock choice
 	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::OVERCLOCK))
