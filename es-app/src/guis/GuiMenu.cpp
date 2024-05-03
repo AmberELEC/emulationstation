@@ -2830,7 +2830,7 @@ void GuiMenu::openGamesSettings()
 	incrementalSaveStates->addRange({
 		{ _("INCREMENT PER SAVE"), _("Never overwrite old savestates, always make new ones."), "" }, // Don't use 1 -> 1 is YES, auto too
 		{ _("INCREMENT SLOT"), _("Increment slot on a new game."), "2" }, // AmberELEC
-		{ _("DO NOT INCREMENT"), _("Use current slot on a new game."), "3" } }, // AmberELEC
+		//{ _("DO NOT INCREMENT"), _("Use current slot on a new game."), "3" } }, // AmberELEC
 		SystemConf::getInstance()->get("global.incrementalsavestates"));
 
 	s->addWithLabel(_("INCREMENTAL SAVESTATES"), incrementalSaveStates);
