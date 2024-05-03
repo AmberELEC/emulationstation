@@ -261,7 +261,7 @@ bool SystemConf::setBool(const std::string &name, bool value)
 bool SystemConf::getIncrementalSaveStates()
 {
 	auto valGSS = SystemConf::getInstance()->get("global.incrementalsavestates");
-	return valGSS != "2" && valGSS != "3"; // AmberELEC
+	return valGSS != "2"; // AmberELEC
 }
 
 bool SystemConf::getIncrementalSaveStatesUseCurrentSlot()
