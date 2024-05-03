@@ -2810,10 +2810,10 @@ void GuiMenu::openGamesSettings()
 		s->addGroup(_("BIOS SETTINGS"));
 		s->addEntry(_("MISSING BIOS CHECK"), true, [this, s] { openMissingBiosSettings(); });
 
-		/*auto checkBiosesAtLaunch = std::make_shared<SwitchComponent>(mWindow);
+		auto checkBiosesAtLaunch = std::make_shared<SwitchComponent>(mWindow);
 		checkBiosesAtLaunch->setState(Settings::getInstance()->getBool("CheckBiosesAtLaunch"));
 		s->addWithLabel(_("CHECK BIOS FILES BEFORE RUNNING A GAME"), checkBiosesAtLaunch);
-		s->addSaveFunc([checkBiosesAtLaunch] { Settings::getInstance()->setBool("CheckBiosesAtLaunch", checkBiosesAtLaunch->getState()); });*/
+		s->addSaveFunc([checkBiosesAtLaunch] { Settings::getInstance()->setBool("CheckBiosesAtLaunch", checkBiosesAtLaunch->getState()); });
 	}
 
 	// Custom config for systems

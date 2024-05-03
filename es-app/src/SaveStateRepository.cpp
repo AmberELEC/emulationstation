@@ -193,8 +193,8 @@ bool SaveStateRepository::isEnabled(FileData* game)
 		return false;
 
 	// Should we really keep this flag ?
-	// if (!game->isFeatureSupported(EmulatorFeatures::autosave))
-	//	 return false;
+	if (!game->isFeatureSupported(EmulatorFeatures::autosave))
+		 return false;
 
 	return SaveStateConfigFile::getSaveStateConfigs(system).size() != 0;
 }
