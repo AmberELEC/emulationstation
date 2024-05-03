@@ -2950,7 +2950,7 @@ void GuiMenu::openGamesSettings()
 				for (auto it = decorations_item.begin(); it != decorations_item.end(); it++)
 					decorations->add(*it, *it,
 					(SystemConf::getInstance()->get("global.bezel") == *it) ||
-						(SystemConf::getInstance()->get("global.bezel") == "none" && *it == _("NONE"));// ||
+						(SystemConf::getInstance()->get("global.bezel") == "none" && *it == _("NONE")));// ||
 						//(SystemConf::getInstance()->get("global.bezel") == "auto" && *it == _("AUTO")));
 
 			s->addWithLabel(_("DECORATION SET"), decorations);
