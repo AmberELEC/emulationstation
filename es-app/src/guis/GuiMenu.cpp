@@ -2950,16 +2950,16 @@ void GuiMenu::openGamesSettings()
 					decorations->add(*it, *it,
 					(SystemConf::getInstance()->get("global.bezel") == *it) ||
 						(SystemConf::getInstance()->get("global.bezel") == "none" && *it == _("NONE")) ||
-						(SystemConf::getInstance()->get("global.bezel") == "default" && *it == _("AUTO")));
+						(SystemConf::getInstance()->get("global.bezel") == "auto" && *it == _("AUTO")));
 
 			s->addWithLabel(_("DECORATION SET"), decorations);
 
 			decorations->setSelectedChangedCallback([decorations](std::string value)
 			{
-				//if (Utils::String::toLower(value) == "auto") {
-				//	value = "default";
-				//}
-				//LOG(LogDebug) << "Setting bezel on change to: " << value;
+				if (Utils::String::toLower(value) == "auto") {
+					value = "default";
+				}
+				LOG(LogDebug) << "Setting bezel on change to: " << value;
 
 				SystemConf::getInstance()->set("global.bezel", value);
 			});
@@ -5227,7 +5227,7 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
 					||
 					(SystemConf::getInstance()->get(configName + ".bezel") == "none" && *it == _("NONE"))
 					||
-					(SystemConf::getInstance()->get(configName + ".bezel") == "default" && *it == _("AUTO"))
+					(SystemConf::getInstance()->get(configName + ".bezel") == "auto" && *it == _("AUTO"))
 				);
 			}
 			systemConfiguration->addWithLabel(_("DECORATION SET"), decorations);
