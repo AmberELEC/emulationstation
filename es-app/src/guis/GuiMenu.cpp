@@ -5247,10 +5247,8 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
 				decorations->selectFirstItem();
 			}
 
-			if (decorations->getSelectedName() != _("NONE")) {
-				systemConfiguration->addEntry(_("DECORATION OPTIONS"), true, [mWindow, configName, sets] {
-					openDecorationConfiguration(mWindow, configName, sets); });
-				}
+			systemConfiguration->addEntry(_("DECORATION OPTIONS"), true, [mWindow, configName, sets] {
+				openDecorationConfiguration(mWindow, configName, sets); });
 			}
 	}
 #else

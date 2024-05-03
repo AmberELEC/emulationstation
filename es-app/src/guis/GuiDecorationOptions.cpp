@@ -148,10 +148,13 @@ GuiDecorationOptions::GuiDecorationOptions(Window *window,
 			LOG(LogDebug) << "Option config : " << optionConfigName << " option file: " << option;
 
 			auto optionComponent = std::make_shared<OptionListComponent<std::string>>(mWindow, _(fileConfigNameUpper.c_str()));
+			std::string currentFilterOverlay = SystemConf::getInstance()->get(configName + optionConfigName);
+			if (currentFilterOverlay.empty()) {
+				currentFilterOverlay = std::string("1");
+			}
 
-			optionComponent->add(_("AUTO"), "auto", SystemConf::getInstance()->get(configName + optionConfigName) != "0" && SystemConf::getInstance()->get(configName + optionConfigName) != "1");
-			optionComponent->add(_("YES"), "1", SystemConf::getInstance()->get(configName + optionConfigName) == "1");
-			optionComponent->add(_("NO"), "0", SystemConf::getInstance()->get(configName + optionConfigName) == "0");
+			optionComponent->add(_("YES"), "1", currentFilterOverlay == "1");
+			optionComponent->add(_("NO"), "0", currentFilterOverlay == "0");
 
 			addWithLabel(_(fileConfigNameUpper.c_str()), optionComponent);
 			addSaveFunc([this, optionComponent, optionConfigName]
