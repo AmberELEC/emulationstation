@@ -1667,23 +1667,15 @@ void GuiMenu::openSystemSettings()
 	s->addGroup(_("HARDWARE"));
 #endif
 
-	// brighness
-	int brighness;
-	if (ApiSystem::getInstance()->getBrightness(brighness))
+	// brightness
+	int brightness;
+	if (ApiSystem::getInstance()->getBrightness(brightness))
 	{
 		auto brightnessComponent = std::make_shared<SliderComponent>(mWindow, 1.f, 100.f, 1.f, "%");
-		brightnessComponent->setValue(brighness);
+		brightnessComponent->setValue(brightness);
 		brightnessComponent->setOnValueChanged([](const float &newVal)
 		{
-#ifdef _ENABLEAMBERELEC
-            auto thebright = std::to_string((int)Math::round(newVal));
-            Utils::Platform::ProcessStartInfo("/usr/bin/odroidgoa_utils.sh bright " + thebright).run();
-#else
 			ApiSystem::getInstance()->setBrightness((int)Math::round(newVal));
-#if !WIN32
-			SystemConf::getInstance()->set("display.brightness", std::to_string((int)Math::round(newVal)));
-#endif
-#endif
 		});
 
        s->addSaveFunc([this, brightnessComponent] {
@@ -2818,10 +2810,10 @@ void GuiMenu::openGamesSettings()
 		s->addGroup(_("BIOS SETTINGS"));
 		s->addEntry(_("MISSING BIOS CHECK"), true, [this, s] { openMissingBiosSettings(); });
 
-		auto checkBiosesAtLaunch = std::make_shared<SwitchComponent>(mWindow);
+		/*auto checkBiosesAtLaunch = std::make_shared<SwitchComponent>(mWindow);
 		checkBiosesAtLaunch->setState(Settings::getInstance()->getBool("CheckBiosesAtLaunch"));
 		s->addWithLabel(_("CHECK BIOS FILES BEFORE RUNNING A GAME"), checkBiosesAtLaunch);
-		s->addSaveFunc([checkBiosesAtLaunch] { Settings::getInstance()->setBool("CheckBiosesAtLaunch", checkBiosesAtLaunch->getState()); });
+		s->addSaveFunc([checkBiosesAtLaunch] { Settings::getInstance()->setBool("CheckBiosesAtLaunch", checkBiosesAtLaunch->getState()); });*/
 	}
 
 	// Custom config for systems

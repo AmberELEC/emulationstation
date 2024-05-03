@@ -60,7 +60,7 @@
 #define script_scraper "batocera-scraper";
 #define script_kodi "batocera-kodi";
 #define script_wifi "batocera-wifi"; // scanlist, list, enable X Y, disable
-#define script_bluetooth "batocera-bluetooth"; // trust, list, remove 
+#define script_bluetooth "batocera-bluetooth"; // trust, list, remove
 #define script_resolution "batocera-resolution"; // listModes
 #define script_sync "batocera-sync";   // list
 #define script_info "batocera-info"; // --full
@@ -90,7 +90,7 @@ ApiSystem *ApiSystem::getInstance()
 #else
 		ApiSystem::instance = new ApiSystem();
 #endif
-		
+
 		IExternalActivity::Instance = ApiSystem::instance;
 	}
 
@@ -159,10 +159,10 @@ std::string ApiSystem::getVersion(bool extra)
 {
 	LOG(LogDebug) << "ApiSystem::getVersion";
 
-	if (isScriptingSupported(VERSIONINFO)) 
+	if (isScriptingSupported(VERSIONINFO))
 	{
 		std::string command = "batocera-version";
-		if (extra) 
+		if (extra)
 			command += " --extra";
 
 		auto res = executeEnumerationScript(command);
@@ -184,7 +184,7 @@ std::string ApiSystem::getVersion(bool extra)
 		return localVersion;
 	}
 
-	return PROGRAM_VERSION_STRING;	
+	return PROGRAM_VERSION_STRING;
 }
 
 std::string ApiSystem::getApplicationName()
@@ -226,11 +226,11 @@ std::pair<std::string, int> ApiSystem::updateSystem(const std::function<void(con
 	FILE *pipe = popen(updatecommand.c_str(), "r");
 	if (pipe == nullptr)
 		return std::pair<std::string, int>(std::string("Cannot call update command"), -1);
-	
+
 	char line[1024] = "";
 	FILE *flog = fopen("/tmp/logs/amberelec-upgrade.log", "w");
 	while (fgets(line, 1024, pipe))
-	{	
+	{
 		strtok(line, "\n");
 		if (flog != nullptr)
 			fprintf(flog, "%s\n", line);
@@ -262,7 +262,7 @@ std::pair<std::string, int> ApiSystem::backupSystem(BusyComponent* ui, std::stri
 	char line[1024] = "";
 
 	FILE* flog = fopen(Utils::FileSystem::combine(Paths::getLogPath(), "batocera-sync.log").c_str(), "w");
-	while (fgets(line, 1024, pipe)) 
+	while (fgets(line, 1024, pipe))
 	{
 		strtok(line, "\n");
 
@@ -291,7 +291,7 @@ std::pair<std::string, int> ApiSystem::installSystem(BusyComponent* ui, std::str
 	char line[1024] = "";
 
 	FILE *flog = fopen(Utils::FileSystem::combine(Paths::getLogPath(), "batocera-install.log").c_str(), "w");
-	while (fgets(line, 1024, pipe)) 
+	while (fgets(line, 1024, pipe))
 	{
 		strtok(line, "\n");
 		if (flog != NULL) fprintf(flog, "%s\n", line);
@@ -321,10 +321,10 @@ std::pair<std::string, int> ApiSystem::scrape(BusyComponent* ui)
 
 #ifdef _ENABLEAMBERELEC
 	FILE* flog = fopen(Utils::FileSystem::combine(Paths::getLogPath(), "amberelec-scraper.log").c_str(), "w");
-#else	
+#else
 	FILE* flog = fopen(Utils::FileSystem::combine(Paths::getLogPath(), "batocera-scraper.log").c_str(), "w");
 #endif
-	while (fgets(line, 1024, pipe)) 
+	while (fgets(line, 1024, pipe))
 	{
 		strtok(line, "\n");
 
@@ -494,7 +494,7 @@ bool ApiSystem::disableWifi()
 std::string ApiSystem::getIpAdress()
 {
 	LOG(LogDebug) << "ApiSystem::getIpAdress";
-	
+
 	std::string result = Utils::Platform::queryIPAdress(); // platform.h
 	if (result.empty())
 		return "NOT CONNECTED";
@@ -553,12 +553,12 @@ std::vector<std::string> ApiSystem::getVideoModes()
 	return executeEnumerationScript("batocera-resolution listModes");
 }
 
-std::vector<std::string> ApiSystem::getCustomRunners() 
+std::vector<std::string> ApiSystem::getCustomRunners()
 {
 	return executeEnumerationScript("batocera-wine-runners");
 }
 
-std::vector<std::string> ApiSystem::getAvailableBackupDevices() 
+std::vector<std::string> ApiSystem::getAvailableBackupDevices()
 {
 	return executeEnumerationScript("batocera-sync list");
 }
@@ -809,7 +809,7 @@ bool ApiSystem::setAudioOutputProfile(std::string selected)
 
 	oss << "batocera-audio set-profile" << " '" << selected << "'";
 	int exitcode = system(oss.str().c_str());
-	
+
 	Sound::get(":/checksound.ogg")->play();
 
 	return exitcode == 0;
@@ -1016,7 +1016,7 @@ std::vector<BatoceraTheme> ApiSystem::getBatoceraThemesList()
 		}
 	}
 
-	return res;	
+	return res;
 }
 
 std::pair<std::string, int> ApiSystem::installBatoceraTheme(std::string thname, const std::function<void(const std::string)>& func)
@@ -1038,7 +1038,7 @@ std::pair<std::string, int> ApiSystem::installBatoceraTheme(std::string thname, 
 
 		Utils::FileSystem::createDirectory(extractionDirectory);
 		Utils::FileSystem::removeFile(zipFile);
-		
+
 		std::string branch = getGitRepositoryDefaultBranch(theme.url);
 
 		if (downloadGitRepository(theme.url, branch, zipFile, thname, func, theme.size * 1024LL * 1024))
@@ -1047,7 +1047,7 @@ std::pair<std::string, int> ApiSystem::installBatoceraTheme(std::string thname, 
 				func(_("Extracting") + " " + thname);
 
 			unzipFile(zipFile, extractionDirectory);
-			
+
 			std::string folderName = extractionDirectory + "/" + themeFileName + "-" + branch;
 			if (!Utils::FileSystem::exists(folderName))
 				folderName = extractionDirectory + "/" + themeFileName;
@@ -1317,81 +1317,99 @@ bool ApiSystem::unzipFile(const std::string fileName, const std::string destFold
 	return ret;
 }
 
-static std::string BACKLIGHT_BRIGHTNESS_NAME;
-static std::string BACKLIGHT_BRIGHTNESS_MAX_NAME;
+const char* BACKLIGHT_BRIGHTNESS_NAME = "/sys/class/backlight/backlight/brightness";
+const char* BACKLIGHT_BRIGHTNESS_MAX_NAME = "/sys/class/backlight/backlight/max_brightness";
+#define BACKLIGHT_BUFFER_SIZE 127
 
 bool ApiSystem::getBrightness(int& value)
-{	
-	#if WIN32
+{
+#if WIN32
 	return false;
-	#endif
-
-	if (BACKLIGHT_BRIGHTNESS_NAME == "notfound")
-		return false;
-
-	if (BACKLIGHT_BRIGHTNESS_NAME.empty() || BACKLIGHT_BRIGHTNESS_MAX_NAME.empty())
-	{
-		for (auto file : Utils::FileSystem::getDirContent("/sys/class/backlight"))
-		{				
-			std::string brightnessPath = file + "/brightness";
-			std::string maxBrightnessPath = file + "/max_brightness";
-
-			if (Utils::FileSystem::exists(brightnessPath) && Utils::FileSystem::exists(maxBrightnessPath))
-			{
-				BACKLIGHT_BRIGHTNESS_NAME = brightnessPath;
-				BACKLIGHT_BRIGHTNESS_MAX_NAME = maxBrightnessPath;
-
-				LOG(LogInfo) << "ApiSystem::getBrightness > brightness path resolved to " << file;
-				break;
-			}
-		}
-	}
-
-	if (BACKLIGHT_BRIGHTNESS_NAME.empty() || BACKLIGHT_BRIGHTNESS_MAX_NAME.empty())
-	{
-		LOG(LogInfo) << "ApiSystem::getBrightness > brightness path is not resolved";
-
-		BACKLIGHT_BRIGHTNESS_NAME = "notfound";
-		return false;
-	}
-
+#else
 	value = 0;
 
-	int max = Utils::String::toInteger(Utils::FileSystem::readAllText(BACKLIGHT_BRIGHTNESS_MAX_NAME));
-	if (max == 0)
+	int fd;
+	int max = 100;
+	char buffer[BACKLIGHT_BUFFER_SIZE + 1];
+	ssize_t count;
+
+	fd = open(BACKLIGHT_BRIGHTNESS_MAX_NAME, O_RDONLY);
+	if (fd < 0)
 		return false;
 
-	if (Utils::FileSystem::exists(BACKLIGHT_BRIGHTNESS_NAME))
-		value = Utils::String::toInteger(Utils::FileSystem::readAllText(BACKLIGHT_BRIGHTNESS_NAME));
+	memset(buffer, 0, BACKLIGHT_BUFFER_SIZE + 1);
+
+	count = read(fd, buffer, BACKLIGHT_BUFFER_SIZE);
+	if (count > 0)
+		max = atoi(buffer);
+
+	close(fd);
+
+	if (max == 0)
+		return 0;
+
+	fd = open(BACKLIGHT_BRIGHTNESS_NAME, O_RDONLY);
+	if (fd < 0)
+		return false;
+
+	memset(buffer, 0, BACKLIGHT_BUFFER_SIZE + 1);
+
+	count = read(fd, buffer, BACKLIGHT_BUFFER_SIZE);
+	if (count > 0)
+		value = atoi(buffer);
+
+	close(fd);
 
 	value = (uint32_t) ((value / (float)max * 100.0f) + 0.5f);
 	return true;
+#endif
 }
 
 void ApiSystem::setBrightness(int value)
 {
-#if WIN32	
-	return;
-#endif 
-
-	if (BACKLIGHT_BRIGHTNESS_NAME.empty() || BACKLIGHT_BRIGHTNESS_NAME == "notfound")
-		return;
-
+#if !WIN32
 	if (value < 1)
 		value = 1;
 
 	if (value > 100)
 		value = 100;
 
-	int max = Utils::String::toInteger(Utils::FileSystem::readAllText(BACKLIGHT_BRIGHTNESS_MAX_NAME));
+	int fd;
+	int max = 100;
+	char buffer[BACKLIGHT_BUFFER_SIZE + 1];
+	ssize_t count;
+
+	fd = open(BACKLIGHT_BRIGHTNESS_MAX_NAME, O_RDONLY);
+	if (fd < 0)
+		return;
+
+	memset(buffer, 0, BACKLIGHT_BUFFER_SIZE + 1);
+
+	count = read(fd, buffer, BACKLIGHT_BUFFER_SIZE);
+	if (count > 0)
+		max = atoi(buffer);
+
+	close(fd);
+
 	if (max == 0)
 		return;
 
+	fd = open(BACKLIGHT_BRIGHTNESS_NAME, O_WRONLY);
+	if (fd < 0)
+		return;
+
 	float percent = (value / 100.0f * (float)max) + 0.5f;
-		
-	std::string content = std::to_string((uint32_t) percent) + "\n";
-	Utils::FileSystem::writeAllText(BACKLIGHT_BRIGHTNESS_NAME, content);
+	sprintf(buffer, "%d\n", (uint32_t)percent);
+
+	count = write(fd, buffer, strlen(buffer));
+	if (count < 0)
+		LOG(LogError) << "ApiSystem::setBrightness failed";
+	SystemConf::getInstance()->set("system.brightness", buffer);
+
+	close(fd);
+#endif
 }
+
 
 std::vector<std::string> ApiSystem::getWifiNetworks(bool scan)
 {
@@ -1516,13 +1534,13 @@ bool ApiSystem::isScriptingSupported(ScriptId script)
 		break;
 	case ApiSystem::AUDIODEVICE:
 		executables.push_back("batocera-audio");
-		break;		
+		break;
 	case ApiSystem::BACKUP:
 		executables.push_back("batocera-sync");
 		break;
 	case ApiSystem::INSTALL:
 		executables.push_back("batocera-install");
-		break;	
+		break;
 	case ApiSystem::SUPPORTFILE:
 		executables.push_back("batocera-support");
 		break;
@@ -1696,7 +1714,7 @@ std::vector<std::string> ApiSystem::extractPdfImages(const std::string& fileName
 	{
 		char buffer[12];
 		sprintf(buffer, "%08d", (uint32_t)pageIndex);
-		
+
 		if (pageIndex < 0)
 			prefix = "page-" + squality + "-" + std::string(buffer) + "-pdf"; // page
 		else
@@ -2100,10 +2118,10 @@ std::vector<Service> ApiSystem::getServices()
 
 	auto slines = executeEnumerationScript("batocera-services list");
 
-	for (auto sline : slines) 
+	for (auto sline : slines)
 	{
 		auto splits = Utils::String::split(sline, ';', true);
-		if (splits.size() == 2) 
+		if (splits.size() == 2)
 		{
 			Service s;
 			s.name = splits[0];
@@ -2114,7 +2132,7 @@ std::vector<Service> ApiSystem::getServices()
 	return services;
 }
 
-bool ApiSystem::enableService(std::string name, bool enable) 
+bool ApiSystem::enableService(std::string name, bool enable)
 {
 	std::string serviceName = name;
 	if (serviceName.find(" ") != std::string::npos)
@@ -2125,6 +2143,6 @@ bool ApiSystem::enableService(std::string name, bool enable)
 	bool res = executeScript("batocera-services " + std::string(enable ? "enable" : "disable") + " " + serviceName);
 	if (res)
 		res = executeScript("batocera-services " + std::string(enable ? "start" : "stop") + " " + serviceName);
-	
+
 	return res;
 }
