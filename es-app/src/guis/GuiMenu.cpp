@@ -5235,8 +5235,7 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
 			systemConfiguration->addWithLabel(_("DECORATION SET"), decorations);
 
 			//AmberELEC - set decoration on change so it's update for decoration options without exiting screen
-			decorations->setSelectedChangedCallback([decorations, configName](std::string value)
-			{
+			decorations->setSelectedChangedCallback([decorations, configName](std::string value) {
 				//LOG(LogDebug) << "Setting bezel on change: " << configName << " to: " << value;
 				//if (Utils::String::toLower(value) == "auto") {
 				//	value = "default";
@@ -5244,13 +5243,14 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
 				SystemConf::getInstance()->set(configName + ".bezel", value);
 			});
 
-			if (decorations->getSelectedName() == "")
-			{
+			if (decorations->getSelectedName() == "") {
 				decorations->selectFirstItem();
 			}
 
-            systemConfiguration->addEntry(_("DECORATION OPTIONS"), true, [mWindow, configName, sets]
-                                              { openDecorationConfiguration(mWindow, configName, sets); });
+			if (decorations->getSelectedName() != _("NONE")) {
+				systemConfiguration->addEntry(_("DECORATION OPTIONS"), true, [mWindow, configName, sets] {
+					openDecorationConfiguration(mWindow, configName, sets); });
+				}
 			}
 	}
 #else
