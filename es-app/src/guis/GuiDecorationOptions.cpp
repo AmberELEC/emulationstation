@@ -149,7 +149,7 @@ GuiDecorationOptions::GuiDecorationOptions(Window *window,
 
 			auto optionComponent = std::make_shared<OptionListComponent<std::string>>(mWindow, _(fileConfigNameUpper.c_str()));
 
-			optionComponent->add(_("AUTO"), "auto", SystemConf::getInstance()->get(configName + optionConfigName) != "0" && SystemConf::getInstance()->get(configName + optionConfigName) != "1");
+			//optionComponent->add(_("AUTO"), "auto", SystemConf::getInstance()->get(configName + optionConfigName) != "0" && SystemConf::getInstance()->get(configName + optionConfigName) != "1");
 			optionComponent->add(_("YES"), "1", SystemConf::getInstance()->get(configName + optionConfigName) == "1");
 			optionComponent->add(_("NO"), "0", SystemConf::getInstance()->get(configName + optionConfigName) == "0");
 
