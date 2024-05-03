@@ -47,7 +47,7 @@ public:
 
 	bool input(InputConfig* config, Input input) override;
 	void onSizeChanged() override;
-	std::vector<HelpPrompt> getHelpPrompts() override;	
+	std::vector<HelpPrompt> getHelpPrompts() override;
 	static void openQuitMenu_static(Window *window, bool quickAccessMenu = false, bool animate = true);
 
 	static void popSystemConfigurationGui(Window* mWindow, SystemData *systemData);
@@ -62,24 +62,20 @@ private:
 	void addEntry(const std::string& name, bool add_arrow, const std::function<void()>& func, const std::string iconName = "");
 	void addVersionInfo();
 	void openCollectionSystemSettings();
-	void openConfigInput();	
+	void openConfigInput();
 	void openScraperSettings();
-	void openScreensaverOptions();	
+	void openScreensaverOptions();
 	void openSoundSettings();
 	void openUISettings();
 	void openUpdatesSettings();
-	
+
 #ifdef _ENABLEAMBERELEC
-	void openEmuELECSettings(); /* < emuelec */
-    static void openDangerZone(Window* mWindow, std::string configName);
-    static void createGamepadConfig(Window* window, GuiSettings* systemConfiguration);
-    static void openExternalMounts(Window* mWindow, std::string configName);
-		static void addFrameBufferOptions(Window* mWindow, GuiSettings* guiSettings, std::string configName, std::string header);
+	static void openDangerZone(Window* mWindow, std::string configName);
 #endif
 
 	void openSystemSettings();
-	void openGamesSettings();	
-	void openNetworkSettings(bool selectWifiEnable = false);	
+	void openGamesSettings();
+	void openNetworkSettings(bool selectWifiEnable = false);
 	void openQuitMenu();
 	void openSystemInformations();
 	void openServicesSettings();
@@ -103,20 +99,6 @@ private:
 
 	static std::shared_ptr<OptionListComponent<std::string>> createRatioOptionList(Window *window, std::string configname);
 	static std::shared_ptr<OptionListComponent<std::string>> createVideoResolutionModeOptionList(Window *window, std::string configname, std::string configoptname = "videomode");
-#ifdef _ENABLEAMBERELEC
-  static std::shared_ptr<OptionListComponent<std::string>> createNativeVideoResolutionModeOptionList(Window *window, std::string configname);
-
-  static std::shared_ptr<OptionListComponent<std::string>> createJoyBtnOptionList(Window *window, std::string prefixName, std::string title, int selectId = -1);
-  static std::shared_ptr<OptionListComponent<std::string>> createJoyBtnRemapOptionList(Window *window, std::string prefixName, std::string remapName, int btnIndex = -1);
-
-  static void createBtnJoyCfgName(Window *window, GuiSettings *systemConfiguration, std::string prefixName);
-  static void createBtnJoyCfgRemap(Window *window, GuiSettings *systemConfiguration, std::string prefixName, std::string remapName, int btnIndex = -1);
-  
-  static void deleteBtnJoyCfg(Window *window, GuiSettings *systemConfiguration, std::string prefixName);
-  static void editJoyBtnRemapOptionList(Window *window, GuiSettings *systemConfiguration, std::string prefixName);
-  static void removeJoyBtnEntry(int index);
-  static void addJoyBtnEntry(std::string name, std::string val);
-#endif
 	static void popSpecificConfigurationGui(Window* mWindow, std::string title, std::string configName, SystemData *systemData, FileData* fileData, bool selectCoreLine = false);
 
 	static void openLatencyReductionConfiguration(Window* mWindow, std::string configName);
@@ -139,11 +121,6 @@ public:
 
 	virtual bool hitTest(int x, int y, Transform4x4f& parentTransform, std::vector<GuiComponent*>* pResult = nullptr) override;
 	virtual bool onMouseClick(int button, bool pressed, int x, int y);
-#ifdef _ENABLEAMBERELEC
-  static std::shared_ptr<OptionListComponent<std::string>> btn_choice;
-  static std::shared_ptr<OptionListComponent<std::string>> del_choice;
-  static std::shared_ptr<OptionListComponent<std::string>> edit_choice;
-#endif
 };
 
 #endif // ES_APP_GUIS_GUI_MENU_H

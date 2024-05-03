@@ -91,7 +91,7 @@ GuiDecorationOptions::GuiDecorationOptions(Window *window,
 			{
 				LOG(LogError) << "Caught an exception in systems list callback.  Not sure the deal";
 			}
-													
+
 		}
 	});
 
