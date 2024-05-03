@@ -215,14 +215,14 @@ GuiMenu::GuiMenu(Window *window, bool animate) : GuiComponent(window), mMenu(win
 	}, "iconKodi");
 #endif
 
-	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::RETROACHIVEMENTS) &&
+	/*if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::RETROACHIVEMENTS) &&
 		SystemConf::getInstance()->getBool("global.retroachievements") &&
 		Settings::getInstance()->getBool("RetroachievementsMenuitem") &&
 		SystemConf::getInstance()->get("global.retroachievements.username") != "")
 		addEntry(_("RETROACHIEVEMENTS").c_str(), true, [this] {
 				if (!checkNetwork())
 					return;
-				GuiRetroAchievements::show(mWindow); }, "iconRetroachievements");
+				GuiRetroAchievements::show(mWindow); }, "iconRetroachievements");*/
 
 	if (isFullUI)
 	{
@@ -239,6 +239,17 @@ GuiMenu::GuiMenu(Window *window, bool animate) : GuiComponent(window), mMenu(win
 		if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::GAMESETTINGS))
 			addEntry(_("GAME SETTINGS").c_str(), true, [this] { openGamesSettings(); }, "iconGames");
 
+		addEntry(_("GAME COLLECTION SETTINGS").c_str(), true, [this] { openCollectionSystemSettings(); }, "iconAdvanced");
+
+		if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::RETROACHIVEMENTS) &&
+			SystemConf::getInstance()->getBool("global.retroachievements") &&
+			Settings::getInstance()->getBool("RetroachievementsMenuitem") &&
+			SystemConf::getInstance()->get("global.retroachievements.username") != "")
+			addEntry(_("RETROACHIEVEMENTS").c_str(), true, [this] {
+					if (!checkNetwork())
+						return;
+					GuiRetroAchievements::show(mWindow); }, "iconRetroachievements");
+
 		addEntry(_("USER INTERFACE SETTINGS").c_str(), true, [this] { openUISettings(); }, "iconUI");
 
 		/*if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::GAMESETTINGS))
@@ -253,7 +264,7 @@ GuiMenu::GuiMenu(Window *window, bool animate) : GuiComponent(window), mMenu(win
 			addEntry(_("NETWORK SETTINGS").c_str(), true, [this] { openNetworkSettings(); }, "iconNetwork");
 #endif
 
-		addEntry(_("GAME COLLECTION SETTINGS").c_str(), true, [this] { openCollectionSystemSettings(); }, "iconAdvanced");
+		/*addEntry(_("GAME COLLECTION SETTINGS").c_str(), true, [this] { openCollectionSystemSettings(); }, "iconAdvanced");*/
 
 		if (!ApiSystem::getInstance()->isScriptingSupported(ApiSystem::GAMESETTINGS))
 		{
@@ -1646,6 +1657,79 @@ void GuiMenu::openSystemSettings()
 
 		s->addWithLabel(_("BRIGHTNESS"), brightnessComponent);
 	}
+
+	// retroarch.menu_driver choose from 'auto' (default), 'xmb', 'rgui', 'ozone', 'glui'
+	auto retroarchRgui = std::make_shared< OptionListComponent<std::string> >(mWindow, _("RETROARCH MENU DRIVER"), false);
+	std::vector<std::string> driver;
+	driver.push_back("auto");
+	driver.push_back("xmb");
+	driver.push_back("rgui");
+	driver.push_back("ozone");
+	driver.push_back("glui");
+
+	auto currentDriver = SystemConf::getInstance()->get("global.retroarch.menu_driver");
+	if (currentDriver.empty())
+		currentDriver = "auto";
+
+	for (auto it = driver.cbegin(); it != driver.cend(); it++)
+		retroarchRgui->add(_(it->c_str()), *it, currentDriver == *it);
+
+	s->addWithLabel(_("RETROARCH MENU DRIVER"), retroarchRgui);
+	s->addSaveFunc([retroarchRgui]
+	{
+		SystemConf::getInstance()->set("global.retroarch.menu_driver", retroarchRgui->getSelected());
+		SystemConf::getInstance()->saveSystemConf();
+	});
+
+	auto fps_enabled = std::make_shared<SwitchComponent>(mWindow);
+	bool fpsEnabled = SystemConf::getInstance()->get("global.showFPS") == "1";
+	fps_enabled->setState(fpsEnabled);
+	s->addWithLabel(_("SHOW RETROARCH FPS"), fps_enabled);
+	s->addSaveFunc([fps_enabled] {
+		bool fpsenabled = fps_enabled->getState();
+	SystemConf::getInstance()->set("global.showFPS", fpsenabled ? "1" : "0");
+			SystemConf::getInstance()->saveSystemConf();
+		});
+
+#ifdef _ENABLEAMBERELEC
+	// powersave
+	auto powersave_es_enabled = std::make_shared<SwitchComponent>(mWindow);
+	powersave_es_enabled->setState(SystemConf::getInstance()->get("powersave_es") == "1");
+	s->addWithDescription(_("ENABLE POWERSAVE MODE"),_("Enables powersave mode while Emulationstation is running"), powersave_es_enabled);
+	powersave_es_enabled->setOnChangedCallback([this, s, powersave_es_enabled]	{
+		if (SystemConf::getInstance()->set("powersave_es", powersave_es_enabled->getState() ? "1" : "0"))
+		{
+			if (SystemConf::getInstance()->get("powersave_es") == "1")
+			{
+				Utils::Platform::ProcessStartInfo("es_powersave &").run();
+			} else {
+				Utils::Platform::ProcessStartInfo("es_ondemand &").run();
+			}
+		}
+	});
+
+#ifdef RG552
+	auto optionsFanProfile = std::make_shared<OptionListComponent<std::string> >(mWindow, _("FAN PROFILE"), false);
+
+	std::string selectedFanProfile = SystemConf::getInstance()->get("fan.profile");
+	if (selectedFanProfile.empty())
+		selectedFanProfile = "default";
+
+	optionsFanProfile->add(_("DEFAULT"),    "default", selectedFanProfile == "default");
+	optionsFanProfile->add(_("PERFORMANCE"),"performance", selectedFanProfile == "performance");
+	optionsFanProfile->add(_("QUIET"),      "quiet", selectedFanProfile == "quiet");
+
+	s->addWithLabel(_("FAN PROFILE"), optionsFanProfile);
+
+	s->addSaveFunc([this, optionsFanProfile, selectedFanProfile]
+	{
+		if (optionsFanProfile->changed()) {
+			SystemConf::getInstance()->set("fan.profile", optionsFanProfile->getSelected());
+			SystemConf::getInstance()->saveSystemConf();
+		}
+	});
+#endif
+#endif
 
 #ifdef BATOCERA
 	// video device
