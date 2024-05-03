@@ -740,7 +740,6 @@ void Window::render()
 	unsigned int screensaverTime = (unsigned int)Settings::ScreenSaverTime();
 	if (mTimeSinceLastInput >= screensaverTime && screensaverTime != 0)
 	{
-
 		// If we just woke up from sleep, treat that like a button press
 		// and restart the screensaver timer
 		auto lastResumeFile = "/run/.last_sleep_time";

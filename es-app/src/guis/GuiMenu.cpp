@@ -945,7 +945,7 @@ void GuiMenu::openDeveloperSettings()
 
 	auto level = Settings::getInstance()->getString("LogLevel");
 	if (level.empty())
-		level = "default";
+		level = "minimal";
 
 	for (auto it = modes.cbegin(); it != modes.cend(); it++)
 		logLevel->add(_(it->c_str()), *it, level == *it);

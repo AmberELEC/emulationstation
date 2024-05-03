@@ -122,7 +122,6 @@ Splash::Splash(Window* window, const std::string image, bool fullScreenBackGroun
 		mText.applyTheme(theme, "splash", "label", ThemeFlags::ALL ^ (ThemeFlags::TEXT));
 	else if (fullScreenBackGround)
 	{
-		
 #ifdef _ENABLEAMBERELEC
 		mText.setGlowColor(0x00000010);
 		mText.setGlowSize(1);	

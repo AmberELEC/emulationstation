@@ -593,7 +593,7 @@ std::vector<BiosSystem> ApiSystem::getBiosInformations(const std::string system)
 	BiosSystem current;
 	bool isCurrent = false;
 
-	std::string cmd = "/roms/update/batocera-systems";
+	std::string cmd = "batocera-systems";
 	if (!system.empty())
 		cmd += " --filter " + system;
 

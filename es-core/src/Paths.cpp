@@ -90,10 +90,9 @@ Paths::Paths()
 	mRetroachivementSounds = "/usr/share/libretro/assets/sounds";
 	mUserRetroachivementSounds = "/userdata/sounds/retroachievements"
 	mUserManualPath = "/usr/share/batocera/doc/notice.pdf";
-*/
-   
-#endif
 
+*/
+#endif
 	loadCustomConfiguration(true); // Load paths overrides from emulationstation.ini file
 }
 
