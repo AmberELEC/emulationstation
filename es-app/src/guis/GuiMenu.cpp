@@ -4545,6 +4545,9 @@ void GuiMenu::openQuitMenu_static(Window *window, bool quickAccessMenu, bool ani
 	}
 
 #ifdef _ENABLEAMBERELEC
+	if (quickAccessMenu)
+		s->addGroup(_("QUIT"));
+
 	s->addEntry(_("RESTART EMULATIONSTATION"), false, [window] {
 		window->pushGui(new GuiMsgBox(window, _("REALLY RESTART EMULATIONSTATION?"), _("YES"),
 			[] {
