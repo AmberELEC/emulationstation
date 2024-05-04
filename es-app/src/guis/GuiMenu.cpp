@@ -1626,6 +1626,18 @@ void GuiMenu::openSystemSettings()
 #endif
 
 #ifdef _ENABLEAMBERELEC
+	auto menuFontScale = std::make_shared< OptionListComponent<std::string> >(mWindow, _("MENU FONT SCALE"), false);
+	menuFontScale->addRange({ { _("AUTO"), "" },{ "100%", "1.0" },{ "105%", "1.05" },{ "110%", "1.1" },{ "115%", "1.15" },{ "120%", "1.2" },{ "125%", "1.25" },{ "133%", "1.33" },{ "150%", "1.5" },{ "175%", "1.75" },{ "200%", "2" },{ "90%", "0.9" },{ "75%", "0.75" } ,{ "50%", "0.5" } },
+		Settings::getInstance()->getString("MenuFontScale"));
+	s->addWithLabel(_("MENU FONT SCALE"), menuFontScale);
+	s->addSaveFunc([s, menuFontScale] { if (Settings::getInstance()->setString("MenuFontScale", menuFontScale->getSelected())) s->setVariable("reboot", true); });
+
+	auto fontScale = std::make_shared< OptionListComponent<std::string> >(mWindow, _("FONT SCALE"), false);
+	fontScale->addRange({ { _("AUTO"), "" },{ "100%", "1.0" },{ "105%", "1.05" },{ "110%", "1.1" },{ "115%", "1.15" },{ "120%", "1.2" },{ "125%", "1.25" },{ "133%", "1.33" },{ "150%", "1.5" },{ "175%", "1.75" },{ "200%", "2" },{ "90%", "0.9" },{ "75%", "0.75" } ,{ "50%", "0.5" } },
+		Settings::getInstance()->getString("FontScale"));
+	s->addWithLabel(_("THEME FONT SCALE"), fontScale);
+	s->addSaveFunc([s, fontScale] { if (Settings::getInstance()->setString("FontScale", fontScale->getSelected())) s->setVariable("reboot", true); });
+
 	// retroarch.menu_driver choose from 'auto' (default), 'xmb', 'rgui', 'ozone', 'glui'
 	auto retroarchRgui = std::make_shared< OptionListComponent<std::string> >(mWindow, _("RETROARCH MENU DRIVER"), false);
 	std::vector<std::string> driver;
@@ -4151,18 +4163,6 @@ void GuiMenu::openUISettings()
 
 	if (Utils::Platform::queryBatteryInformation().hasBattery)
 		s->addOptionList(_("SHOW BATTERY STATUS"), { { _("NO"), "" },{ _("ICON"), "icon" },{ _("ICON AND TEXT"), "text" } }, "ShowBattery", true);
-
-	auto menuFontScale = std::make_shared< OptionListComponent<std::string> >(mWindow, _("MENU FONT SCALE"), false);
-	menuFontScale->addRange({ { _("AUTO"), "" },{ "100%", "1.0" },{ "105%", "1.05" },{ "110%", "1.1" },{ "115%", "1.15" },{ "120%", "1.2" },{ "125%", "1.25" },{ "133%", "1.33" },{ "150%", "1.5" },{ "175%", "1.75" },{ "200%", "2" },{ "90%", "0.9" },{ "75%", "0.75" } ,{ "50%", "0.5" } },
-		Settings::getInstance()->getString("MenuFontScale"));
-	s->addWithLabel(_("MENU FONT SCALE"), menuFontScale);
-	s->addSaveFunc([s, menuFontScale] { if (Settings::getInstance()->setString("MenuFontScale", menuFontScale->getSelected())) s->setVariable("reboot", true); });
-
-	auto fontScale = std::make_shared< OptionListComponent<std::string> >(mWindow, _("FONT SCALE"), false);
-	fontScale->addRange({ { _("AUTO"), "" },{ "100%", "1.0" },{ "105%", "1.05" },{ "110%", "1.1" },{ "115%", "1.15" },{ "120%", "1.2" },{ "125%", "1.25" },{ "133%", "1.33" },{ "150%", "1.5" },{ "175%", "1.75" },{ "200%", "2" },{ "90%", "0.9" },{ "75%", "0.75" } ,{ "50%", "0.5" } },
-		Settings::getInstance()->getString("FontScale"));
-	s->addWithLabel(_("THEME FONT SCALE"), fontScale);
-	s->addSaveFunc([s, fontScale] { if (Settings::getInstance()->setString("FontScale", fontScale->getSelected())) s->setVariable("reboot", true); });
 
 	s->addGroup(_("GAMELIST OPTIONS"));
 	s->addSwitch(_("SHOW FAVORITES ON TOP"), "FavoritesFirst", true, [s] { s->setVariable("reloadAll", true); });
