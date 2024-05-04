@@ -91,9 +91,6 @@ std::vector<const char*> settings_dont_save {
 	{ "ScreenOffsetY" },
 	{ "ScreenRotate" },
 	{ "MonitorID" },
-#ifdef _ENABLEAMBERELEC
-	{ "LogPath" },
-#endif
 };
 
 Settings::Settings() : mLoaded(false)
@@ -146,10 +143,10 @@ void Settings::setDefaults()
 	mIntMap["MonitorID"] = -1;
 
 	mBoolMap["UseOSK"] = true; // on screen keyboard
-	mBoolMap["DrawClock"] = true;
+	mBoolMap["DrawClock"] = false;
 	mBoolMap["ClockMode12"] = Settings::_ClockMode12;	
 	mBoolMap["ShowControllerActivity"] = false;
-	mBoolMap["ShowControllerBattery"] = true;
+	mBoolMap["ShowControllerBattery"] = false;
 	mIntMap["SystemVolume"] = 95;
 	mBoolMap["Overscan"] = false;
 	mStringMap["Language"] = "en_US";
@@ -199,14 +196,11 @@ void Settings::setDefaults()
 #if defined(_WIN32) || defined(TINKERBOARD) || defined(X86) || defined(X86_64) || defined(ODROIDN2) || defined(ODROIDC2) || defined(ODROIDXU4) || defined(RPI4) || defined(RG552)
 	// Boards > 1Gb RAM
 	mIntMap["MaxVRAM"] = 256;
-#elif defined(ODROIDGOA) || defined(GAMEFORCE) || defined(RK3326) || defined(RPIZERO2) || defined(RPI2) || defined(RPI3) || defined(ROCKPRO64)
+#elif defined(_ENABLEAMBERELEC) || defined(ODROIDGOA) || defined(GAMEFORCE) || defined(RK3326) || defined(RPIZERO2) || defined(RPI2) || defined(RPI3) || defined(ROCKPRO64)
 	// Boards with 1Gb RAM
 	mIntMap["MaxVRAM"] = 128;
 #elif defined(_RPI_)
 	// Rpi 0, 1
-	mIntMap["MaxVRAM"] = 128;
-#elif defined(_ENABLEAMBERELEC)
-	// AmberELEC
 	mIntMap["MaxVRAM"] = 128;
 #else 
 	// Other boards
@@ -241,8 +235,6 @@ void Settings::setDefaults()
 	mBoolMap["SlideshowScreenSaverCustomImageSource"] = false;
 #ifdef _ENABLEAMBERELEC
 	mStringMap["SlideshowScreenSaverImageDir"] = "/storage/roms/screenshots"; // AmberELEC
-#else
-	mStringMap["SlideshowScreenSaverImageDir"] = "/userdata/screenshots"; // batocera
 #endif
 	mStringMap["SlideshowScreenSaverImageFilter"] = ".png,.jpg";
 	mBoolMap["SlideshowScreenSaverRecurse"] = false;
@@ -262,7 +254,6 @@ void Settings::setDefaults()
 #endif
 	mStringMap["SlideshowScreenSaverVideoFilter"] = ".mp4,.avi";
 	mBoolMap["SlideshowScreenSaverVideoRecurse"] = false;
-
 
 	// This setting only applies to raspberry pi but set it for all platforms so
 	// we don't get a warning if we encounter it on a different platform
@@ -355,9 +346,6 @@ void Settings::setDefaults()
 	mStringMap["INPUT P6NAME"] = "DEFAULT";
 	mStringMap["INPUT P7NAME"] = "DEFAULT";
 	mStringMap["INPUT P8NAME"] = "DEFAULT";
-#ifdef _ENABLEAMBERELEC
-	mStringMap["LogPath"] = "";
-#endif
 
 	// Audio settings
 	mBoolMap["audio.bgmusic"] = Settings::_BackgroundMusic;

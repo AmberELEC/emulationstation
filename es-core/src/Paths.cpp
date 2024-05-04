@@ -63,7 +63,6 @@ Paths::Paths()
 	mKodiPath = "/usr/bin/kodi";
 #endif
 
-// EmuElec paths
 #ifdef _ENABLEAMBERELEC
 	mRootPath = "/storage";
 	mEmulationStationPath = getExePath();
@@ -81,17 +80,6 @@ Paths::Paths()
 	mSaveStatesPath = "/storage/roms/savestates";
     mTimeZonesPath = "/usr/share/zoneinfo/";
 
-/*
-	mConfigPath = "/userdata/system/";
-	mKeyboardMappingsPath = "/usr/share/evmapy";
-	mUserKeyboardMappingsPath = "/userdata/system/configs/evmapy";
-	mShadersPath = "/usr/share/batocera/shaders/configs";
-    mUserShadersPath = "/userdata/shaders/configs";
-	mRetroachivementSounds = "/usr/share/libretro/assets/sounds";
-	mUserRetroachivementSounds = "/userdata/sounds/retroachievements"
-	mUserManualPath = "/usr/share/batocera/doc/notice.pdf";
-
-*/
 #endif
 	loadCustomConfiguration(true); // Load paths overrides from emulationstation.ini file
 }

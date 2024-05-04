@@ -2216,7 +2216,7 @@ std::map<std::string, ThemeSet> ThemeData::getThemeSets()
 		Paths::getThemesPath(),
 		Paths::getUserEmulationStationPath() + "/themes"
 #if !WIN32
-        "/storage/.config/emulationstation/themes/", // AmberELEC
+		,"/etc/emulationstation/themes" // Backward compatibility with Retropie
 #endif
 	};
 
