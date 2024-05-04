@@ -250,9 +250,9 @@ void Settings::setDefaults()
 #ifdef _ENABLEAMBERELEC
 	mStringMap["SlideshowScreenSaverVideoDir"] = "/storage/roms/mplayer"; // AmberELEC
 	mStringMap["SlideshowScreenSaverVideoFilter"] = ".mp4,.avi,.mkv,.flv,.mpg,.mov";
-	mBoolMap["SlideshowScreenSaverVideoRecurse"] = true;
-#endif
+#else
 	mStringMap["SlideshowScreenSaverVideoFilter"] = ".mp4,.avi";
+#endif
 	mBoolMap["SlideshowScreenSaverVideoRecurse"] = false;
 
 	// This setting only applies to raspberry pi but set it for all platforms so

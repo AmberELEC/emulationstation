@@ -1399,7 +1399,7 @@ void ApiSystem::setBrightness(int value)
 		return;
 
 	float percent = (value / 100.0f * (float)max) + 0.5f;
-	sprintf(buffer, "%d\n", (uint32_t)percent);
+	sprintf(buffer, "%d", (uint32_t)percent);
 
 	count = write(fd, buffer, strlen(buffer));
 	if (count < 0)
