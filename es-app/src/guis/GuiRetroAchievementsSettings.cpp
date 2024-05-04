@@ -30,39 +30,12 @@ GuiRetroAchievementsSettings::GuiRetroAchievementsSettings(Window* window) : Gui
 
 	addSwitch(_("HARDCORE MODE"), _("Disable loading states, rewind and cheats for more points."), "global.retroachievements.hardcore", false, nullptr);
 
-	// retroachievements_leaderboards list
-	auto retroachievements_leaderboards_list = std::make_shared< OptionListComponent<std::string> >(mWindow, _("LEADERBOARDS"), false);
-	std::vector<std::string> leader;
-	leader.push_back("disabled");
-	leader.push_back("enabled");
-	leader.push_back("trackers only");
-	leader.push_back("notifications only");
-
-	auto currentLeader = SystemConf::getInstance()->get("global.retroachievements.leaderboards");
-	if (currentLeader.empty())
-		currentLeader = "disabled";
-
-	for (auto it = leader.cbegin(); it != leader.cend(); it++)
-		retroachievements_leaderboards_list->add(_(it->c_str()), *it, currentLeader == *it);
-
-		addWithLabel(_("LEADERBOARDS"), retroachievements_leaderboards_list);
-		addSaveFunc([retroachievements_leaderboards_list]
-	{
-		SystemConf::getInstance()->set("global.retroachievements.leaderboards", retroachievements_leaderboards_list->getSelected());
-		SystemConf::getInstance()->saveSystemConf();
-	});
-
-	//addSwitch(_("LEADERBOARDS"), _("Compete in high-score and best time leaderboards (requires hardcore)."), "global.retroachievements.leaderboards", false, nullptr);
+	addSwitch(_("LEADERBOARDS"), _("Compete in high-score and best time leaderboards (requires hardcore)."), "global.retroachievements.leaderboards", false, nullptr);
 	addSwitch(_("VERBOSE MODE"), _("Show achievement progression on game launch and other notifications."), "global.retroachievements.verbose", false, nullptr);
 	addSwitch(_("RICH PRESENCE"), "global.retroachievements.richpresence", false);
 	addSwitch(_("ENCORE MODE"), _("Unlocked achievements can be earned again."), "global.retroachievements.encore", false, nullptr);
 	addSwitch(_("AUTOMATIC SCREENSHOT"), _("Automatically take a screenshot when an achievement is earned."), "global.retroachievements.screenshot", false, nullptr);
 	addSwitch(_("CHALLENGE INDICATORS"), _("Shows icons in the bottom right corner when eligible achievements can be earned."), "global.retroachievements.challenge_indicators", false, nullptr);
-
-	// AmberELEC
-	addSwitch(_("BADGES"), "global.retroachievements.testunofficial", false);
-	addSwitch(_("TEST UNOFFICIAL ACHIEVEMENTS"), "global.retroachievements.testunofficial", false);
-	addSwitch(_("VERBOSE MODE"), "global.retroachievements.verbose", false);
 
 	// Unlock sound
 	auto installedRSounds = ApiSystem::getInstance()->getRetroachievementsSoundsList();
