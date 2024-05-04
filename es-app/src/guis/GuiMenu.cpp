@@ -1633,13 +1633,25 @@ void GuiMenu::openSystemSettings()
 	menuFontScale->addRange({ { _("AUTO"), "" },{ "100%", "1.0" },{ "105%", "1.05" },{ "110%", "1.1" },{ "115%", "1.15" },{ "120%", "1.2" },{ "125%", "1.25" },{ "133%", "1.33" },{ "150%", "1.5" },{ "175%", "1.75" },{ "200%", "2" },{ "90%", "0.9" },{ "75%", "0.75" } ,{ "50%", "0.5" } },
 		Settings::getInstance()->getString("MenuFontScale"));
 	s->addWithLabel(_("MENU FONT SCALE"), menuFontScale);
-	s->addSaveFunc([s, menuFontScale] { if (Settings::getInstance()->setString("MenuFontScale", menuFontScale->getSelected())) s->setVariable("reboot", true); });
+	s->addSaveFunc([s, menuFontScale] { if (Settings::getInstance()->setString("MenuFontScale", menuFontScale->getSelected())) s->setVariable("reloadAll", true); });
 
 	auto fontScale = std::make_shared< OptionListComponent<std::string> >(mWindow, _("FONT SCALE"), false);
 	fontScale->addRange({ { _("AUTO"), "" },{ "100%", "1.0" },{ "105%", "1.05" },{ "110%", "1.1" },{ "115%", "1.15" },{ "120%", "1.2" },{ "125%", "1.25" },{ "133%", "1.33" },{ "150%", "1.5" },{ "175%", "1.75" },{ "200%", "2" },{ "90%", "0.9" },{ "75%", "0.75" } ,{ "50%", "0.5" } },
 		Settings::getInstance()->getString("FontScale"));
 	s->addWithLabel(_("THEME FONT SCALE"), fontScale);
-	s->addSaveFunc([s, fontScale] { if (Settings::getInstance()->setString("FontScale", fontScale->getSelected())) s->setVariable("reboot", true); });
+	s->addSaveFunc([s, fontScale] { if (Settings::getInstance()->setString("FontScale", fontScale->getSelected())) s->setVariable("reloadAll", true); });
+
+	auto invertJoy = std::make_shared<SwitchComponent>(mWindow);
+	invertJoy->setState(Settings::getInstance()->getBool("InvertButtons"));
+	s->addWithDescription(_("SWITCH CONFIRM & CANCEL BUTTONS IN EMULATIONSTATION"), _("Switches the South and East buttons' functionality"), invertJoy);
+	s->addSaveFunc([this, s, invertJoy]
+	{
+		if (Settings::getInstance()->setBool("InvertButtons", invertJoy->getState()))
+		{
+			InputConfig::AssignActionButtons();
+			s->setVariable("reloadAll", true);
+		}
+	});
 
 	// retroarch.menu_driver choose from 'auto' (default), 'xmb', 'rgui', 'ozone', 'glui'
 	auto retroarchRgui = std::make_shared< OptionListComponent<std::string> >(mWindow, _("RETROARCH MENU DRIVER"), false);
@@ -2136,6 +2148,12 @@ void GuiMenu::openSystemSettings()
 		{
 			Utils::Platform::quitES(Utils::Platform::QuitMode::QUIT);
 			return;
+		}
+
+		if (s->getVariable("reloadAll"))
+		{
+			ViewController::get()->reloadAll(window);
+			window->closeSplashScreen();
 		}
 
 		if (s->getVariable("reboot") || s->getVariable("exitreboot"))
