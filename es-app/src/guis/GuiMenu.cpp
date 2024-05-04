@@ -2120,7 +2120,7 @@ void GuiMenu::openSystemSettings()
 
 	if (isFullUI){
 		auto dev_unlock = "/dev/shm/developer_unlock";
-		if (Utils::FileSystem::exists(dev_unlock))
+		if (Utils::FileSystem::exists(dev_unlock)){
 			// Developer options
 			s->addEntry(_("DEVELOPER"), true, [this] { openDeveloperSettings(); });
 		}
