@@ -60,6 +60,9 @@
 #include "Gamelist.h"
 #include "TextToSpeech.h"
 #include "Paths.h"
+#ifdef _ENABLEAMBERELEC
+#include "utils/FileSystemUtil.h"
+#endif
 
 #if WIN32
 #include "Win32ApiSystem.h"
@@ -2116,8 +2119,11 @@ void GuiMenu::openSystemSettings()
 #endif
 
 	if (isFullUI){
-		// Developer options
-		s->addEntry(_("DEVELOPER"), true, [this] { openDeveloperSettings(); });
+		auto dev_unlock = "/dev/shm/developer_unlock";
+		if (Utils::FileSystem::exists(dev_unlock))
+			// Developer options
+			s->addEntry(_("DEVELOPER"), true, [this] { openDeveloperSettings(); });
+		}
 
 		// Danger zone options
 		s->addEntry(_("DANGER ZONE"), true, [this] { openDangerZone(mWindow, "global"); });
