@@ -555,6 +555,30 @@ std::string getShOutput(const std::string& mStr)
 			if (!arch.empty())
 				return arch;
 
+#if RG351P
+			return "amberelec-rg351p";
+#endif
+
+#if RG351V
+			return "amberelec-rg351v";
+#endif
+
+#if RG351MP
+			return "amberelec-rg351mp";
+#endif
+
+#if RG552
+			return "amberelec-rg552";
+#endif
+
+#if RG353
+			return "amberelec-rg353";
+#endif
+
+#if RG503
+			return "amberelec-rg503";
+#endif
+
 #if X86
 			return "x86";
 #endif
