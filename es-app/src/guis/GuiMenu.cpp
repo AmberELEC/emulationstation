@@ -3766,22 +3766,6 @@ void GuiMenu::openThemeConfiguration(Window* mWindow, GuiComponent* s, std::shar
 				themeconfig->setVariable("reloadAll", true);
 		});
 
-#ifdef _ENABLEAMBERELEC
-	auto enable_hideSortName = std::make_shared<SwitchComponent>(window);
-	bool hideSortNameEnabled = SystemConf::getInstance()->get(system->getName() + ".hideSortNames") == "1";
-	enable_hideSortName->setState(hideSortNameEnabled);
-	themeconfig->addWithLabel(_("HIDE SORTNAMES IN GAMELIST"), enable_hideSortName);
-
-	themeconfig->addSaveFunc([enable_hideSortName, mWindow, system, themeconfig] {
-		bool hideSortNameEnabled = enable_hideSortName->getState();
-		bool hideSortNameEnabled2 = SystemConf::getInstance()->get(system->getName() + ".hideSortNames") == "1";
-		if (hideSortNameEnabled != hideSortNameEnabled2)
-			themeconfig->setVariable("reloadAll", true);
-
-		SystemConf::getInstance()->set(system->getName() + ".hideSortNames", hideSortNameEnabled ? "1" : "");
-	});
-#endif
-
 		// Show Cheevos
 		auto defCI = Settings::getInstance()->getBool("ShowCheevosIcon") ? _("YES") : _("NO");
 		auto curCI = Settings::getInstance()->getString(system->getName() + ".ShowCheevosIcon");
@@ -3887,6 +3871,22 @@ void GuiMenu::openThemeConfiguration(Window* mWindow, GuiComponent* s, std::shar
 				}
 			});
 		}
+
+#ifdef _ENABLEAMBERELEC
+		auto enable_hideSortName = std::make_shared<SwitchComponent>(window);
+		bool hideSortNameEnabled = SystemConf::getInstance()->get(system->getName() + ".hideSortNames") == "1";
+		enable_hideSortName->setState(hideSortNameEnabled);
+		themeconfig->addWithLabel(_("HIDE SORTNAMES IN GAMELIST"), enable_hideSortName);
+
+		themeconfig->addSaveFunc([enable_hideSortName, mWindow, system, themeconfig] {
+			bool hideSortNameEnabled = enable_hideSortName->getState();
+			bool hideSortNameEnabled2 = SystemConf::getInstance()->get(system->getName() + ".hideSortNames") == "1";
+			if (hideSortNameEnabled != hideSortNameEnabled2)
+				themeconfig->setVariable("reloadAll", true);
+
+			SystemConf::getInstance()->set(system->getName() + ".hideSortNames", hideSortNameEnabled ? "1" : "");
+		});
+#endif
 	}
 
 	if (systemTheme.empty())
@@ -4821,21 +4821,6 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
 		systemConfiguration->addSaveFunc([configName, rgascale_enabled] { SystemConf::getInstance()->set(configName + ".rgascale", rgascale_enabled->getSelected()); });
 	}
 
-	// Game screensaver time
-	auto screensavertime = std::make_shared<OptionListComponent<std::string>>(mWindow, _("SCREENSAVER TIME"));
-	screensavertime->addRange({ { _("AUTO"), "auto" },{ _("OFF"), "0" },{ "1min" , "1" },{ "2min" , "2" },{ "3min" , "3" },{ "4min" , "4" },{ "5min" , "5" },{ "6min" , "6" },{ "7min" , "7" },{ "8min" , "8" },{ "9min" , "9" },{ "10min" , "10" },{ "11min" , "11" },{ "12min" , "12" },{ "13min" , "13" },{ "14min" , "14" },{ "15min" , "15" } }, SystemConf::getInstance()->get(configName + ".screensavertime"));
-	systemConfiguration->addWithDescription(_("SCREENSAVER TIME"),_("Activates the game screensaver after the set time if no button has been pressed since then"), screensavertime, nullptr, "", false, true);
-	systemConfiguration->addSaveFunc([screensavertime, configName] { SystemConf::getInstance()->set(configName + ".screensavertime", screensavertime->getSelected()); });
-
-	if (systemData->isFeatureSupported(currentEmulator, currentCore, EmulatorFeatures::autosave))
-	{
-		// Game screensaver auto-shutdown time
-		auto screensaverautoshutdowntime = std::make_shared<OptionListComponent<std::string>>(mWindow, _("SCREENSAVER SHUTDOWN TIME"));
-		screensaverautoshutdowntime->addRange({ { _("AUTO"), "auto" },{ _("OFF"), "off" },{ _("INSTANT"), "0" },{ "5min" , "5" },{ "10min" , "10" },{ "15min" , "15" },{ "20min" , "20" },{ "25min" , "25" },{ "30min" , "30" },{ "35min" , "35" },{ "40min" , "40" },{ "45min" , "45" },{ "50min" , "50" },{ "55min" , "55" },{ "60min" , "60" } }, SystemConf::getInstance()->get(configName + ".screensaverautoshutdowntime"));
-		systemConfiguration->addWithDescription(_("SCREENSAVER SHUTDOWN TIME"),_("Time for the game screensaver running till the device is automatically saving and switching off"), screensaverautoshutdowntime, nullptr, "", false, true);
-		systemConfiguration->addSaveFunc([screensaverautoshutdowntime, configName] { SystemConf::getInstance()->set(configName + ".screensaverautoshutdowntime", screensaverautoshutdowntime->getSelected()); });
-	}
-
 	// Enable Decorations for AmberELEC
 	// decorations
 	if (ApiSystem::getInstance()->isScriptingSupported(ApiSystem::DECORATIONS) && systemData->isFeatureSupported(currentEmulator, currentCore, EmulatorFeatures::decoration))
@@ -5021,6 +5006,21 @@ void GuiMenu::popSpecificConfigurationGui(Window* mWindow, std::string title, st
 #endif
 	if (systemData->isFeatureSupported(currentEmulator, currentCore, EmulatorFeatures::latency_reduction))
 		systemConfiguration->addEntry(_("LATENCY REDUCTION"), true, [mWindow, configName] { openLatencyReductionConfiguration(mWindow, configName); });
+
+	// Game screensaver time
+	auto screensavertime = std::make_shared<OptionListComponent<std::string>>(mWindow, _("SCREENSAVER TIME"));
+	screensavertime->addRange({ { _("AUTO"), "auto" },{ _("OFF"), "0" },{ "1min" , "1" },{ "2min" , "2" },{ "3min" , "3" },{ "4min" , "4" },{ "5min" , "5" },{ "6min" , "6" },{ "7min" , "7" },{ "8min" , "8" },{ "9min" , "9" },{ "10min" , "10" },{ "11min" , "11" },{ "12min" , "12" },{ "13min" , "13" },{ "14min" , "14" },{ "15min" , "15" } }, SystemConf::getInstance()->get(configName + ".screensavertime"));
+	systemConfiguration->addWithDescription(_("SCREENSAVER TIME"),_("Activates the game screensaver after the set time if no button has been pressed since then"), screensavertime, nullptr, "", false, true);
+	systemConfiguration->addSaveFunc([screensavertime, configName] { SystemConf::getInstance()->set(configName + ".screensavertime", screensavertime->getSelected()); });
+
+	if (systemData->isFeatureSupported(currentEmulator, currentCore, EmulatorFeatures::autosave))
+	{
+		// Game screensaver auto-shutdown time
+		auto screensaverautoshutdowntime = std::make_shared<OptionListComponent<std::string>>(mWindow, _("SCREENSAVER SHUTDOWN TIME"));
+		screensaverautoshutdowntime->addRange({ { _("AUTO"), "auto" },{ _("OFF"), "off" },{ _("INSTANT"), "0" },{ "5min" , "5" },{ "10min" , "10" },{ "15min" , "15" },{ "20min" , "20" },{ "25min" , "25" },{ "30min" , "30" },{ "35min" , "35" },{ "40min" , "40" },{ "45min" , "45" },{ "50min" , "50" },{ "55min" , "55" },{ "60min" , "60" } }, SystemConf::getInstance()->get(configName + ".screensaverautoshutdowntime"));
+		systemConfiguration->addWithDescription(_("SCREENSAVER SHUTDOWN TIME"),_("Time for the game screensaver running till the device is automatically saving and switching off"), screensaverautoshutdowntime, nullptr, "", false, true);
+		systemConfiguration->addSaveFunc([screensaverautoshutdowntime, configName] { SystemConf::getInstance()->set(configName + ".screensaverautoshutdowntime", screensaverautoshutdowntime->getSelected()); });
+	}
 
 	if (systemData->isFeatureSupported(currentEmulator, currentCore, EmulatorFeatures::colorization))
 	{
