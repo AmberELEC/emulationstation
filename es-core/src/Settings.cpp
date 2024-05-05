@@ -55,7 +55,7 @@ void Settings::updateCachedSetting(const std::string& name)
 	UPDATE_STATIC_BOOL_SETTING(VolumePopup)
 	UPDATE_STATIC_BOOL_SETTING(VSync)
 	UPDATE_STATIC_BOOL_SETTING(PreloadMedias)
-	UPDATE_STATIC_BOOL_SETTING(IgnoreLeadingArticles)		
+	UPDATE_STATIC_BOOL_SETTING(IgnoreLeadingArticles)
 	UPDATE_STATIC_BOOL_SETTING(ShowFoldersFirst)
 	UPDATE_STATIC_INT_SETTING(ScreenSaverTime)
 
@@ -120,7 +120,7 @@ void Settings::setDefaults()
 	mBoolMap["IgnoreLeadingArticles"] = Settings::_IgnoreLeadingArticles;
 	mBoolMap["ShowFoldersFirst"] = Settings::_ShowFoldersFirst;
 	mBoolMap["DrawFramerate"] = false;
-	mBoolMap["ScrollLoadMedias"] = false;	
+	mBoolMap["ScrollLoadMedias"] = false;
 	mBoolMap["ShowExit"] = true;
 	mBoolMap["ExitOnRebootRequired"] = false;
 	mBoolMap["Windowed"] = false;
@@ -150,7 +150,7 @@ void Settings::setDefaults()
 
 	mBoolMap["UseOSK"] = true; // on screen keyboard
 	mBoolMap["DrawClock"] = false;
-	mBoolMap["ClockMode12"] = Settings::_ClockMode12;	
+	mBoolMap["ClockMode12"] = Settings::_ClockMode12;
 	mBoolMap["ShowControllerActivity"] = false;
 	mBoolMap["ShowControllerBattery"] = false;
 	mIntMap["SystemVolume"] = 95;
@@ -167,14 +167,14 @@ void Settings::setDefaults()
 	mStringMap["FolderViewMode"] = "never";
 	mStringMap["HiddenSystems"] = "";
 
-	mBoolMap["PublicWebAccess"] = false;	
+	mBoolMap["PublicWebAccess"] = false;
 	mBoolMap["FirstJoystickOnly"] = false;
 	mBoolMap["EnableSounds"] = false;
 	mBoolMap["ShowHelpPrompts"] = true;
 	mBoolMap["ScrapeRatings"] = true;
-	mBoolMap["ScrapeDescription"] = true;	
+	mBoolMap["ScrapeDescription"] = true;
 	mBoolMap["ScrapePadToKey"] = false;
-	mBoolMap["ScrapeOverWrite"] = true;	
+	mBoolMap["ScrapeOverWrite"] = true;
 	mBoolMap["IgnoreGamelist"] = false;
 	mBoolMap["HideConsole"] = true;
 	mBoolMap["QuickSystemSelect"] = true;
@@ -192,9 +192,9 @@ void Settings::setDefaults()
 
 	mBoolMap["GameOptionsAtNorth"] = true;
 	mBoolMap["LoadEmptySystems"] = false;
-	
+
 	mIntMap["RecentlyScrappedFilter"] = 3;
-	
+
 	mIntMap["ScreenSaverTime"] = Settings::_ScreenSaverTime;
 	mIntMap["ScraperResizeWidth"] = 640;
 	mIntMap["ScraperResizeHeight"] = 0;
@@ -208,7 +208,7 @@ void Settings::setDefaults()
 #elif defined(_RPI_)
 	// Rpi 0, 1
 	mIntMap["MaxVRAM"] = 128;
-#else 
+#else
 	// Other boards
 	mIntMap["MaxVRAM"] = 100;
 #endif
@@ -226,12 +226,12 @@ void Settings::setDefaults()
 	mStringMap["ScrapperLogoSrc"] = "";
 	mBoolMap["ScrapeVideos"] = true;
 	mBoolMap["ScrapeShortTitle"] = false;
-	
+
 	mBoolMap["ScreenSaverMarquee"] = true;
 	mBoolMap["ScreenSaverControls"] = true;
 	mStringMap["ScreenSaverGameInfo"] = "never";
 	mBoolMap["StretchVideoOnScreenSaver"] = false;
-	mStringMap["PowerSaverMode"] = "default"; 
+	mStringMap["PowerSaverMode"] = "default";
 
 	mBoolMap["StopMusicOnScreenSaver"] = false;
 
@@ -290,11 +290,11 @@ void Settings::setDefaults()
 	mStringMap["OMXAudioDev"] = "both";
 	mStringMap["CollectionSystemsAuto"] = "all,favorites"; // 2players,4players,favorites,recent
 	mStringMap["CollectionSystemsCustom"] = "";
-	mBoolMap["SortAllSystems"] = true; 
+	mBoolMap["SortAllSystems"] = true;
 	mStringMap["SortSystems"] = "manufacturer";
-	
+
 	mStringMap["UseCustomCollectionsSystemEx"] = "";
-	
+
 	mBoolMap["HiddenSystemsShowGames"] = false;
 	mBoolMap["CollectionShowSystemInfo"] = true;
 	mBoolMap["FavoritesFirst"] = false;
@@ -303,15 +303,19 @@ void Settings::setDefaults()
 	mBoolMap["WebServices"] = false;
 
 	// Audio out device for volume control
-	#if defined _RPI_ || defined _ENABLEAMBERELEC
+	#ifdef _RPI_
 		mStringMap["AudioDevice"] = "PCM";
+	#elif defined(_ENABLEAMBERELEC) && defined(RG552)
+		mStringMap["AudioDevice"] = "DAC";
+	#elif defined(_ENABLEAMBERELEC)
+		mStringMap["AudioDevice"] = "Playback";
 	#else
 		mStringMap["AudioDevice"] = "Master";
 	#endif
 
 	mStringMap["AudioCard"] = "default";
 	mStringMap["UIMode"] = "Full";
-	mStringMap["UIMode_passkey"] = "aaaba"; 
+	mStringMap["UIMode_passkey"] = "aaaba";
 	mBoolMap["ForceKiosk"] = false;
 	mBoolMap["ForceKid"] = false;
 	mBoolMap["ForceDisableFilters"] = false;
@@ -367,8 +371,8 @@ void Settings::setDefaults()
 
 	mBoolMap["NetPlayCheckIndexesAtStart"] = false;
 	mBoolMap["NetPlayShowMissingGames"] = false;
-	
-	mBoolMap["CheevosCheckIndexesAtStart"] = false;	
+
+	mBoolMap["CheevosCheckIndexesAtStart"] = false;
 
 	mBoolMap["AllImagesAsync"] = true;
 
@@ -496,7 +500,7 @@ void Settings::loadFile()
 		setFloat(node.attribute("name").as_string(), node.attribute("value").as_float());
 	for(pugi::xml_node node = root.child("string"); node; node = node.next_sibling("string"))
 		setString(node.attribute("name").as_string(), node.attribute("value").as_string());
-	
+
 	// Migrate old preferences
 	auto it = mBoolMap.find("UseCustomCollectionsSystem");
 	if (it != mBoolMap.cend())
