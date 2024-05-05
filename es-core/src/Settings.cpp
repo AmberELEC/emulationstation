@@ -143,7 +143,7 @@ void Settings::setDefaults()
 #if defined(RG552)
 	mStringMap["MenuFontScale"] = "1.1";
 	mStringMap["FontScale"] = "1.1";
-	mBoolMap["FullScreenMenu"] = true;
+	mStringMap["FullScreenMenu"] = "true";
 #endif
 
 	mIntMap["MonitorID"] = -1;
