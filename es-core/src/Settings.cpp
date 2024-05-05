@@ -140,6 +140,12 @@ void Settings::setDefaults()
 #endif
 	mBoolMap["TTS"] = false;
 
+#if defined(RG552)
+	mStringMap["MenuFontScale"] = "1.1";
+	mStringMap["FontScale"] = "1.1";
+	mBoolMap["FullScreenMenu"] = true;
+#endif
+
 	mIntMap["MonitorID"] = -1;
 
 	mBoolMap["UseOSK"] = true; // on screen keyboard
@@ -241,6 +247,11 @@ void Settings::setDefaults()
 	mBoolMap["SlideshowScreenSaverGameName"] = true;
 	mStringMap["ScreenSaverDecorations"] = "systems";
 
+#ifdef _ENABLEAMBERELEC
+	mStringMap["LogLevel"] = "minimal";
+	mBoolMap["ShowManualIcon"] = false;
+	mBoolMap["ShowSaveStates"] = true;
+#endif
 	mBoolMap["ShowCheevosIcon"] = true;
 
 	mBoolMap["ShowWheelIconOnGames"] = false;
