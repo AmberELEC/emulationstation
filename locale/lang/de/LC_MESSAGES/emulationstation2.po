@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: emulationstation\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-15 23:48+0100\n"
-"PO-Revision-Date: 2024-06-10 15:09+0000\n"
+"PO-Revision-Date: 2024-08-12 14:07+0000\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -408,20 +408,20 @@ msgid "SEARCHING WI-FI NETWORKS"
 msgstr "SUCHE NACH WIFI-NETZWERKEN"
 
 msgid "DEVICE OPTIONS"
-msgstr ""
-
-msgid "FORGET"
-msgstr ""
+msgstr "GERÄTEOPTIONEN"
 
 msgid "DISCONNECT"
-msgstr ""
+msgstr "VERBINDUNG TRENNEN"
 
 msgid "CONNECT"
-msgstr ""
+msgstr "VERBINDEN"
+
+msgid "FORGET"
+msgstr "VERGESSEN"
 
 #, c-format
 msgid "ARE YOU SURE YOU WANT TO FORGET '%s' ?"
-msgstr ""
+msgstr "SIND SIE SICHER, DASS SIE '%s' VERGESSEN WOLLEN?"
 
 msgid "YES"
 msgstr "JA"
@@ -431,11 +431,11 @@ msgstr "NEIN"
 
 #, c-format
 msgid "ARE YOU SURE YOU WANT TO CONNECT TO '%s' ?"
-msgstr ""
+msgstr "EINE VERBINDUNG ZU '%s' HERSTELLEN?"
 
 #, c-format
 msgid "ARE YOU SURE YOU WANT TO DISCONNECT '%s' ?"
-msgstr ""
+msgstr "DIE VERBINDUNG ZU '%s' TRENNEN?"
 
 msgid "PAD TO KEYBOARD CONFIGURATION"
 msgstr "PAD TO KEYBOARD KONFIGURATION"
@@ -671,7 +671,7 @@ msgid "UNABLE TO ACTIVATE RETROACHIEVEMENTS:"
 msgstr "RETROACHIEVEMENTS KÖNNEN NICHT AKTIVIERT WERDEN:"
 
 msgid "BLUETOOTH DEVICE LIST"
-msgstr ""
+msgstr "BLUETOOTH GERÄTELISTE"
 
 msgid "REMOVE ALL"
 msgstr "ALLE ENTFERNEN"
@@ -680,7 +680,7 @@ msgid "NO BLUETOOTH DEVICES FOUND"
 msgstr "KEINE BLUETOOTH-GERÄTE GEFUNDEN"
 
 msgid " (Connected)"
-msgstr ""
+msgstr " (Verbunden)"
 
 msgid "BLUETOOTH DEVICES HAVE BEEN DELETED."
 msgstr "BLUETOOTH-GERÄTE WURDEN GELÖSCHT."
@@ -697,7 +697,7 @@ msgstr "BEZELS ZUM INSTALLIEREN/ENTFERNEN AUSWÄHLEN"
 
 #, c-format
 msgid "UPDATING %s"
-msgstr "UPDATE %s"
+msgstr "UPDATING %s"
 
 msgid "UPDATE IS READY"
 msgstr "UPDATE IST BEREIT"
@@ -3495,6 +3495,3 @@ msgid ""
 msgstr ""
 "KALIBRIERE PISTOLE\n"
 "Zur Kalibration auf Ziele schießen"
-
-#~ msgid "FORGET A BLUETOOTH DEVICE"
-#~ msgstr "BLUETOOTH-GERÄT ENTFERNEN"

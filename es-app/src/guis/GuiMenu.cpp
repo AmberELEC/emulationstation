@@ -1961,26 +1961,35 @@ void GuiMenu::openSystemSettings()
 	std::string soundSplash   = SystemConf::getInstance()->get("splash.screen.sound");
 
 	std::string selectedSplash = "auto";
-	if(enabledSplash == "0")      selectedSplash = "nosplash";
-	else if(soundSplash   == "0") selectedSplash = "silentsplash";
+	if(enabledSplash == "1") {
+	  selectedSplash = "splash";
+	  if(soundSplash   == "0") selectedSplash = "silentsplash";
+	} else {
+	  if(enabledSplash == "0") selectedSplash = "nosplash";
+	}
 
-	optionsSplash->add(_("DEFAULT VIDEO/USER SET SPLASH"),          "auto", selectedSplash == "auto");
-	optionsSplash->add(_("SILENT VIDEO/USER SET SPLASH"), "silentsplash", selectedSplash == "silentsplash");
-	optionsSplash->add(_("BATOCERA SPLASH IMAGE"),     "nosplash", selectedSplash == "nosplash");
+	optionsSplash->add(_("AUTO"), "auto", selectedSplash == "auto");
+	optionsSplash->add(_("DEFAULT VIDEO/USER SET SPLASH"), "splash",       selectedSplash == "splash");
+	optionsSplash->add(_("SILENT VIDEO/USER SET SPLASH"),  "silentsplash", selectedSplash == "silentsplash");
+	optionsSplash->add(_("BATOCERA SPLASH IMAGE"),         "nosplash",     selectedSplash == "nosplash");
 
 	s->addWithLabel(_("SPLASH SETTING"), optionsSplash);
 
 	s->addSaveFunc([this, optionsSplash, selectedSplash]
 	{
 	  if (optionsSplash->changed()) {
-	    if(optionsSplash->getSelected() == "nosplash") {
-	      SystemConf::getInstance()->set("splash.screen.enabled", "0");
+	    if(optionsSplash->getSelected() == "auto") {
+	      SystemConf::getInstance()->set("splash.screen.enabled", "");
 	    } else {
-	      SystemConf::getInstance()->set("splash.screen.enabled", "1");
-	      if(optionsSplash->getSelected() == "silentsplash") {
-		SystemConf::getInstance()->set("splash.screen.sound", "0");
+	      if(optionsSplash->getSelected() == "nosplash") {
+		SystemConf::getInstance()->set("splash.screen.enabled", "0");
 	      } else {
-		SystemConf::getInstance()->set("splash.screen.sound", "1");
+		SystemConf::getInstance()->set("splash.screen.enabled", "1");
+		if(optionsSplash->getSelected() == "silentsplash") {
+		  SystemConf::getInstance()->set("splash.screen.sound", "0");
+		} else {
+		  SystemConf::getInstance()->set("splash.screen.sound", "1");
+		}
 	      }
 	    }
 	    SystemConf::getInstance()->saveSystemConf();
