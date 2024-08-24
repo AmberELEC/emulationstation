@@ -1830,7 +1830,7 @@ void GuiMenu::openSystemSettings()
 			bool afound = false;
 			for (auto it = availableAudio.begin(); it != availableAudio.end(); it++)
 			{
-				std::vector<std::string> tokens = Utils::String::split(*it, ' ');
+				std::vector<std::string> tokens = Utils::String::split(*it, '\t');
 
 				if (selectedAudio == tokens.at(0))
 					afound = true;
@@ -1879,7 +1879,7 @@ void GuiMenu::openSystemSettings()
 			bool afound = false;
 			for (auto it = availableAudioProfiles.begin(); it != availableAudioProfiles.end(); it++)
 			{
-				std::vector<std::string> tokens = Utils::String::split(*it, ' ');
+				std::vector<std::string> tokens = Utils::String::split(*it, '\t');
 
 				if (selectedAudioProfile == tokens.at(0))
 					afound = true;
