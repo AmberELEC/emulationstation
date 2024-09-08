@@ -1665,14 +1665,16 @@ bool SystemData::isCheevosSupported()
 
 			return false;
 		}
-
 		if (!CustomFeatures::FeaturesLoaded)
 		{
 			const std::set<std::string> cheevosSystems = {
-			"arcade","mame","atari2600","atari7800","atarilynx","colecovision","fbn","gamegear","gb",
-			"gba","gbc","genesis","intellivision","mastersystem","megacd","megadrive","msx","msx2","n64","nds","neogeo","nes","ngp",
-			"ngpc","odyssey2","pcengine","pcenginecd","pokemini","psp","psx","sega32x","segacd","sg-1000",
-			"snes","snesmsu1","supervision","tg16","tg16cd","vectrex","virtualboy","wonderswan","wonderswancolor","megaduck","arduboy","wasm4""dreamcast",};
+				"genesis", "megacd", "msx","msx2", "ngpc", "odyssey2", "snesmsu1", "tg16cd", "wonderswancolor",
+				"megadrive", "n64", "snes", "gb", "gba", "gbc", "nes", "fds", "pcengine", "segacd", "sega32x", "mastersystem",
+				"atarilynx", "lynx", "ngp", "gamegear", "pokemini", "atari2600", "fbneo", "fbn", "virtualboy", "pcfx", "tg16", "famicom", "msx1",
+				"psx", "sg-1000", "sg1000", "coleco", "colecovision", "atari7800", "wonderswan", "pc88", "saturn", "3do", "apple2", "neogeo",
+				"arcade", "mame", "nds", "arcade", "megadrive-japan", "pcenginecd", "supergrafx", "supervision", "snes-msu1", "amstradcpc",
+				"dreamcast", "psp", "jaguar", "intellivision", "vectrex", "megaduck", "arduboy", "wasm4", "ps2", "gamecube", "wii", "channelf",
+				"o2em", "uzebox" };
 
 			if (cheevosSystems.find(getName()) != cheevosSystems.cend())
 				mIsCheevosSupported = 1;
