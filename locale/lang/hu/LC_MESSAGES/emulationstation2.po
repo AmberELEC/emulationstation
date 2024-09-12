@@ -2677,6 +2677,9 @@ msgstr "SZEGÉLY SZÍNE"
 msgid "WHITE"
 msgstr "FEHÉR"
 
+msgid "BORDER RATIO"
+msgstr ""
+
 msgid "CAMERA CONTRAST"
 msgstr "KAMERA KONTRASZTJA"
 

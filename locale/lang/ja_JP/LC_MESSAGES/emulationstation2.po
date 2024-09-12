@@ -2663,6 +2663,9 @@ msgstr "境界色"
 msgid "WHITE"
 msgstr "白"
 
+msgid "BORDER RATIO"
+msgstr ""
+
 msgid "CAMERA CONTRAST"
 msgstr "カメラ コントラスト"
 

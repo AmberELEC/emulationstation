@@ -2662,6 +2662,9 @@ msgstr "COLORE BORDO"
 msgid "WHITE"
 msgstr "BIANCO"
 
+msgid "BORDER RATIO"
+msgstr ""
+
 msgid "CAMERA CONTRAST"
 msgstr "CONTRASTO CINEPRESA"
 

@@ -2661,6 +2661,9 @@ msgstr "RAMME FARGE"
 msgid "WHITE"
 msgstr "HVIT"
 
+msgid "BORDER RATIO"
+msgstr ""
+
 msgid "CAMERA CONTRAST"
 msgstr "KAMERA KONTRAST"
 
