@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: emulationstation\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-15 23:48+0100\n"
-"PO-Revision-Date: 2024-09-09 09:06+0000\n"
+"PO-Revision-Date: 2024-09-29 08:13+0000\n"
 "Last-Translator: THa MuSHeR\n"
 "Language-Team: Dutch (Netherlands)\n"
 "Language: nl-NL\n"
@@ -510,7 +510,7 @@ msgid "VIDEO DRIVER"
 msgstr "VIDEO DRIVER"
 
 msgid "NETPLAY SETTINGS"
-msgstr "NETPLAY INSTELLINGEN"
+msgstr "NETPLAY"
 
 msgid "SETTINGS"
 msgstr "INSTELLINGEN"
@@ -975,7 +975,7 @@ msgid "GAME SETTINGS"
 msgstr "SPELINSTELLINGEN"
 
 msgid "USER INTERFACE SETTINGS"
-msgstr "GEBRUIKERSINTERFACE INSTELLINGEN"
+msgstr "GEBRUIKERSINTERFACE"
 
 msgid "GAME COLLECTION SETTINGS"
 msgstr "SPELCOLLECTIE INSTELLINGEN"
@@ -996,7 +996,7 @@ msgid "UPDATES & DOWNLOADS"
 msgstr "DOWNLOADS & UPDATES"
 
 msgid "SYSTEM SETTINGS"
-msgstr "SYSTEEMINSTELLINGEN"
+msgstr "SYSTEEM INSTELLINGEN"
 
 msgid "UNLOCK USER INTERFACE MODE"
 msgstr "ONTGRENDELEN GEBRUIKERSINTERFACE MODUS"
@@ -1080,7 +1080,7 @@ msgid "VIDEO OUTPUT"
 msgstr "VIDEO UITVOER"
 
 msgid "VIDEO MODE"
-msgstr "VIDEOMODUS"
+msgstr "VIDEO MODUS"
 
 msgid "Sets the display's resolution."
 msgstr "Stelt de resolutie van het beeldscherm in."
@@ -1110,7 +1110,7 @@ msgid "FRONTEND DEVELOPER OPTIONS"
 msgstr "FRONTEND ONTWIKKELAARSOPTIES"
 
 msgid "VIDEO OPTIONS"
-msgstr "VIDEOOPTIES"
+msgstr "VIDEO OPTIES"
 
 msgid "VRAM LIMIT"
 msgstr "VRAM LIMIET"
@@ -1207,7 +1207,7 @@ msgid "Building image cache"
 msgstr "Image cache aan het opbouwen"
 
 msgid "DISPLAY SETTINGS"
-msgstr "BEELDSCHERMINSTELLINGEN"
+msgstr "BEELDSCHERM INSTELLINGEN"
 
 msgid "MENU FONT SCALE"
 msgstr "MENU LETTERTYPESCHAAL"
@@ -1454,10 +1454,10 @@ msgid "Sets the display's resolution for emulationstation."
 msgstr "Stelt de schermresolutie voor emulationstation in."
 
 msgid "AUDIO OUTPUT"
-msgstr "AUDIO-UITVOER"
+msgstr "AUDIO UITVOER"
 
 msgid "AUDIO PROFILE"
-msgstr "AUDIO-PROFIEL"
+msgstr "AUDIO PROFIEL"
 
 msgid "Available options can change depending on current audio output."
 msgstr ""
@@ -2683,7 +2683,7 @@ msgid "WHITE"
 msgstr "WIT"
 
 msgid "BORDER RATIO"
-msgstr ""
+msgstr "RAND VERHOUDING"
 
 msgid "CAMERA CONTRAST"
 msgstr "CAMERA CONTRAST"
