@@ -549,6 +549,27 @@ msgstr ""
 msgid "CUSTOM RELAY SERVER"
 msgstr ""
 
+msgid "PUBLICLY ANNOUNCE GAME"
+msgstr "ANUNCIAR PUBLICAMENTE O JOGO"
+
+msgid "PLAYER PASSWORD"
+msgstr "SENHA DO JOGADOR"
+
+msgid "VIEWER PASSWORD"
+msgstr "SENHA DE ESPECTADOR"
+
+msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
+msgstr ""
+
+msgid "Allows choice of online, offline, or joining another game."
+msgstr ""
+
+msgid "SHOW RELAY SERVER GAMES ONLY"
+msgstr ""
+
+msgid "Relay server games have a higher chance of successful entry."
+msgstr ""
+
 msgid "SHOW UNAVAILABLE GAMES"
 msgstr "EXIBIR JOGOS INDISPONÍVEIS"
 
@@ -1280,6 +1301,9 @@ msgstr "ANIMAÇÃO DE TRANSIÇÃO CARROSSEL"
 msgid "QUICK SYSTEM SELECT"
 msgstr "MENU DE SELEÇÃO RÁPIDA DE SISTEMAS"
 
+msgid "QUICK JUMP LETTER"
+msgstr ""
+
 msgid "ON-SCREEN KEYBOARD"
 msgstr "TECLADO NA TELA"
 
@@ -1870,6 +1894,12 @@ msgstr "EXIBIR ÍCONE DE PISTOLA"
 msgid "SHOW WHEEL ICON"
 msgstr "EXIBIR ÍCONE DE VOLANTE"
 
+msgid "SHOW TRACKBALL ICON"
+msgstr ""
+
+msgid "SHOW SPINNER ICON"
+msgstr ""
+
 msgid "SHOW FILENAMES INSTEAD"
 msgstr "EXIBIR NOMES DOS ARQUIVOS"
 
@@ -2190,15 +2220,6 @@ msgstr "INICIAR JOGO"
 
 msgid "HOST A NETPLAY GAME"
 msgstr "ORGANIZAR JOGO EM REDE"
-
-msgid "PUBLICLY ANNOUNCE GAME"
-msgstr "ANUNCIAR PUBLICAMENTE O JOGO"
-
-msgid "PLAYER PASSWORD"
-msgstr "SENHA DO JOGADOR"
-
-msgid "VIEWER PASSWORD"
-msgstr "SENHA DE ESPECTADOR"
 
 msgid "FIND SIMILAR GAMES..."
 msgstr "JOGOS SEMELHANTES..."
@@ -2565,6 +2586,9 @@ msgstr "CONECTE-SE AOS JOGOS EM REDE"
 msgid "Select a game lobby to join"
 msgstr "Seleciona uma sala de jogo para juntar-se"
 
+msgid "Select a game lobby to create or join"
+msgstr ""
+
 msgid "FAILED"
 msgstr "FALHOU"
 
@@ -2579,6 +2603,15 @@ msgstr "MESMA ROM"
 
 msgid "UNAVAILABLE CORE"
 msgstr "NÚCLEO INDISPONÍVEL"
+
+msgid "PLAY ONLINE AS HOST"
+msgstr ""
+
+msgid "PLAY OFFLINE"
+msgstr ""
+
+msgid "JOIN EXISTING GAME"
+msgstr ""
 
 msgid "AVAILABLE GAMES"
 msgstr "JOGOS DISPONÍVEIS"
@@ -3059,6 +3092,12 @@ msgstr "PISTOLAS"
 msgid "STEERING WHEEL"
 msgstr "VOLANTE"
 
+msgid "TRACKBALL"
+msgstr ""
+
+msgid "SPINNER"
+msgstr ""
+
 msgid "HAVING MEDIAS"
 msgstr "SE HOUVER MÍDIAS"
 
@@ -3139,6 +3178,12 @@ msgstr "jogos de pistola"
 
 msgid "wheel games"
 msgstr "jogos de volante"
+
+msgid "trackball games"
+msgstr ""
+
+msgid "spinner games"
+msgstr ""
 
 msgid "collections"
 msgstr "coleções"

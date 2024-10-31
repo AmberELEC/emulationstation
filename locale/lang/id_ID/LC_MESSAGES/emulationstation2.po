@@ -550,6 +550,27 @@ msgstr ""
 msgid "CUSTOM RELAY SERVER"
 msgstr ""
 
+msgid "PUBLICLY ANNOUNCE GAME"
+msgstr "UMUMKAN GAME SECARA PUBLIK"
+
+msgid "PLAYER PASSWORD"
+msgstr "PASSWORD PEMAIN"
+
+msgid "VIEWER PASSWORD"
+msgstr "PASSWOR PENONTON"
+
+msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
+msgstr ""
+
+msgid "Allows choice of online, offline, or joining another game."
+msgstr ""
+
+msgid "SHOW RELAY SERVER GAMES ONLY"
+msgstr ""
+
+msgid "Relay server games have a higher chance of successful entry."
+msgstr ""
+
 msgid "SHOW UNAVAILABLE GAMES"
 msgstr "TAMPILKAN GAME YANG TIDAK TERSEDIA"
 
@@ -1260,6 +1281,9 @@ msgstr "TRANSISI CAROUSEL"
 msgid "QUICK SYSTEM SELECT"
 msgstr "PILIH SISTEM CEPAT"
 
+msgid "QUICK JUMP LETTER"
+msgstr ""
+
 msgid "ON-SCREEN KEYBOARD"
 msgstr "KEYBOARD DI LAYAR"
 
@@ -1843,6 +1867,12 @@ msgstr ""
 msgid "SHOW WHEEL ICON"
 msgstr ""
 
+msgid "SHOW TRACKBALL ICON"
+msgstr ""
+
+msgid "SHOW SPINNER ICON"
+msgstr ""
+
 msgid "SHOW FILENAMES INSTEAD"
 msgstr "TAMPILKAN NAMA FILE SEHARUSNYA"
 
@@ -2161,15 +2191,6 @@ msgstr "MULAI GAME"
 
 msgid "HOST A NETPLAY GAME"
 msgstr "HOST GAME NETPLAY"
-
-msgid "PUBLICLY ANNOUNCE GAME"
-msgstr "UMUMKAN GAME SECARA PUBLIK"
-
-msgid "PLAYER PASSWORD"
-msgstr "PASSWORD PEMAIN"
-
-msgid "VIEWER PASSWORD"
-msgstr "PASSWOR PENONTON"
 
 msgid "FIND SIMILAR GAMES..."
 msgstr "TEMUKAN GAME SERUPA..."
@@ -2535,6 +2556,9 @@ msgstr "HUBUNGKAN KE NETPLAY"
 msgid "Select a game lobby to join"
 msgstr "Pilih lobi permainan untuk bergabung"
 
+msgid "Select a game lobby to create or join"
+msgstr ""
+
 msgid "FAILED"
 msgstr "GAGAL"
 
@@ -2549,6 +2573,15 @@ msgstr "ROM SAMA"
 
 msgid "UNAVAILABLE CORE"
 msgstr "CORE TIDAK TERSEDIA"
+
+msgid "PLAY ONLINE AS HOST"
+msgstr ""
+
+msgid "PLAY OFFLINE"
+msgstr ""
+
+msgid "JOIN EXISTING GAME"
+msgstr ""
 
 msgid "AVAILABLE GAMES"
 msgstr "GAME TERSEDIA"
@@ -3023,6 +3056,12 @@ msgstr "SENJATA RINGAN"
 msgid "STEERING WHEEL"
 msgstr ""
 
+msgid "TRACKBALL"
+msgstr ""
+
+msgid "SPINNER"
+msgstr ""
+
 msgid "HAVING MEDIAS"
 msgstr ""
 
@@ -3102,6 +3141,12 @@ msgid "lightgun games"
 msgstr "permainan bersenjata ringan"
 
 msgid "wheel games"
+msgstr ""
+
+msgid "trackball games"
+msgstr ""
+
+msgid "spinner games"
 msgstr ""
 
 msgid "collections"

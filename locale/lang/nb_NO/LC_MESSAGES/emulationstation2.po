@@ -551,6 +551,27 @@ msgstr "EGENDEFINERT"
 msgid "CUSTOM RELAY SERVER"
 msgstr "EGENDEFINERT RELAY SERVER"
 
+msgid "PUBLICLY ANNOUNCE GAME"
+msgstr "OFFENTLIG KUNNGJØR SPILLET"
+
+msgid "PLAYER PASSWORD"
+msgstr "SPILLER PASSORD"
+
+msgid "VIEWER PASSWORD"
+msgstr "SEERPASSORD"
+
+msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
+msgstr ""
+
+msgid "Allows choice of online, offline, or joining another game."
+msgstr ""
+
+msgid "SHOW RELAY SERVER GAMES ONLY"
+msgstr ""
+
+msgid "Relay server games have a higher chance of successful entry."
+msgstr ""
+
 msgid "SHOW UNAVAILABLE GAMES"
 msgstr "VIS UTILGJENGELIGE SPILL"
 
@@ -1259,6 +1280,9 @@ msgstr "Karusell overganger"
 msgid "QUICK SYSTEM SELECT"
 msgstr "RASKT PLATTFORM VALG"
 
+msgid "QUICK JUMP LETTER"
+msgstr ""
+
 msgid "ON-SCREEN KEYBOARD"
 msgstr "Tastatur (På Skjermen)"
 
@@ -1844,6 +1868,12 @@ msgstr "VIS PISTOL IKON"
 msgid "SHOW WHEEL ICON"
 msgstr "VIS WHEEL ICON"
 
+msgid "SHOW TRACKBALL ICON"
+msgstr ""
+
+msgid "SHOW SPINNER ICON"
+msgstr ""
+
 msgid "SHOW FILENAMES INSTEAD"
 msgstr "VIS FILNAVN ISTEDET"
 
@@ -2164,15 +2194,6 @@ msgstr "START SPILL"
 
 msgid "HOST A NETPLAY GAME"
 msgstr "VERT ET NETPLAY SPILL"
-
-msgid "PUBLICLY ANNOUNCE GAME"
-msgstr "OFFENTLIG KUNNGJØR SPILLET"
-
-msgid "PLAYER PASSWORD"
-msgstr "SPILLER PASSORD"
-
-msgid "VIEWER PASSWORD"
-msgstr "SEERPASSORD"
 
 msgid "FIND SIMILAR GAMES..."
 msgstr "FINN LIGNENDE SPILL..."
@@ -2538,6 +2559,9 @@ msgstr "KOBLE TIL NETPLAY"
 msgid "Select a game lobby to join"
 msgstr "Velg en spilllobby å bli med"
 
+msgid "Select a game lobby to create or join"
+msgstr ""
+
 msgid "FAILED"
 msgstr "FEILET"
 
@@ -2552,6 +2576,15 @@ msgstr "SAMME ROM"
 
 msgid "UNAVAILABLE CORE"
 msgstr "UTILGJENGELIG KJERNE"
+
+msgid "PLAY ONLINE AS HOST"
+msgstr ""
+
+msgid "PLAY OFFLINE"
+msgstr ""
+
+msgid "JOIN EXISTING GAME"
+msgstr ""
 
 msgid "AVAILABLE GAMES"
 msgstr "TILGJENGELIGE SPILL"
@@ -3030,6 +3063,12 @@ msgstr "LYSVÅPEN"
 msgid "STEERING WHEEL"
 msgstr "RATT"
 
+msgid "TRACKBALL"
+msgstr ""
+
+msgid "SPINNER"
+msgstr ""
+
 msgid "HAVING MEDIAS"
 msgstr "HAR MEDIA"
 
@@ -3110,6 +3149,12 @@ msgstr "lysvåpen spill"
 
 msgid "wheel games"
 msgstr "rattspill"
+
+msgid "trackball games"
+msgstr ""
+
+msgid "spinner games"
+msgstr ""
 
 msgid "collections"
 msgstr "samlinger"

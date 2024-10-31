@@ -554,6 +554,27 @@ msgstr ""
 msgid "CUSTOM RELAY SERVER"
 msgstr ""
 
+msgid "PUBLICLY ANNOUNCE GAME"
+msgstr ""
+
+msgid "PLAYER PASSWORD"
+msgstr ""
+
+msgid "VIEWER PASSWORD"
+msgstr ""
+
+msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
+msgstr ""
+
+msgid "Allows choice of online, offline, or joining another game."
+msgstr ""
+
+msgid "SHOW RELAY SERVER GAMES ONLY"
+msgstr ""
+
+msgid "Relay server games have a higher chance of successful entry."
+msgstr ""
+
 msgid "SHOW UNAVAILABLE GAMES"
 msgstr ""
 
@@ -1249,6 +1270,9 @@ msgstr "CARWSEL TRAWSNEWIDIADAU"
 msgid "QUICK SYSTEM SELECT"
 msgstr "DETHOL SYSTEM CYFLYM"
 
+msgid "QUICK JUMP LETTER"
+msgstr ""
+
 msgid "ON-SCREEN KEYBOARD"
 msgstr "ALWEDDFWRDD AR SGRIN"
 
@@ -1816,6 +1840,12 @@ msgstr ""
 msgid "SHOW WHEEL ICON"
 msgstr ""
 
+msgid "SHOW TRACKBALL ICON"
+msgstr ""
+
+msgid "SHOW SPINNER ICON"
+msgstr ""
+
 msgid "SHOW FILENAMES INSTEAD"
 msgstr "DANGOS ENWAU FFEILIAU MEWN RHESTR"
 
@@ -2133,15 +2163,6 @@ msgid "START GAME"
 msgstr "DECHRAU GAME"
 
 msgid "HOST A NETPLAY GAME"
-msgstr ""
-
-msgid "PUBLICLY ANNOUNCE GAME"
-msgstr ""
-
-msgid "PLAYER PASSWORD"
-msgstr ""
-
-msgid "VIEWER PASSWORD"
 msgstr ""
 
 msgid "FIND SIMILAR GAMES..."
@@ -2506,6 +2527,9 @@ msgstr "CYSYLLTWCH Â RHWYDWAITH"
 msgid "Select a game lobby to join"
 msgstr ""
 
+msgid "Select a game lobby to create or join"
+msgstr ""
+
 msgid "FAILED"
 msgstr "METHU"
 
@@ -2520,6 +2544,15 @@ msgstr "UN ROM"
 
 msgid "UNAVAILABLE CORE"
 msgstr "CRAIDD ANNERBYNIOL"
+
+msgid "PLAY ONLINE AS HOST"
+msgstr ""
+
+msgid "PLAY OFFLINE"
+msgstr ""
+
+msgid "JOIN EXISTING GAME"
+msgstr ""
 
 msgid "AVAILABLE GAMES"
 msgstr "GEMAU AR GAEL"
@@ -3003,6 +3036,12 @@ msgstr ""
 msgid "STEERING WHEEL"
 msgstr ""
 
+msgid "TRACKBALL"
+msgstr ""
+
+msgid "SPINNER"
+msgstr ""
+
 msgid "HAVING MEDIAS"
 msgstr ""
 
@@ -3082,6 +3121,12 @@ msgid "lightgun games"
 msgstr ""
 
 msgid "wheel games"
+msgstr ""
+
+msgid "trackball games"
+msgstr ""
+
+msgid "spinner games"
 msgstr ""
 
 msgid "collections"

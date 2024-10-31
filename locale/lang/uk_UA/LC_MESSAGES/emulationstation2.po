@@ -551,6 +551,27 @@ msgstr ""
 msgid "CUSTOM RELAY SERVER"
 msgstr ""
 
+msgid "PUBLICLY ANNOUNCE GAME"
+msgstr ""
+
+msgid "PLAYER PASSWORD"
+msgstr ""
+
+msgid "VIEWER PASSWORD"
+msgstr ""
+
+msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
+msgstr ""
+
+msgid "Allows choice of online, offline, or joining another game."
+msgstr ""
+
+msgid "SHOW RELAY SERVER GAMES ONLY"
+msgstr ""
+
+msgid "Relay server games have a higher chance of successful entry."
+msgstr ""
+
 msgid "SHOW UNAVAILABLE GAMES"
 msgstr "ПОКАЗАТИ НЕДОСТУПНІ ІГРИ"
 
@@ -1251,6 +1272,9 @@ msgstr "АНИМАЦІЯ КАРУСЕЛІ"
 msgid "QUICK SYSTEM SELECT"
 msgstr "ШВИДКЕ ПЕРЕМИКАННЯ СИСТЕМ"
 
+msgid "QUICK JUMP LETTER"
+msgstr ""
+
 msgid "ON-SCREEN KEYBOARD"
 msgstr "ЕКРАННА КЛАВІАТУРА"
 
@@ -1818,6 +1842,12 @@ msgstr ""
 msgid "SHOW WHEEL ICON"
 msgstr ""
 
+msgid "SHOW TRACKBALL ICON"
+msgstr ""
+
+msgid "SHOW SPINNER ICON"
+msgstr ""
+
 msgid "SHOW FILENAMES INSTEAD"
 msgstr "ПОКАЗАТИ СПРАВЖНЮ НАЗВУ ФАЙЛУ"
 
@@ -2135,15 +2165,6 @@ msgid "START GAME"
 msgstr ""
 
 msgid "HOST A NETPLAY GAME"
-msgstr ""
-
-msgid "PUBLICLY ANNOUNCE GAME"
-msgstr ""
-
-msgid "PLAYER PASSWORD"
-msgstr ""
-
-msgid "VIEWER PASSWORD"
 msgstr ""
 
 msgid "FIND SIMILAR GAMES..."
@@ -2508,6 +2529,9 @@ msgstr "ПІД'ЄДНАТИСЬ ДО NETPLAY"
 msgid "Select a game lobby to join"
 msgstr ""
 
+msgid "Select a game lobby to create or join"
+msgstr ""
+
 msgid "FAILED"
 msgstr "ПОМИЛКА"
 
@@ -2522,6 +2546,15 @@ msgstr "ТА Ж САМА ГРА"
 
 msgid "UNAVAILABLE CORE"
 msgstr "НЕДОСТУПНЕ ЯДРО"
+
+msgid "PLAY ONLINE AS HOST"
+msgstr ""
+
+msgid "PLAY OFFLINE"
+msgstr ""
+
+msgid "JOIN EXISTING GAME"
+msgstr ""
 
 msgid "AVAILABLE GAMES"
 msgstr "ДОСТУПНІ ІГРИ"
@@ -2992,6 +3025,12 @@ msgstr ""
 msgid "STEERING WHEEL"
 msgstr ""
 
+msgid "TRACKBALL"
+msgstr ""
+
+msgid "SPINNER"
+msgstr ""
+
 msgid "HAVING MEDIAS"
 msgstr ""
 
@@ -3072,6 +3111,12 @@ msgstr "гра з рушницею"
 
 msgid "wheel games"
 msgstr "гра з кермом"
+
+msgid "trackball games"
+msgstr ""
+
+msgid "spinner games"
+msgstr ""
 
 msgid "collections"
 msgstr "колекції"

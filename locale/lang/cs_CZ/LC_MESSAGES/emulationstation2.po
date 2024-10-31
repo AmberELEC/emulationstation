@@ -550,6 +550,27 @@ msgstr ""
 msgid "CUSTOM RELAY SERVER"
 msgstr ""
 
+msgid "PUBLICLY ANNOUNCE GAME"
+msgstr "VEŘEJNĚ OZNÁMIT HRU"
+
+msgid "PLAYER PASSWORD"
+msgstr "HESLO HRÁČE"
+
+msgid "VIEWER PASSWORD"
+msgstr "HESLO PROHLÍŽEČE"
+
+msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
+msgstr ""
+
+msgid "Allows choice of online, offline, or joining another game."
+msgstr ""
+
+msgid "SHOW RELAY SERVER GAMES ONLY"
+msgstr ""
+
+msgid "Relay server games have a higher chance of successful entry."
+msgstr ""
+
 msgid "SHOW UNAVAILABLE GAMES"
 msgstr "ZOBRAZIT NEDOSTUPNÉ HRY"
 
@@ -1260,6 +1281,9 @@ msgstr "CAROUSEL TRANZITY"
 msgid "QUICK SYSTEM SELECT"
 msgstr "RYCHLÝ VÝBĚR SYSTÉMU"
 
+msgid "QUICK JUMP LETTER"
+msgstr ""
+
 msgid "ON-SCREEN KEYBOARD"
 msgstr "KLÁVESNICE NA OBRAZOVCE"
 
@@ -1845,6 +1869,12 @@ msgstr "ZOBRAZIT IKONU ZBRANĚ"
 msgid "SHOW WHEEL ICON"
 msgstr "ZOBRAZIT IKONU KOLEČKA"
 
+msgid "SHOW TRACKBALL ICON"
+msgstr ""
+
+msgid "SHOW SPINNER ICON"
+msgstr ""
+
 msgid "SHOW FILENAMES INSTEAD"
 msgstr "ZOBRAZIT NÁZVY SOUBORŮ V SEZNAMECH"
 
@@ -2165,15 +2195,6 @@ msgstr "START HRY"
 
 msgid "HOST A NETPLAY GAME"
 msgstr "HOSTIT NETPLAY HRU"
-
-msgid "PUBLICLY ANNOUNCE GAME"
-msgstr "VEŘEJNĚ OZNÁMIT HRU"
-
-msgid "PLAYER PASSWORD"
-msgstr "HESLO HRÁČE"
-
-msgid "VIEWER PASSWORD"
-msgstr "HESLO PROHLÍŽEČE"
 
 msgid "FIND SIMILAR GAMES..."
 msgstr "NAJÍT PODOBNÉ HRY..."
@@ -2540,6 +2561,9 @@ msgstr "PŘIPOJIT SE K SÍTI"
 msgid "Select a game lobby to join"
 msgstr "Vyberte herní lobby, do které se chcete připojit"
 
+msgid "Select a game lobby to create or join"
+msgstr ""
+
 msgid "FAILED"
 msgstr "NEÚSPĚŠNÉ"
 
@@ -2554,6 +2578,15 @@ msgstr "STEJNÁ ROM"
 
 msgid "UNAVAILABLE CORE"
 msgstr "NEDOSTUPNÉ JÁDRO"
+
+msgid "PLAY ONLINE AS HOST"
+msgstr ""
+
+msgid "PLAY OFFLINE"
+msgstr ""
+
+msgid "JOIN EXISTING GAME"
+msgstr ""
 
 msgid "AVAILABLE GAMES"
 msgstr "DOSTUPNÉ HRY"
@@ -3036,6 +3069,12 @@ msgstr "SVĚTELNÁ ZBRAŇ"
 msgid "STEERING WHEEL"
 msgstr "ŘÍDICÍ KOLO"
 
+msgid "TRACKBALL"
+msgstr ""
+
+msgid "SPINNER"
+msgstr ""
+
 msgid "HAVING MEDIAS"
 msgstr "MAJÍCÍ MÉDIA"
 
@@ -3116,6 +3155,12 @@ msgstr "hry se světelnou pistolí"
 
 msgid "wheel games"
 msgstr "kolové hry"
+
+msgid "trackball games"
+msgstr ""
+
+msgid "spinner games"
+msgstr ""
 
 msgid "collections"
 msgstr "sbírky"

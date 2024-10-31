@@ -51,6 +51,8 @@ static std::map<std::string, std::function<BindableProperty(FileData*)>> propert
 	{ "kidGame",			[](FileData* file) { return file->getKidGame(); } },
 	{ "gunGame",			[](FileData* file) { return file->isLightGunGame(); } },
 	{ "wheelGame",			[](FileData* file) { return file->isWheelGame(); } },
+	{ "trackballGame",			[](FileData* file) { return file->isTrackballGame(); } },
+	{ "spinnerGame",			[](FileData* file) { return file->isSpinnerGame(); } },
 	{ "cheevos",			[](FileData* file) { return file->hasCheevos(); } },
 	{ "genre",			    [](FileData* file) { return file->getGenre(); } },
 	{ "hasKeyboardMapping", [](FileData* file) { return file->hasKeyboardMapping(); } },	
@@ -487,6 +489,18 @@ const bool FileData::isWheelGame()
 	//return Genres::genreExists(&getMetadata(), GENRE_WHEEL);
 }
 
+const bool FileData::isTrackballGame()
+{
+	return MameNames::getInstance()->isTrackball(Utils::FileSystem::getStem(getPath()), mSystem->getName(), mSystem && mSystem->hasPlatformId(PlatformIds::ARCADE));
+	//return Genres::genreExists(&getMetadata(), GENRE_TRACKBALL);
+}
+
+const bool FileData::isSpinnerGame()
+{
+	return MameNames::getInstance()->isSpinner(Utils::FileSystem::getStem(getPath()), mSystem->getName(), mSystem && mSystem->hasPlatformId(PlatformIds::ARCADE));
+	//return Genres::genreExists(&getMetadata(), GENRE_SPINNER);
+}
+
 FileData* FileData::getSourceFileData()
 {
 	return this;
@@ -522,6 +536,12 @@ std::string FileData::getlaunchCommand(LaunchGameOptions& options, bool includeC
 
         if (gameToUpdate->isWheelGame())
 		controllersConfig = controllersConfig + "-wheel ";
+
+        if (gameToUpdate->isTrackballGame())
+		controllersConfig = controllersConfig + "-trackball ";
+
+        if (gameToUpdate->isSpinnerGame())
+		controllersConfig = controllersConfig + "-spinner ";
 
 	std::string systemName = system->getName();
 	std::string emulator = getEmulator();
@@ -612,7 +632,7 @@ std::string FileData::getlaunchCommand(LaunchGameOptions& options, bool includeC
 	if (includeControllers)
 		command = Utils::String::replace(command, "%CONTROLLERSCONFIG%", controllersConfig);
 
-	if (options.netPlayMode != DISABLED && (forceCore || gameToUpdate->isNetplaySupported()) && command.find("%NETPLAY%") == std::string::npos)
+	if (options.netPlayMode != DISABLED && command.find("%NETPLAY%") == std::string::npos)
 		command = command + " %NETPLAY%"; // Add command line parameter if the netplay option is defined at <core netplay="true"> level
 
 	if (options.netPlayMode == CLIENT || options.netPlayMode == SPECTATOR)

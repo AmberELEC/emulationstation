@@ -194,6 +194,7 @@ namespace PlatformIds
 		{ "camplynx",				CAMPUTER_LYNX },
 		{ "gamepock",				EPOCH_GAMEPOCKET },	
 		{ "wasm4",					WASM4 },
+		{ "vircon32",				VIRCON32 },
 		{ "vis",					TANDY_VIS },
 			
 		{ "pcarcade",				TEKNOPARROT },

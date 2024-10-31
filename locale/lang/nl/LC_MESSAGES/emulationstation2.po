@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: emulationstation\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-15 23:48+0100\n"
-"PO-Revision-Date: 2024-09-29 08:13+0000\n"
+"PO-Revision-Date: 2024-10-13 14:47+0000\n"
 "Last-Translator: THa MuSHeR\n"
 "Language-Team: Dutch (Netherlands)\n"
 "Language: nl-NL\n"
@@ -551,6 +551,27 @@ msgstr "AANGEPAST"
 msgid "CUSTOM RELAY SERVER"
 msgstr "AANGEPASTE RELAY SERVER"
 
+msgid "PUBLICLY ANNOUNCE GAME"
+msgstr "EEN SPEL PUBLIEKELIJK AANKONDIGEN"
+
+msgid "PLAYER PASSWORD"
+msgstr "SPELER WACHTWOORD"
+
+msgid "VIEWER PASSWORD"
+msgstr "TOESCHOUWER WACHTWOORD"
+
+msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
+msgstr ""
+
+msgid "Allows choice of online, offline, or joining another game."
+msgstr ""
+
+msgid "SHOW RELAY SERVER GAMES ONLY"
+msgstr ""
+
+msgid "Relay server games have a higher chance of successful entry."
+msgstr ""
+
 msgid "SHOW UNAVAILABLE GAMES"
 msgstr "TOON NIET-BESCHIKBARE SPELLEN"
 
@@ -838,13 +859,13 @@ msgid "fade"
 msgstr "vervagen"
 
 msgid "fast fade"
-msgstr ""
+msgstr "snel vervagen"
 
 msgid "slide"
 msgstr "schuiven"
 
 msgid "fast slide"
-msgstr ""
+msgstr "snel glijden"
 
 msgid "fade & slide"
 msgstr "vervagen en schuiven"
@@ -1274,6 +1295,9 @@ msgstr "CARROUSEL OVERGANGEN"
 
 msgid "QUICK SYSTEM SELECT"
 msgstr "SNELLE SYSTEEMSELECTIE"
+
+msgid "QUICK JUMP LETTER"
+msgstr ""
 
 msgid "ON-SCREEN KEYBOARD"
 msgstr "ON-SCREEN TOETSENBORD"
@@ -1868,6 +1892,12 @@ msgstr "TOON GUN ICOON"
 msgid "SHOW WHEEL ICON"
 msgstr "TOON STUURWIEL ICOON"
 
+msgid "SHOW TRACKBALL ICON"
+msgstr ""
+
+msgid "SHOW SPINNER ICON"
+msgstr ""
+
 msgid "SHOW FILENAMES INSTEAD"
 msgstr "TOON BESTANDSNAMEN IN PLAATS VAN DE TITEL"
 
@@ -2188,15 +2218,6 @@ msgstr "START SPEL"
 
 msgid "HOST A NETPLAY GAME"
 msgstr "HOST EEN NETPLAY SPEL"
-
-msgid "PUBLICLY ANNOUNCE GAME"
-msgstr "EEN SPEL PUBLIEKELIJK AANKONDIGEN"
-
-msgid "PLAYER PASSWORD"
-msgstr "SPELER WACHTWOORD"
-
-msgid "VIEWER PASSWORD"
-msgstr "TOESCHOUWER WACHTWOORD"
 
 msgid "FIND SIMILAR GAMES..."
 msgstr "VIND SOORTGELIJKE SPELLEN..."
@@ -2560,6 +2581,9 @@ msgstr "VERBIND MET NETPLAY"
 msgid "Select a game lobby to join"
 msgstr "Selecteer een spel lobby voor deelname"
 
+msgid "Select a game lobby to create or join"
+msgstr ""
+
 msgid "FAILED"
 msgstr "MISLUKT"
 
@@ -2574,6 +2598,15 @@ msgstr "DEZELFDE ROM"
 
 msgid "UNAVAILABLE CORE"
 msgstr "NIET-BESCHIKBARE CORE"
+
+msgid "PLAY ONLINE AS HOST"
+msgstr ""
+
+msgid "PLAY OFFLINE"
+msgstr ""
+
+msgid "JOIN EXISTING GAME"
+msgstr ""
 
 msgid "AVAILABLE GAMES"
 msgstr "BESCHIKBARE SPELLEN"
@@ -3053,6 +3086,12 @@ msgstr "LIGHTGUN"
 msgid "STEERING WHEEL"
 msgstr "STUURWIEL"
 
+msgid "TRACKBALL"
+msgstr ""
+
+msgid "SPINNER"
+msgstr ""
+
 msgid "HAVING MEDIAS"
 msgstr "AANWEZIGE MEDIA"
 
@@ -3133,6 +3172,12 @@ msgstr "lightgun spellen"
 
 msgid "wheel games"
 msgstr "spellen met stuurwiel"
+
+msgid "trackball games"
+msgstr ""
+
+msgid "spinner games"
+msgstr ""
 
 msgid "collections"
 msgstr "collecties"

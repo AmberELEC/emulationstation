@@ -257,6 +257,8 @@ void Settings::setDefaults()
 
 	mBoolMap["ShowWheelIconOnGames"] = false;
 	mBoolMap["ShowGunIconOnGames"] = false;
+	mBoolMap["ShowTrackballIconOnGames"] = false;
+	mBoolMap["ShowSpinnerIconOnGames"] = false;
 
 	mBoolMap["SlideshowScreenSaverCustomVideoSource"] = false;
 #ifdef _ENABLEAMBERELEC
@@ -371,6 +373,8 @@ void Settings::setDefaults()
 	mIntMap["audio.display_titles_time"] = 3;
 
 	mBoolMap["NetPlayCheckIndexesAtStart"] = false;
+	mBoolMap["NetPlayShowOptionsWhenLaunchingGames"] = false;
+	mBoolMap["NetPlayShowOnlyRelayServerGames"] = false;
 	mBoolMap["NetPlayShowMissingGames"] = false;
 
 	mBoolMap["CheevosCheckIndexesAtStart"] = false;

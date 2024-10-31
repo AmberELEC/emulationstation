@@ -587,6 +587,27 @@ msgstr ""
 msgid "CUSTOM RELAY SERVER"
 msgstr ""
 
+msgid "PUBLICLY ANNOUNCE GAME"
+msgstr "الإعلان عن اللعبة للجماهير"
+
+msgid "PLAYER PASSWORD"
+msgstr "كلمة سر اللاعب"
+
+msgid "VIEWER PASSWORD"
+msgstr "كلمة سر المتفرج"
+
+msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
+msgstr ""
+
+msgid "Allows choice of online, offline, or joining another game."
+msgstr ""
+
+msgid "SHOW RELAY SERVER GAMES ONLY"
+msgstr ""
+
+msgid "Relay server games have a higher chance of successful entry."
+msgstr ""
+
 msgid "SHOW UNAVAILABLE GAMES"
 msgstr "عرض الألعاب الغير موجودة"
 
@@ -1293,6 +1314,9 @@ msgstr "تنقل دائري"
 msgid "QUICK SYSTEM SELECT"
 msgstr "تحديد نظام سريع"
 
+msgid "QUICK JUMP LETTER"
+msgstr ""
+
 msgid "ON-SCREEN KEYBOARD"
 msgstr "لوحة مفاتيح على الشاشة"
 
@@ -1871,6 +1895,12 @@ msgstr "إظهار أيقونة GUN"
 msgid "SHOW WHEEL ICON"
 msgstr "إظهار أيقونة WHEEL"
 
+msgid "SHOW TRACKBALL ICON"
+msgstr ""
+
+msgid "SHOW SPINNER ICON"
+msgstr ""
+
 msgid "SHOW FILENAMES INSTEAD"
 msgstr "عرض اسم الملف في القائمة"
 
@@ -2189,15 +2219,6 @@ msgstr "بدئ اللعبة"
 
 msgid "HOST A NETPLAY GAME"
 msgstr "استضف اللعب عبر النت"
-
-msgid "PUBLICLY ANNOUNCE GAME"
-msgstr "الإعلان عن اللعبة للجماهير"
-
-msgid "PLAYER PASSWORD"
-msgstr "كلمة سر اللاعب"
-
-msgid "VIEWER PASSWORD"
-msgstr "كلمة سر المتفرج"
 
 msgid "FIND SIMILAR GAMES..."
 msgstr "أوجد ألعاب مماثلة..."
@@ -2563,6 +2584,9 @@ msgstr "الإتصال بـ لعبة نت"
 msgid "Select a game lobby to join"
 msgstr "اختر حُجرَة اللعبة للانضمام"
 
+msgid "Select a game lobby to create or join"
+msgstr ""
+
 msgid "FAILED"
 msgstr "فشل"
 
@@ -2577,6 +2601,15 @@ msgstr "نفس الروم"
 
 msgid "UNAVAILABLE CORE"
 msgstr "CORE غير متوفر"
+
+msgid "PLAY ONLINE AS HOST"
+msgstr ""
+
+msgid "PLAY OFFLINE"
+msgstr ""
+
+msgid "JOIN EXISTING GAME"
+msgstr ""
 
 msgid "AVAILABLE GAMES"
 msgstr "ألعاب متوفرة"
@@ -3068,6 +3101,12 @@ msgstr "المسدس"
 msgid "STEERING WHEEL"
 msgstr "عجلة القيادة"
 
+msgid "TRACKBALL"
+msgstr ""
+
+msgid "SPINNER"
+msgstr ""
+
 msgid "HAVING MEDIAS"
 msgstr "الوسائط الموجودة"
 
@@ -3148,6 +3187,12 @@ msgstr "ألعاب المسدس الضوئي"
 
 msgid "wheel games"
 msgstr "العاب سيارات"
+
+msgid "trackball games"
+msgstr ""
+
+msgid "spinner games"
+msgstr ""
 
 msgid "collections"
 msgstr "مجموعات"

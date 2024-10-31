@@ -549,6 +549,27 @@ msgstr ""
 msgid "CUSTOM RELAY SERVER"
 msgstr ""
 
+msgid "PUBLICLY ANNOUNCE GAME"
+msgstr "ΔΗΜΟΣΙΑ ΑΝΑΚΟΙΝΩΣΗ ΠΑΙΧΝΙΔΙΟΥ"
+
+msgid "PLAYER PASSWORD"
+msgstr "ΚΩΔΙΚΟΣ ΠΑΙΚΤΗ"
+
+msgid "VIEWER PASSWORD"
+msgstr "ΚΩΔΙΚΟΣ ΘΕΑΤΗ"
+
+msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
+msgstr ""
+
+msgid "Allows choice of online, offline, or joining another game."
+msgstr ""
+
+msgid "SHOW RELAY SERVER GAMES ONLY"
+msgstr ""
+
+msgid "Relay server games have a higher chance of successful entry."
+msgstr ""
+
 msgid "SHOW UNAVAILABLE GAMES"
 msgstr "ΠΡΟΒΟΛΗ ΜΗ ΔΙΑΘΕΣΙΜΩΝ ΠΑΙΧΝΙΔΙΩΝ"
 
@@ -1260,6 +1281,9 @@ msgstr "ΤΥΠΟΣ ΜΕΤΑΒΑΣΕΩΝ ΚΑΡΟΥΖΕΛ"
 msgid "QUICK SYSTEM SELECT"
 msgstr "ΓΡΗΓΟΡΗ ΕΠΙΛΟΓΗ ΣΥΣΤΗΜΑΤΟΣ"
 
+msgid "QUICK JUMP LETTER"
+msgstr ""
+
 msgid "ON-SCREEN KEYBOARD"
 msgstr "ΠΛΗΚΤΡΟΛΟΓΙΟ ΟΘΟΝΗΣ"
 
@@ -1834,6 +1858,12 @@ msgstr ""
 msgid "SHOW WHEEL ICON"
 msgstr "ΠΡΟΒΟΛΗ ΕΙΚΟΝΙΔΙΟΥ ΤΡΟΧΟΥ"
 
+msgid "SHOW TRACKBALL ICON"
+msgstr ""
+
+msgid "SHOW SPINNER ICON"
+msgstr ""
+
 msgid "SHOW FILENAMES INSTEAD"
 msgstr "ΕΜΦΑΝΙΣΗ ΟΝΟΜΑΤΩΝ ΑΡΧΕΙΩΝ ΣΤΙΣ ΛΙΣΤΕΣ"
 
@@ -2152,15 +2182,6 @@ msgstr "ΕΚΚΙΝΗΣΗ ΠΑΙΧΝΙΔΙΟΥ"
 
 msgid "HOST A NETPLAY GAME"
 msgstr ""
-
-msgid "PUBLICLY ANNOUNCE GAME"
-msgstr "ΔΗΜΟΣΙΑ ΑΝΑΚΟΙΝΩΣΗ ΠΑΙΧΝΙΔΙΟΥ"
-
-msgid "PLAYER PASSWORD"
-msgstr "ΚΩΔΙΚΟΣ ΠΑΙΚΤΗ"
-
-msgid "VIEWER PASSWORD"
-msgstr "ΚΩΔΙΚΟΣ ΘΕΑΤΗ"
 
 msgid "FIND SIMILAR GAMES..."
 msgstr "ΒΡΕΙΤΕ ΠΑΡΟΜΟΙΑ ΠΑΙΧΝΙΔΙΑ..."
@@ -2527,6 +2548,9 @@ msgstr "ΣΥΝΔΕΣΗ ΣΤΟ NETPLAY"
 msgid "Select a game lobby to join"
 msgstr ""
 
+msgid "Select a game lobby to create or join"
+msgstr ""
+
 msgid "FAILED"
 msgstr "ΑΠΕΤΥΧΕ"
 
@@ -2541,6 +2565,15 @@ msgstr "ΙΔΙΟ ROM"
 
 msgid "UNAVAILABLE CORE"
 msgstr "ΜΗ ΔΙΑΘΕΣΙΜΟΣ ΠYΡHΝΑΣ"
+
+msgid "PLAY ONLINE AS HOST"
+msgstr ""
+
+msgid "PLAY OFFLINE"
+msgstr ""
+
+msgid "JOIN EXISTING GAME"
+msgstr ""
 
 msgid "AVAILABLE GAMES"
 msgstr "ΔΙΑΘΕΣΙΜΑ ΠΑΙΧΝΙΔΙΑ"
@@ -3015,6 +3048,12 @@ msgstr ""
 msgid "STEERING WHEEL"
 msgstr ""
 
+msgid "TRACKBALL"
+msgstr ""
+
+msgid "SPINNER"
+msgstr ""
+
 msgid "HAVING MEDIAS"
 msgstr "MEDIA ΠΟΥ ΥΠΑΡΧΟΥΝ"
 
@@ -3094,6 +3133,12 @@ msgid "lightgun games"
 msgstr "lightgun παιχνιδια"
 
 msgid "wheel games"
+msgstr ""
+
+msgid "trackball games"
+msgstr ""
+
+msgid "spinner games"
 msgstr ""
 
 msgid "collections"
