@@ -202,7 +202,6 @@ namespace PlatformIds
 
 		{ "z-machine",			Z_MACHINE },
 		{ "wasm4",			WASM4 },
-		{ "vircon32",			VIRCON32 },
 		{ "gamepocketcomputer",		EPOCH_GAMEPOCKET },
 		{ "gamemaster",			HARTUNG_GAME_MASTER },
 		{ "americanlasergames",		AMERICANLASERGAMES },

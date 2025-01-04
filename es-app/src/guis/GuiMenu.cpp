@@ -4657,7 +4657,7 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable)
        auto syncthing_enabled = std::make_shared<SwitchComponent>(mWindow);
                 bool syncthingEnabled = SystemConf::getInstance()->get("ee_syncthing.enabled") == "1";
                 syncthing_enabled->setState(syncthingEnabled);
-		auto syncthing_location = "http://"+ApiSystem::getInstance()->getIpAdress()+":8384 or http://"+ApiSystem::getInstance()->getHostsName()+":8384";
+		auto syncthing_location = "http://"+ApiSystem::getInstance()->getIpAddress()+":8384 or http://"+ApiSystem::getInstance()->getHostsName()+":8384";
 		s->addWithDescription(_("ENABLE SYNCTHING"),_(syncthing_location.c_str()), syncthing_enabled);
                 syncthing_enabled->setOnChangedCallback([syncthing_enabled] {
                         if (syncthing_enabled->getState() == false) {
@@ -4673,7 +4673,7 @@ void GuiMenu::openNetworkSettings(bool selectWifiEnable)
        auto webui_enabled = std::make_shared<SwitchComponent>(mWindow);
 		bool webuibaseEnabled = SystemConf::getInstance()->get("ee_webui.enabled") == "1";
 		webui_enabled->setState(webuibaseEnabled);
-		auto web_ui_location = "http://"+ApiSystem::getInstance()->getIpAdress()+" or http://"+ApiSystem::getInstance()->getHostsName();
+		auto web_ui_location = "http://"+ApiSystem::getInstance()->getIpAddress()+" or http://"+ApiSystem::getInstance()->getHostsName();
 		s->addWithDescription(_("ENABLE WEB UI"),_(web_ui_location.c_str()), webui_enabled);
 		webui_enabled->setOnChangedCallback([webui_enabled] {
 			if (webui_enabled->getState() == false) {
