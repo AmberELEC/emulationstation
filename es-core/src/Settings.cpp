@@ -192,7 +192,8 @@ void Settings::setDefaults()
 
 	mBoolMap["GameOptionsAtNorth"] = true;
 	mBoolMap["LoadEmptySystems"] = false;
-
+	mBoolMap["HideUniqueGroups"] = true;	
+	
 	mIntMap["RecentlyScrappedFilter"] = 3;
 
 	mIntMap["ScreenSaverTime"] = Settings::_ScreenSaverTime;

@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: emulationstation\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-15 23:48+0100\n"
-"PO-Revision-Date: 2024-10-13 14:47+0000\n"
+"PO-Revision-Date: 2024-12-05 10:08+0000\n"
 "Last-Translator: THa MuSHeR\n"
 "Language-Team: Dutch (Netherlands)\n"
 "Language: nl-NL\n"
@@ -561,16 +561,16 @@ msgid "VIEWER PASSWORD"
 msgstr "TOESCHOUWER WACHTWOORD"
 
 msgid "SHOW NETPLAY OPTIONS WHEN LAUNCHING GAME"
-msgstr ""
+msgstr "TOON NETPLAY-OPTIES BIJ HET STARTEN VAN HET SPEL"
 
 msgid "Allows choice of online, offline, or joining another game."
-msgstr ""
+msgstr "Biedt de keuze tussen online, offline of deelnemen aan een ander spel."
 
 msgid "SHOW RELAY SERVER GAMES ONLY"
-msgstr ""
+msgstr "ALLEEN RELAY SERVER SPELLEN TONEN"
 
 msgid "Relay server games have a higher chance of successful entry."
-msgstr ""
+msgstr "Relay server spellen hebben een grotere kans op succesvolle toegang."
 
 msgid "SHOW UNAVAILABLE GAMES"
 msgstr "TOON NIET-BESCHIKBARE SPELLEN"
@@ -1205,10 +1205,8 @@ msgstr "Opruimen"
 msgid "RESET GAMELISTS USAGE DATA"
 msgstr "RESET SPELLIJSTEN GEBRUIKSGEGEVENS"
 
-msgid "Reset values of GameTime, PlayCount and LastPlayed metadatas."
+msgid "Reset values of GameTime, PlayCount and LastPlayed metadata."
 msgstr ""
-"Reset waarden van \"Speeltijd, Aantal keer gespeeld en Laatst gespeeld\" "
-"metadata."
 
 msgid "RESET FILE EXTENSIONS"
 msgstr "RESET FILTEREXTENSIES"
@@ -1297,7 +1295,7 @@ msgid "QUICK SYSTEM SELECT"
 msgstr "SNELLE SYSTEEMSELECTIE"
 
 msgid "QUICK JUMP LETTER"
-msgstr ""
+msgstr "SPRING SNEL NAAR LETTER"
 
 msgid "ON-SCREEN KEYBOARD"
 msgstr "ON-SCREEN TOETSENBORD"
@@ -1893,10 +1891,10 @@ msgid "SHOW WHEEL ICON"
 msgstr "TOON STUURWIEL ICOON"
 
 msgid "SHOW TRACKBALL ICON"
-msgstr ""
+msgstr "TOON TRACKBALL ICOON"
 
 msgid "SHOW SPINNER ICON"
-msgstr ""
+msgstr "TOON SPINNER ICOON"
 
 msgid "SHOW FILENAMES INSTEAD"
 msgstr "TOON BESTANDSNAMEN IN PLAATS VAN DE TITEL"
@@ -2436,6 +2434,9 @@ msgstr "TOON SPELLEN VAN VERBORGEN SYSTEMEN IN COLLECTIES"
 msgid "SHOW EMPTY SYSTEMS"
 msgstr "TOON LEGE SYSTEMEN"
 
+msgid "DON'T SHOW GROUPS WITH ONLY ONE SYSTEM"
+msgstr ""
+
 msgid "Loading..."
 msgstr "Laden..."
 
@@ -2582,7 +2583,7 @@ msgid "Select a game lobby to join"
 msgstr "Selecteer een spel lobby voor deelname"
 
 msgid "Select a game lobby to create or join"
-msgstr ""
+msgstr "Selecteer een gamelobby om aan te maken of eraan deel te nemen"
 
 msgid "FAILED"
 msgstr "MISLUKT"
@@ -2600,13 +2601,13 @@ msgid "UNAVAILABLE CORE"
 msgstr "NIET-BESCHIKBARE CORE"
 
 msgid "PLAY ONLINE AS HOST"
-msgstr ""
+msgstr "SPEEL ONLINE ALS HOST"
 
 msgid "PLAY OFFLINE"
-msgstr ""
+msgstr "SPEEL OFFLINE"
 
 msgid "JOIN EXISTING GAME"
-msgstr ""
+msgstr "DOE MEE AAN EEN BESTAAND SPEL"
 
 msgid "AVAILABLE GAMES"
 msgstr "BESCHIKBARE SPELLEN"
@@ -2687,6 +2688,9 @@ msgstr "TOON ACTIVITEIT CONTROLLER"
 
 msgid "SHOW CONTROLLER BATTERY LEVEL"
 msgstr "TOON BATTERIJNIVEAU CONTROLLER"
+
+msgid "DRAW GUN CROSSHAIR"
+msgstr ""
 
 msgid "default"
 msgstr "standaard"
@@ -3087,10 +3091,10 @@ msgid "STEERING WHEEL"
 msgstr "STUURWIEL"
 
 msgid "TRACKBALL"
-msgstr ""
+msgstr "TRACKBALL"
 
 msgid "SPINNER"
-msgstr ""
+msgstr "SPINNER"
 
 msgid "HAVING MEDIAS"
 msgstr "AANWEZIGE MEDIA"
@@ -3116,8 +3120,8 @@ msgstr "UPDATE DE SPELLIJSTEN OM WIJZIGINGEN TOE TE PASSEN."
 msgid "Loading system config..."
 msgstr "Systeemconfiguratie wordt geladen..."
 
-msgid "SAVING METADATAS. PLEASE WAIT..."
-msgstr "METADATAS OPSLAAN. WACHT ALSTUBLIEFT..."
+msgid "SAVING METADATA. PLEASE WAIT..."
+msgstr ""
 
 msgid "THE EMULATOR EXITED UNEXPECTEDLY"
 msgstr "DE EMULATOR IS ONVERWACHT AFGESLOTEN"
@@ -3174,10 +3178,10 @@ msgid "wheel games"
 msgstr "spellen met stuurwiel"
 
 msgid "trackball games"
-msgstr ""
+msgstr "trackball spellen"
 
 msgid "spinner games"
-msgstr ""
+msgstr "spinner spellen"
 
 msgid "collections"
 msgstr "collecties"
@@ -3584,3 +3588,11 @@ msgid ""
 msgstr ""
 "KALIBREREN GUN\n"
 "Vuur op doelen om te kalibreren"
+
+#~ msgid "Reset values of GameTime, PlayCount and LastPlayed metadatas."
+#~ msgstr ""
+#~ "Reset waarden van \"Speeltijd, Aantal keer gespeeld en Laatst gespeeld\" "
+#~ "metadata."
+
+#~ msgid "SAVING METADATAS. PLEASE WAIT..."
+#~ msgstr "METADATAS OPSLAAN. WACHT ALSTUBLIEFT..."
