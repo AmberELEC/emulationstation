@@ -87,17 +87,17 @@
 #define fake_gettext_cpu_frequency _("Cpu max frequency")
 #define fake_gettext_cpu_feature  _("Cpu feature")
 
-#define fake_gettext_cpu_feature  _("Available Memory")
-#define fake_gettext_cpu_feature  _("Display Resolution")
-#define fake_gettext_cpu_feature  _("Display Refresh Rate")
-#define fake_gettext_cpu_feature  _("OpenGL Driver Version")
-#define fake_gettext_cpu_feature  _("Vulkan Driver Name")
-#define fake_gettext_cpu_feature  _("Vulkan Driver Version")
-#define fake_gettext_cpu_feature  _("Data Partition Format")
-#define fake_gettext_cpu_feature  _("Data Partition Available Space")
-#define fake_gettext_cpu_feature  _("Network IP Address")
-#define fake_gettext_cpu_feature  _("UEFI Boot")
-#define fake_gettext_cpu_feature  _("Secure Boot")
+#define fake_gettext_available_memory               _("Available Memory")
+#define fake_gettext_display_resolution             _("Display Resolution")
+#define fake_gettext_display_refresh_rate           _("Display Refresh Rate")
+#define fake_gettext_opengl_driver_version          _("OpenGL Driver Version")
+#define fake_gettext_vulkan_driver_name             _("Vulkan Driver Name")
+#define fake_gettext_vulkan_driver_version          _("Vulkan Driver Version")
+#define fake_gettext_data_partition_format          _("Data Partition Format")
+#define fake_gettext_data_partition_available_space _("Data Partition Available Space")
+#define fake_gettext_network_ip_address             _("Network IP Address")
+#define fake_gettext_uefi_boot                      _("UEFI Boot")
+#define fake_gettext_secure_boot                    _("Secure Boot")
 
 #define fake_gettext_simple_bilinear_simple	pgettext("game_options", "SHARP-BILINEAR-SIMPLE")
 #define fake_gettext_scanlines				pgettext("game_options", "SCANLINES")
@@ -592,29 +592,18 @@ void GuiMenu::openDmdSettings()
 
 	s->addGroup("ZEDMD");
 
-	// zedmd.matrix
-	auto zedmd_matrix = std::make_shared< OptionListComponent<std::string> >(window, _("MATRIX"), false);
-	std::string current_zedmd_matrix = SystemConf::getInstance()->get("dmd.zedmd.matrix");
-	zedmd_matrix->addRange({ { _("AUTO"), "" }, { "RGB", "rgb" }, { "RBG", "rbg" }, { "BRG", "brg" }, { "BGR", "bgr" }, { "GRB", "grb" }, { "GBR", "gbr" } }, current_zedmd_matrix);
-	s->addWithDescription(_("MATRIX"), _("rgb dmd order"), zedmd_matrix);
-
 	// zedmd.brightness
 	auto zedmd_brightness = std::make_shared< OptionListComponent<std::string> >(window, _("BRIGHTNESS"), false);
 	std::string current_zedmd_brightness = SystemConf::getInstance()->get("dmd.zedmd.brightness");
 	zedmd_brightness->addRange({ { _("AUTO"), "" }, { "0", "0" }, { "1", "1" }, { "2", "2" }, { "3", "3" }, { "4", "4" }, { "5", "5" }, { "6", "6" }, { "7", "7" }, { "8", "8" }, { "9", "9" }, { "10", "10" }, { "11", "11" }, { "12", "12" }, { "13", "13" }, { "14", "14" }, { "15", "15" } }, current_zedmd_brightness);
 	s->addWithLabel(_("BRIGHTNESS"), zedmd_brightness);
 
-	s->addSaveFunc([window, server, format, zedmd_matrix, zedmd_brightness, current_server, current_format, current_zedmd_matrix, current_zedmd_brightness] {
+	s->addSaveFunc([window, server, format, zedmd_brightness, current_server, current_format, current_zedmd_brightness] {
 	  bool needRestart = false;
 	  bool needSave    = false;
 
 	  if(current_format != format->getSelected()) {
 	    SystemConf::getInstance()->set("dmd.format", format->getSelected());
-	    needSave = true;
-	  }
-	  if(current_zedmd_matrix != zedmd_matrix->getSelected()) {
-	    SystemConf::getInstance()->set("dmd.zedmd.matrix", zedmd_matrix->getSelected());
-	    needRestart = true;
 	    needSave = true;
 	  }
 	  if(current_zedmd_brightness != zedmd_brightness->getSelected()) {
@@ -2940,6 +2929,21 @@ static std::string getFeatureMenuDescription(const std::string& configName, cons
 					storedValue = ch.name;
 					break;
 				}
+			}
+
+			if (item.preset == "switchoff" || item.preset == "switch_default_off_reverse_value")
+			{
+				if (storedValue == "0")
+					storedValue = _("ON");
+				else if (storedValue == "1")
+					storedValue = _("OFF");
+			}
+			else if (Utils::String::startsWith(item.preset, "switch"))
+			{
+				if (storedValue == "0")
+					storedValue = _("OFF");
+				else if (storedValue == "1")
+					storedValue = _("ON");
 			}
 
 			text += " : " + Utils::String::toUpper(storedValue);
