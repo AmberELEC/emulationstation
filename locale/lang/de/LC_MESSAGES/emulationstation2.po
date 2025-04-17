@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: emulationstation\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-12-15 23:48+0100\n"
-"PO-Revision-Date: 2025-03-05 09:58+0000\n"
+"PO-Revision-Date: 2025-03-17 20:13+0000\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de\n"
@@ -550,6 +550,19 @@ msgstr "BENUTZERDEFINIERT"
 
 msgid "CUSTOM RELAY SERVER"
 msgstr "BENUTZERDEFINIERTER RELAY-SERVER"
+
+msgid "AUTOMATICALLY CREATE LOBBY"
+msgstr "AUTOMATISCH LOBBY ERSTELLEN"
+
+msgid "Automatically creates a Netplay lobby when starting a game."
+msgstr "Erstellt beim Start eines Spiels automatisch eine Netplay-Lobby."
+
+msgid "SHOW RELAY SERVER GAMES ONLY"
+msgstr "NUR RELAY-SERVER-SPIELE ANZEIGEN"
+
+msgid "Relay server games have a higher chance of successful entry."
+msgstr ""
+"Relaisserver-Spiele haben eine höhere Chance auf eine erfolgreiche Teilnahme."
 
 msgid "SHOW UNAVAILABLE GAMES"
 msgstr "NICHT VERFÜGBARE SPIELE ANZEIGEN"
