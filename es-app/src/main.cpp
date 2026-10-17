@@ -628,6 +628,23 @@ int main(int argc, char* argv[])
 	// Create a flag in  temporary directory to signal READY state
 	ApiSystem::getInstance()->setReadyFlag();
 
+#ifdef _ENABLEAMBERELEC
+#if defined(RG353) || defined(RG503)
+	int b = Settings::getInstance()->getInt("PanelBrightness");
+	int c = Settings::getInstance()->getInt("PanelContrast");
+	int s = Settings::getInstance()->getInt("PanelSaturation");
+	int h = Settings::getInstance()->getInt("PanelHue");
+
+	std::string restoreCmd = 
+		"drm_tool set /dev/dri/card0 130 brightness " + std::to_string(b) + " && " +
+		"drm_tool set /dev/dri/card0 130 contrast " + std::to_string(c) + " && " +
+		"drm_tool set /dev/dri/card0 130 saturation " + std::to_string(s) + " && " +
+		"drm_tool set /dev/dri/card0 130 hue " + std::to_string(h) + " 2>/dev/null &";
+
+	system(restoreCmd.c_str());
+#endif
+#endif
+
 	// Play music
 	AudioManager::getInstance()->init();
 

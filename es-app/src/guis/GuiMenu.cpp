@@ -1745,6 +1745,49 @@ void GuiMenu::openSystemSettings()
 	}
 
 #ifdef _ENABLEAMBERELEC
+
+#if defined(RG353) || defined(RG503)
+	auto panel_brightness = std::make_shared<SliderComponent>(mWindow, 0.f, 100.f, 1.f, "%");
+	panel_brightness->setValue((float)Settings::getInstance()->getInt("PanelBrightness"));
+	panel_brightness->setOnValueChanged([](float value) {
+		int val = (int)std::round(value);
+		Settings::getInstance()->setInt("PanelBrightness", val);
+		std::string cmd = "drm_tool set /dev/dri/card0 130 brightness " + std::to_string(val) + " 2>/dev/null &";
+		system(cmd.c_str());
+	});
+	s->addWithLabel(_("PANEL BRIGHTNESS"), panel_brightness);
+
+	auto panel_contrast = std::make_shared<SliderComponent>(mWindow, 0.f, 100.f, 1.f, "%");
+	panel_contrast->setValue((float)Settings::getInstance()->getInt("PanelContrast"));
+	panel_contrast->setOnValueChanged([](float value) {
+		int val = (int)std::round(value);
+		Settings::getInstance()->setInt("PanelContrast", val);
+		std::string cmd = "drm_tool set /dev/dri/card0 130 contrast " + std::to_string(val) + " 2>/dev/null &";
+		system(cmd.c_str());
+	});
+	s->addWithLabel(_("PANEL CONTRAST"), panel_contrast);
+
+	auto panel_saturation = std::make_shared<SliderComponent>(mWindow, 0.f, 100.f, 1.f, "%");
+	panel_saturation->setValue((float)Settings::getInstance()->getInt("PanelSaturation"));
+	panel_saturation->setOnValueChanged([](float value) {
+		int val = (int)std::round(value);
+		Settings::getInstance()->setInt("PanelSaturation", val);
+		std::string cmd = "drm_tool set /dev/dri/card0 130 saturation " + std::to_string(val) + " 2>/dev/null &";
+		system(cmd.c_str());
+	});
+	s->addWithLabel(_("PANEL SATURATION"), panel_saturation);
+
+	auto panel_hue = std::make_shared<SliderComponent>(mWindow, 0.f, 100.f, 1.f, "%");
+	panel_hue->setValue((float)Settings::getInstance()->getInt("PanelHue"));
+	panel_hue->setOnValueChanged([](float value) {
+		int val = (int)std::round(value);
+		Settings::getInstance()->setInt("PanelHue", val);
+		std::string cmd = "drm_tool set /dev/dri/card0 130 hue " + std::to_string(val) + " 2>/dev/null &";
+		system(cmd.c_str());
+	});
+	s->addWithLabel(_("PANEL HUE"), panel_hue);
+#endif
+
 	// powersave
 	auto powersave_es_enabled = std::make_shared<SwitchComponent>(mWindow);
 	powersave_es_enabled->setState(SystemConf::getInstance()->get("powersave_es") == "1");

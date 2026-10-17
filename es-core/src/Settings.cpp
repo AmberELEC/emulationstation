@@ -140,6 +140,13 @@ void Settings::setDefaults()
 #endif
 	mBoolMap["TTS"] = false;
 
+#if defined(RG503) || defined(RG353)
+	mIntMap["PanelBrightness"] = 50;
+	mIntMap["PanelContrast"] = 50;
+	mIntMap["PanelSaturation"] = 50;
+	mIntMap["PanelHue"] = 50;
+#endif
+
 #if defined(RG552) || defined(RG503)
 	mStringMap["FullScreenMenu"] = "true";
 #endif

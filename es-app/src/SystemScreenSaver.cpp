@@ -30,10 +30,19 @@
 #define DATE_TIME_UPDATE_INTERVAL	(100)
 
 void setBacklight(int power_value) {
-    FILE *power_file;
-    power_file = fopen("/sys/class/backlight/backlight/bl_power", "w");
-    fprintf(power_file, "%d", power_value);
-    fclose(power_file);
+#ifdef RG503
+	// DRM DPMS: 3 = Off, 0 = On
+	int dpms_val = (power_value != 0) ? 3 : 0;
+	std::string cmd = "drm_tool set /dev/dri/card0 130 DPMS " + std::to_string(dpms_val) + " 2>/dev/null &";
+	system(cmd.c_str());
+#else
+	FILE *power_file = fopen("/sys/class/backlight/backlight/bl_power", "w");
+	if (power_file != nullptr)
+	{
+		fprintf(power_file, "%d", power_value);
+		fclose(power_file);
+	}
+#endif
 }
 
 SystemScreenSaver::SystemScreenSaver(Window* window) :
